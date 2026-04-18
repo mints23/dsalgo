@@ -53,6 +53,8 @@
         .sidebar-footer{margin-top:auto;padding:.8rem;border-top:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between}
         .theme-btn{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);padding:.3rem .5rem;border-radius:.35rem;transition:background .15s}
         .theme-btn:hover{background:var(--offset);color:var(--text)}
+        .theme-btn-top{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:.45rem;background:var(--offset);border:1px solid var(--border);color:var(--text);transition:background .15s,color .15s}
+        .theme-btn-top:hover{background:var(--surface2);color:var(--primary)}
         .progress-summary{font-size:.68rem;color:var(--faint)}
 
         /* ── TOPBAR ── */
@@ -511,11 +513,13 @@
 </div>
 <script>
     // Theme Toggler
-    const themeToggle = document.querySelector('.theme-btn');
-    themeToggle.addEventListener('click', () => {
+    function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
+    }
+    document.querySelectorAll('.theme-btn, .theme-btn-top').forEach(btn => {
+        btn.addEventListener('click', toggleTheme);
     });
 
     // Topic Switching
