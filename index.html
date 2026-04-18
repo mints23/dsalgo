@@ -1,56 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DS & Algo Problems</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.min.js"></script>
-</head>
-<body class="bg-gray-900 text-gray-100 p-8">
-    <div class="max-w-4xl mx-auto" x-data="{ 
-        search: '',
-        problems: [
-            { name: 'Two Sum', diff: 'Easy', category: 'Arrays', link: 'https://leetcode.com/problems/two-sum/' },
-            { name: 'Longest Path in DAG', diff: 'Hard', category: 'Graphs', link: '#' },
-            { name: 'Merge K Sorted Lists', diff: 'Hard', category: 'Heap', link: 'https://leetcode.com/problems/merge-k-sorted-lists/' }
-        ]
-    }">
-        <h1 class="text-3xl font-bold mb-6 text-yellow-500">DSA Problem Tracker</h1>
-        
-        <input type="text" x-model="search" placeholder="Search problems or patterns..." 
-               class="w-full p-3 mb-8 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500">
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-gray-700 text-gray-400">
-                        <th class="p-4">Title</th>
-                        <th class="p-4">Category</th>
-                        <th class="p-4">Difficulty</th>
-                        <th class="p-4">Resource</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="p in problems.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || i.category.toLowerCase().includes(search.toLowerCase()))">
-                        <tr class="border-b border-gray-800 hover:bg-gray-800 transition">
-                            <td class="p-4 font-medium" x-text="p.name"></td>
-                            <td class="p-4 text-sm text-gray-400" x-text="p.category"></td>
-                            <td class="p-4 text-sm">
-                                <span :class="{
-                                    'text-green-400': p.diff === 'Easy',
-                                    'text-yellow-400': p.diff === 'Medium',
-                                    'text-red-400': p.diff === 'Hard'
-                                }" x-text="p.diff"></span>
-                            </td>
-                            <td class="p-4">
-                                <a :href="p.link" target="_blank" class="text-blue-400 hover:underline">Link &rarr;</a>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</body>
-</html>
+1.  Two Pointer
+2.  HashMap
+3.  Binary Search
+4.  Sliding Window
+5.  Kadane's Algorithm
+6.  Merge Intervals
+7.  Prefix Sums
+8.  Top K Elements
+9.  Monotonic Stack/Queue
+10. Trees
+11. Graphs
+12. BFS
+13. Multi-Source BFS
+14. Topological Sort
+15. Dijkstra's Algorithm
+16. DFS
+17. Bipartite Graph
+18. Backtracking
+19. Greedy
+20. Trie
+21. Sieve of Eratosthenes
+22. Line Sweep
+23. Dynamic Programming
+24. Fibonacci DP
+25. Knapsack DP
+26. LIS DP
+27. Floyd Warshall
+28. Union Find
+29. Bellman Ford
+30. NlogN LIS
+31. Digit DP
+32. Fenwick Tree
+33. Eulerian Paths
+34. Knuth-Morris-Pratt (KMP)
+35. Segment Tree
