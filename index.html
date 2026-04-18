@@ -1,35 +1,769 @@
-1.  Two Pointer
-2.  HashMap
-3.  Binary Search
-4.  Sliding Window
-5.  Kadane's Algorithm
-6.  Merge Intervals
-7.  Prefix Sums
-8.  Top K Elements
-9.  Monotonic Stack/Queue
-10. Trees
-11. Graphs
-12. BFS
-13. Multi-Source BFS
-14. Topological Sort
-15. Dijkstra's Algorithm
-16. DFS
-17. Bipartite Graph
-18. Backtracking
-19. Greedy
-20. Trie
-21. Sieve of Eratosthenes
-22. Line Sweep
-23. Dynamic Programming
-24. Fibonacci DP
-25. Knapsack DP
-26. LIS DP
-27. Floyd Warshall
-28. Union Find
-29. Bellman Ford
-30. NlogN LIS
-31. Digit DP
-32. Fenwick Tree
-33. Eulerian Paths
-34. Knuth-Morris-Pratt (KMP)
-35. Segment Tree
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>DSA Mastery Guides — Crack Any Company</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--text-xs:clamp(.7rem,.66rem + .18vw,.8rem);--text-sm:clamp(.8rem,.76rem + .2vw,.9rem);--text-base:clamp(.88rem,.84rem + .2vw,.98rem);--text-lg:clamp(1rem,.9rem + .45vw,1.25rem);--text-xl:clamp(1.25rem,.95rem + .8vw,1.75rem);--text-hero:clamp(1.9rem,.5rem + 3.5vw,3.5rem);--sp1:.25rem;--sp2:.5rem;--sp3:.75rem;--sp4:1rem;--sp5:1.25rem;--sp6:1.5rem;--sp8:2rem;--sp10:2.5rem;--sp12:3rem;--sp16:4rem;--bg:#f7f6f2;--sur:#f9f8f5;--sur2:#fafaf8;--bor:#d4d1ca;--div:#e0ddd8;--tx:#28251d;--txm:#6e6b65;--txf:#9a9790;--pri:#01696f;--pri-hl:#cde2df;--pri-bg:color-mix(in srgb,#cde2df 35%,#f9f8f5);--sdw:0 1px 4px rgba(0,0,0,.07);--r-sm:.4rem;--r-md:.65rem;--r-lg:1rem;--r-xl:1.4rem;--font:'Inter',sans-serif;--fdis:'Instrument Serif',serif;--fmono:'JetBrains Mono',monospace;--sw:280px;}
+        [data-theme=dark]{--bg:#171614;--sur:#1c1b19;--sur2:#201f1d;--bor:#393836;--div:#2b2a28;--tx:#e0ddd8;--txm:#9a9790;--txf:#6a6764;--pri:#4f98a3;--pri-hl:#1e3336;--pri-bg:color-mix(in srgb,#1e3336 65%,#1c1b19);--sdw:0 1px 4px rgba(0,0,0,.35);}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;scroll-padding-top:56px;}
+        body{font-family:var(--font);font-size:var(--text-base);line-height:1.7;background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;}
+        a{color:var(--pri);text-decoration:none;}a:hover{text-decoration:underline;}
+        .topbar{position:sticky;top:0;z-index:300;backdrop-filter:blur(18px);background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--div);}
+        .tb{max-width:1640px;margin:0 auto;padding:.62rem var(--sp6);display:flex;align-items:center;gap:var(--sp4);}
+        .brand{display:flex;align-items:center;gap:.65rem;font-weight:800;font-size:var(--text-base);color:var(--tx);}
+        .bmark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--pri-hl);color:var(--pri);font-size:1rem;font-weight:800;flex-shrink:0;}
+        .spacer{flex:1;}.srch-wrap{position:relative;}
+        .srch-icon{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);color:var(--txf);pointer-events:none;}
+        .srch{background:var(--sur);border:1px solid var(--bor);color:var(--tx);border-radius:var(--r-md);padding:.42rem .75rem .42rem 1.8rem;font-size:var(--text-sm);width:200px;font-family:var(--font);outline:none;}
+        .srch:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-hl);}
+        .tp-count{font-size:var(--text-xs);font-weight:700;background:var(--pri-bg);color:var(--pri);padding:.26rem .65rem;border-radius:999px;border:1px solid var(--pri-hl);white-space:nowrap;}
+        .tog{border:1px solid var(--bor);background:var(--sur);color:var(--tx);border-radius:999px;padding:.4rem .72rem;min-width:44px;min-height:44px;cursor:pointer;}
+        .layout{display:flex;max-width:1640px;margin:0 auto;min-height:calc(100vh - 56px);}
+        .sidebar{width:var(--sw);flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;border-right:1px solid var(--div);background:var(--sur);padding:var(--sp4) 0;scrollbar-width:thin;scrollbar-color:var(--bor) transparent;}
+        .sb-hd{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txf);padding:0 var(--sp5) var(--sp2);}
+        .snav-item{display:flex;align-items:center;gap:.5rem;padding:.48rem var(--sp5);text-decoration:none;color:var(--txm);font-size:var(--text-sm);border-left:3px solid transparent;transition:background .12s,color .12s;}
+        .snav-item:hover,.snav-item.active{background:var(--pri-bg);color:var(--tx);border-left-color:var(--pri);}
+        .snav-num{font-weight:700;font-size:.7rem;font-family:var(--fmono);color:var(--txf);width:22px;flex-shrink:0;}
+        .snav-name{flex:1;line-height:1.2;}.snav-tier{font-size:.65rem;font-weight:800;flex-shrink:0;}
+        .main{flex:1;overflow:hidden;padding:var(--sp8) var(--sp8) var(--sp16);max-width:1100px;}
+        .hero{border-radius:var(--r-xl);background:linear-gradient(130deg,var(--pri-bg) 0%,var(--sur) 100%);border:1px solid var(--pri-hl);padding:var(--sp10) var(--sp8);margin-bottom:var(--sp10);}
+        .eyebrow{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--pri);margin-bottom:var(--sp2);display:block;}
+        h1.hero-t{font-family:var(--fdis);font-size:var(--text-hero);line-height:1.03;margin-bottom:var(--sp3);}
+        .hero-sub{color:var(--txm);max-width:68ch;font-size:var(--text-sm);margin-bottom:var(--sp5);}
+        .hero-pills{display:flex;flex-wrap:wrap;gap:var(--sp3);}
+        .hpill{display:flex;align-items:center;gap:.4rem;background:var(--sur);border:1px solid var(--bor);border-radius:999px;padding:.3rem .8rem;font-size:var(--text-xs);}.hpill strong{color:var(--pri);}
+        .topic-article{margin-bottom:var(--sp10);border-radius:var(--r-xl);border:1px solid var(--bor);background:var(--sur);overflow:hidden;box-shadow:var(--sdw);}
+        .art-header{display:flex;align-items:center;gap:var(--sp5);padding:var(--sp6) var(--sp8);border-bottom:3px solid var(--tc,var(--pri));background:color-mix(in srgb,var(--tc,var(--pri)) 6%,var(--sur));}
+        .art-num{width:48px;height:48px;border-radius:var(--r-lg);display:grid;place-items:center;background:color-mix(in srgb,var(--tc,var(--pri)) 15%,var(--sur));color:var(--tc,var(--pri));font-weight:800;font-size:var(--text-sm);font-family:var(--fmono);flex-shrink:0;border:1px solid color-mix(in srgb,var(--tc,var(--pri)) 30%,var(--sur));}
+        .art-title{font-size:var(--text-xl);font-weight:800;margin-bottom:.25rem;}.art-chips{display:flex;gap:.5rem;flex-wrap:wrap;}
+        .art-type{font-size:var(--text-xs);background:var(--sur2);border:1px solid var(--bor);color:var(--txm);padding:.15rem .5rem;border-radius:999px;}
+        .art-tier{font-size:var(--text-xs);font-weight:800;padding:.15rem .5rem;border-radius:999px;border:1px solid;}
+        .art-sec{padding:var(--sp6) var(--sp8);border-bottom:1px solid var(--div);}.art-sec:last-child{border-bottom:none;}
+        .art-sec h3{font-size:var(--text-base);font-weight:700;margin-bottom:var(--sp4);}
+        .art-sec p{color:var(--txm);font-size:var(--text-sm);max-width:80ch;line-height:1.75;}
+        .variants-list{list-style:decimal;padding-left:var(--sp6);display:flex;flex-direction:column;gap:var(--sp2);}.variants-list li{font-size:var(--text-sm);color:var(--txm);padding-left:var(--sp2);}
+        .table-wrap{overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--bor);}
+        .prob-table{width:100%;border-collapse:collapse;font-size:var(--text-xs);}.prob-table th{background:var(--sur2);color:var(--txm);font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:var(--sp2) var(--sp3);text-align:left;border-bottom:2px solid var(--bor);white-space:nowrap;}.prob-table td{padding:var(--sp2) var(--sp3);border-bottom:1px solid var(--div);vertical-align:top;}.prob-table tbody tr:last-child td{border-bottom:none;}.prob-table tbody tr:hover{background:var(--sur2);}
+        .sno{font-weight:700;color:var(--txf);font-family:var(--fmono);width:32px;}
+        .layer-badge{font-size:.65rem;font-weight:700;padding:.15rem .42rem;border-radius:999px;white-space:nowrap;}
+        .layer-L1{background:#d4f0e4;color:#0a5c3a;}.layer-L2{background:#dce8fc;color:#1a4a8a;}.layer-L3{background:#e8ddf8;color:#5a1fa0;}.layer-L4{background:#fde8cc;color:#8a3800;}.layer-L5{background:#fde;color:#a00;}
+        [data-theme=dark] .layer-L1{background:#0d3325;color:#5adba0;}[data-theme=dark] .layer-L2{background:#0d2040;color:#7ab4f8;}[data-theme=dark] .layer-L3{background:#25103e;color:#c07af8;}[data-theme=dark] .layer-L4{background:#3e1a00;color:#f8a060;}[data-theme=dark] .layer-L5{background:#3e0010;color:#f88080;}
+        .src-tag{font-family:var(--fmono);font-size:.65rem;font-weight:600;background:var(--sur2);border:1px solid var(--bor);padding:.1rem .35rem;border-radius:var(--r-sm);color:var(--txm);}
+        .prob-cell a{font-weight:600;color:var(--tx);display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}.prob-cell a:hover{color:var(--pri);text-decoration:none;}
+        .prob-id{font-family:var(--fmono);font-size:.68rem;color:var(--txf);font-weight:400;}
+        .diff{font-weight:700;font-size:.7rem;padding:.1rem .4rem;border-radius:999px;}.diff-m{background:#fef3c7;color:#92400e;}.diff-h{background:#fee2e2;color:#991b1b;}.diff-e{background:#d1fae5;color:#065f46;}
+        [data-theme=dark] .diff-m{background:#3d2800;color:#fcd34d;}[data-theme=dark] .diff-h{background:#3d0000;color:#fca5a5;}[data-theme=dark] .diff-e{background:#003d18;color:#6ee7b7;}
+        .badge{font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:999px;margin-left:.3rem;}.prem{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}.trap{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}.custom{background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe;}
+        .variant-cell{color:var(--txm);max-width:200px;font-size:var(--text-xs);}.insight-cell{color:var(--txm);max-width:280px;font-size:var(--text-xs);line-height:1.6;}
+        .triggers-list,.breaks-list,.redflags-list{list-style:none;display:flex;flex-direction:column;gap:var(--sp2);}
+        .triggers-list li{font-size:var(--text-xs);color:var(--txm);padding:.4rem var(--sp4);background:var(--sur2);border-radius:var(--r-md);border-left:3px solid var(--pri);font-family:var(--fmono);line-height:1.6;}
+        .breaks-list li,.redflags-list li{font-size:var(--text-sm);color:var(--txm);padding:.4rem var(--sp4);background:var(--sur2);border-radius:var(--r-md);}
+        .breaks-list li{border-left:3px solid #dc2626;}.redflags-list li{border-left:3px solid #d97706;}
+        .phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:var(--sp4);margin-bottom:var(--sp4);}
+        .phase{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--r-lg);padding:var(--sp4);}.ph-label{display:block;font-size:var(--text-xs);font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--sp2);}.phase p{font-size:var(--text-xs);color:var(--txm);font-family:var(--fmono);line-height:1.7;}
+        .coverage-box{display:flex;flex-direction:column;gap:.3rem;background:var(--pri-bg);border:1px solid var(--pri-hl);border-radius:var(--r-lg);padding:var(--sp4);}.cov-label{font-size:var(--text-xs);font-weight:700;color:var(--pri);}.cov-nums{font-size:var(--text-xs);font-family:var(--fmono);color:var(--txm);}
+        .notice-banner{border-radius:var(--r-xl);border:2px dashed var(--bor);background:var(--sur);padding:var(--sp10) var(--sp8);text-align:center;margin-bottom:var(--sp12);}.nb-title{font-size:var(--text-xl);font-weight:700;margin-bottom:var(--sp3);}.nb-sub{color:var(--txm);font-size:var(--text-sm);margin-bottom:var(--sp5);}.nb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:var(--sp3);text-align:left;}.nb-item{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--r-md);padding:var(--sp3) var(--sp4);font-size:var(--text-xs);color:var(--txm);}.nb-item strong{color:var(--tx);display:block;margin-bottom:.25rem;}
+        @media(max-width:900px){.sidebar{display:none;}.main{padding:var(--sp5) var(--sp4);}.srch{width:130px;}}
+    </style>
+</head>
+<body>
+<header class="topbar"><div class="tb">
+    <div class="brand"><div class="bmark">∑</div><span>DSA Mastery Guides</span></div>
+    <div class="spacer"></div>
+    <div class="srch-wrap"><span class="srch-icon">⌕</span><input class="srch" id="srch" type="search" placeholder="Search topic…" autocomplete="off"/></div>
+    <span class="tp-count">3 of 50 topics · Expanding</span>
+    <button class="tog" data-theme-toggle aria-label="Toggle theme">◐</button>
+</div></header>
+<div class="layout">
+    <nav class="sidebar"><div class="sb-hd">Topics (50)</div><a class="snav-item" href="#t1" data-id="1"><span class="snav-num">01</span><span class="snav-name">Two Pointers</span><span class="snav-tier" style="color:#01696f">T1</span></a>
+        <a class="snav-item" href="#t2" data-id="2"><span class="snav-num">02</span><span class="snav-name">HashMap / HashSet</span><span class="snav-tier" style="color:#01696f">T1</span></a>
+        <a class="snav-item" href="#t3" data-id="3"><span class="snav-num">03</span><span class="snav-name">Binary Search</span><span class="snav-tier" style="color:#01696f">T1</span></a>
+    </nav>
+    <main class="main">
+        <div class="hero">
+            <span class="eyebrow">World-Class Coaching · 50 Topics · Crack Any Company</span>
+            <h1 class="hero-t">DSA Mastery<br/>Coaching Guides</h1>
+            <p class="hero-sub">Exhaustive topic-by-topic coaching guides at Google-interview depth. Every sub-variant, every trap, every pattern recognition trigger. Nothing a LeetCode problem can teach will catch you off guard.</p>
+            <div class="hero-pills">
+                <div class="hpill">📚 <strong>50</strong>&nbsp;Topics</div>
+                <div class="hpill">⬆ <strong>5 Mastery Layers</strong>&nbsp;per topic</div>
+                <div class="hpill">🚩 Trap problems flagged ⚠️</div>
+                <div class="hpill">🔧 Custom problems for gaps</div>
+                <div class="hpill">✅ Premium problems included</div>
+            </div>
+        </div>
+        <article class="topic-article" id="t1" data-tier="T1">
+            <div class="art-header" style="--tc:#01696f">
+                <div class="art-num">#01</div>
+                <div class="art-meta">
+                    <h2 class="art-title">Two Pointers</h2>
+                    <div class="art-chips">
+                        <span class="art-type">Technique</span>
+                        <span class="art-tier" style="color:#01696f;border-color:#01696f">T1</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="art-sec">
+                <h3>💡 Why This Topic Matters</h3>
+                <p>Two pointers places one index at each end (or both starting from same side) and converges/diverges them based on a comparison. The core invariant is that the search space shrinks monotonically — once you move a pointer, you never need to revisit its previous position. It appears in Google interviews because it converts O(n²) brute force into O(n) for sorted-array pair/triplet problems, palindrome checks, in-place array mutations, and linked-list cycle detection. Mastery requires knowing WHICH pointer to move and WHY — the proof that moving the other pointer can never produce a better answer.</p>
+            </section>
+
+            <section class="art-sec">
+                <h3>🔀 Sub-Variants to Master</h3>
+                <ol class="variants-list"><li>Opposite-direction on sorted array (two-sum, container, 3-sum)</li><li>Same-direction fast/slow (cycle detection, middle of list, duplicate number)</li><li>Shrink-from-both-ends palindrome / valid check</li><li>Three pointers (Dutch National Flag, 3-way partition)</li><li>Two pointers on two separate sorted arrays (merge, intersection)</li><li>Two pointers with a running condition (boats, partitioning)</li><li>Linked list two-pointer (Floyd's cycle, k-th from end, intersection)</li><li>In-place array compaction (remove element, remove duplicates)</li><li>Two-pointer binary search hybrid (find K closest elements)</li><li>Two-pointer + greedy proof (trapping rain water)</li></ol>
+            </section>
+
+            <section class="art-sec">
+                <h3>📋 Mastery Problem Set</h3>
+                <div class="table-wrap">
+                    <table class="prob-table">
+                        <thead><tr>
+                            <th>#</th><th>Layer</th><th>Src</th><th>Problem</th>
+                            <th>Diff</th><th>Sub-Variant</th><th>Key Insight</th>
+                        </tr></thead>
+                        <tbody><tr>
+                            <td class="sno">1</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/167/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#167</span> Two Sum II – Input Array is Sorted</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Opposite-direction sorted</td>
+                            <td class="insight-cell">Classic template: move left if sum too small, right if too large.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">2</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/11/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#11</span> Container With Most Water</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Maximize area, opposite-direction</td>
+                            <td class="insight-cell">Always move the shorter line — moving the taller can never increase area.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">3</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/15/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#15</span> 3Sum</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Three pointers, dedup</td>
+                            <td class="insight-cell">Fix one element, run two-pointer on remainder; skip duplicates at both levels.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">4</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/876/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#876</span> Middle of the Linked List</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Fast/slow pointer</td>
+                            <td class="insight-cell">Fast moves 2x; when fast reaches end, slow is at middle.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">5</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/75/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#75</span> Sort Colors</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Dutch National Flag / 3-way partition</td>
+                            <td class="insight-cell">Three pointers: lo, mid, hi; mid scans and swaps maintaining invariants.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">6</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/142/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#142</span> Linked List Cycle II</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Floyd's cycle detection + entry point</td>
+                            <td class="insight-cell">After meeting point, reset one pointer to head; both advance 1 step to find entry.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">7</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/287/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#287</span> Find the Duplicate Number</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Fast/slow on implicit linked list</td>
+                            <td class="insight-cell">Treat array values as next-pointers; duplicate creates a cycle entry.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">8</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/881/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#881</span> Boats to Save People</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Greedy two-pointer on sorted array</td>
+                            <td class="insight-cell">Sort, pair heaviest with lightest; if they fit, move both pointers.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">9</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/16/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#16</span> 3Sum Closest</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Three-pointer minimization</td>
+                            <td class="insight-cell">Track closest sum, shrink gap same way as 3Sum.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">10</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/18/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#18</span> 4Sum</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Four pointers (two fixed + two-pointer)</td>
+                            <td class="insight-cell">O(n³) by fixing two and running inner two-pointer loop with careful dedup.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">11</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/658/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#658</span> Find K Closest Elements</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Two-pointer window shrink on sorted array</td>
+                            <td class="insight-cell">Shrink from the farther end: compare abs(arr[lo]-x) vs abs(arr[hi]-x).</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">12</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/557/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#557</span> Reverse Words in a String III</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">In-place reverse with two boundary pointers</td>
+                            <td class="insight-cell">Find word boundaries, reverse within each, advance past space.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">13</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/259/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#259</span> 3Sum Smaller</a><span class="badge prem">Premium ✅</span></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Two-pointer + counting subarrays</td>
+                            <td class="insight-cell">When sum < target, all pairs with right pointer between [lo+1..hi] are valid — count (hi-lo).</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">14</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/42/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#42</span> Trapping Rain Water</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Two-pointer max prefix/suffix</td>
+                            <td class="insight-cell">Maintain left_max and right_max; water at position is min(left_max,right_max)-height[i]. Hard because the greedy proof that moving the shorter side is always safe is non-obvious.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">15</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/632/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#632</span> Smallest Range Covering Elements from K Lists</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Multi-list two-pointer with min-heap</td>
+                            <td class="insight-cell">Hard because two-pointer alone is insufficient; need heap to track current minimum across K sorted lists simultaneously.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">16</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/719/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#719</span> Find K-th Smallest Pair Distance</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Binary search on answer + two-pointer counting</td>
+                            <td class="insight-cell">Hard because the insight is binary searching on the distance value and using two-pointer to count pairs with distance ≤ mid.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">17</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/2444/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#2444</span> Count Subarrays With Fixed Bounds</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Two-pointer tracking constraint boundaries</td>
+                            <td class="insight-cell">Hard because you must track three independent boundary indices (last invalid, last min, last max) simultaneously.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">18</td>
+                            <td><span class="layer-badge layer-L5">L5</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/209/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#209</span> Minimum Size Subarray Sum</a><span class="badge trap">Trap ⚠️</span></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">⚠️ Looks two-pointer, IS sliding window</td>
+                            <td class="insight-cell">All-positive constraint makes this sliding window, not opposite-direction two-pointer — the window expands/shrinks from same side.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">19</td>
+                            <td><span class="layer-badge layer-L5">L5</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/560/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#560</span> Subarray Sum Equals K</a><span class="badge trap">Trap ⚠️</span></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">⚠️ Looks two-pointer but requires prefix+hashmap</td>
+                            <td class="insight-cell">Negative numbers destroy the monotone invariant; two-pointer gives wrong answers — must use prefix sum + frequency map.</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="art-sec triggers-sec">
+                <h3>🎯 Pattern Recognition Triggers</h3>
+                <ul class="triggers-list"><li>"Two numbers in SORTED array that sum to X" → opposite-direction</li><li>"Longest/shortest subarray with ALL POSITIVE numbers" → sliding window (same-direction)</li><li>"Detect cycle in linked list" → fast/slow</li><li>"Find duplicate in array where values are in range [1,n]" → fast/slow implicit list</li><li>"Partition array in-place" → Dutch National Flag</li><li>"Pair heaviest with lightest" → sort + two ends</li></ul>
+            </section>
+
+            <section class="art-sec breaks-sec">
+                <h3>⛔ When This Technique BREAKS</h3>
+                <ul class="breaks-list"><li>Unsorted arrays where no monotone invariant exists</li><li>Negative numbers in subarray sum problems (monotonicity breaks)</li><li>Problems requiring ALL pairs not just existence</li><li>Non-linear search spaces (use binary search instead)</li><li>When you need index positions of all solutions (two-pointer counts but doesn't enumerate cheaply)</li></ul>
+            </section>
+
+            <section class="art-sec plan-sec">
+                <h3>🗺️ 3-Phase Mastery Plan</h3>
+                <div class="phases">
+                    <div class="phase"><span class="ph-label">Phase 1 — Solve</span><p>1→4→5→6→7→8→14→16→17</p></div>
+                    <div class="phase"><span class="ph-label">Phase 2 — Drill</span><p>Timed re-solve of 1,2,3,8 under 15 min each; articulate WHY you move each pointer</p></div>
+                    <div class="phase"><span class="ph-label">Phase 3 — Validate</span><p>Codeforces two-pointers tag, USACO Silver problems with sorting+pairing</p></div>
+                </div>
+                <div class="coverage-box">
+                    <span class="cov-label">⚡ 80% Coverage Set (under 2 weeks)</span>
+                    <span class="cov-nums">Problems: 1,2,3,5,6,8,14,16</span>
+                </div>
+            </section>
+
+            <section class="art-sec flags-sec">
+                <h3>🚩 Red Flags / Common Mistakes</h3>
+                <ul class="redflags-list"><li>Moving the wrong pointer — always prove why the other pointer's remaining positions are dominated</li><li>Forgetting to skip duplicates in 3Sum/4Sum</li><li>Applying two-pointer to unsorted input without sorting first</li><li>Using two-pointer when negatives exist in subarray sum</li><li>Off-by-one in cycle entry (forgetting to reset one pointer to head)</li><li>Conflating sliding window with two-pointer — they are different invariants</li><li>Not handling edge case: array length < 2</li></ul>
+            </section>
+        </article>
+        <article class="topic-article" id="t2" data-tier="T1">
+            <div class="art-header" style="--tc:#01696f">
+                <div class="art-num">#02</div>
+                <div class="art-meta">
+                    <h2 class="art-title">HashMap / HashSet</h2>
+                    <div class="art-chips">
+                        <span class="art-type">Data Structure</span>
+                        <span class="art-tier" style="color:#01696f;border-color:#01696f">T1</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="art-sec">
+                <h3>💡 Why This Topic Matters</h3>
+                <p>A hash map reduces lookup/insert/delete to amortized O(1), converting quadratic brute-force scans into linear passes. The core invariant is that any problem requiring 'have I seen X before' or 'how many times did X appear' can be answered in O(1) with a map. It is ubiquitous in Google interviews because it is rarely the entire solution — it is the enabler that makes another technique (two-pointer, prefix sum, greedy, DP) efficient. Mastery means knowing when to use frequency map vs. existence set vs. value-to-index map vs. prefix-state map.</p>
+            </section>
+
+            <section class="art-sec">
+                <h3>🔀 Sub-Variants to Master</h3>
+                <ol class="variants-list"><li>Frequency counting (anagrams, most frequent, mode)</li><li>Existence / membership check (two-sum, contains duplicate)</li><li>Value-to-index map (two-sum index return, next greater element)</li><li>Grouping by canonical key (group anagrams, isomorphic strings)</li><li>Prefix sum + hashmap (subarray sum = k, longest balanced)</li><li>Complement lookup (two-sum, pair with given XOR)</li><li>Sliding window with frequency map (minimum window substring)</li><li>Two-pass: build map then query</li><li>Nested map / map of sets (user activity minutes)</li><li>Custom hash / polynomial rolling hash for strings</li></ol>
+            </section>
+
+            <section class="art-sec">
+                <h3>📋 Mastery Problem Set</h3>
+                <div class="table-wrap">
+                    <table class="prob-table">
+                        <thead><tr>
+                            <th>#</th><th>Layer</th><th>Src</th><th>Problem</th>
+                            <th>Diff</th><th>Sub-Variant</th><th>Key Insight</th>
+                        </tr></thead>
+                        <tbody><tr>
+                            <td class="sno">1</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/49/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#49</span> Group Anagrams</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Group by canonical key (sorted string)</td>
+                            <td class="insight-cell">Sort each word as key; words with same sorted form are anagrams.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">2</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/128/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#128</span> Longest Consecutive Sequence</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Set for O(1) neighbor lookup</td>
+                            <td class="insight-cell">Only start counting from sequence beginnings (num-1 not in set) to avoid O(n²).</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">3</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/347/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#347</span> Top K Frequent Elements</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Frequency map + heap/bucket sort</td>
+                            <td class="insight-cell">Build frequency map then extract top-k with min-heap or bucket sort.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">4</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/560/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#560</span> Subarray Sum Equals K</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Prefix sum + frequency map</td>
+                            <td class="insight-cell">Store count of each prefix sum; answer += map[prefix - k].</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">5</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/525/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#525</span> Contiguous Array</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Prefix balance + earliest-index map</td>
+                            <td class="insight-cell">Transform 0→-1; equal prefix values mean equal 0s and 1s between indices.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">6</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/974/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#974</span> Subarray Sums Divisible by K</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Prefix remainder frequency</td>
+                            <td class="insight-cell">Same remainder mod k means divisible subarray; normalize negatives with (r%k+k)%k.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">7</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/76/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#76</span> Minimum Window Substring</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Sliding window + frequency map</td>
+                            <td class="insight-cell">Hard because maintaining 'have and need' counters while shrinking window requires careful bookkeeping without recomputing from scratch.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">8</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/438/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#438</span> Find All Anagrams in a String</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Fixed-window frequency map comparison</td>
+                            <td class="insight-cell">Slide window of size p; compare character counts with target map.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">9</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/454/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#454</span> 4Sum II</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Meet-in-the-middle with frequency map</td>
+                            <td class="insight-cell">Map all A+B sums; for each C+D check if -(C+D) in map.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">10</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/290/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#290</span> Word Pattern</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Bidirectional isomorphism map</td>
+                            <td class="insight-cell">Need two maps: pattern→word AND word→pattern; one map misses conflicts.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">11</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/340/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#340</span> Longest Substring with At Most K Distinct Characters</a><span class="badge prem">Premium ✅</span></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Sliding window + character frequency map</td>
+                            <td class="insight-cell">Shrink window when distinct count exceeds k by removing until a character disappears from map.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">12</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1010/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1010</span> Pairs of Songs With Total Duration Divisible by 60</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Complement lookup with modular arithmetic</td>
+                            <td class="insight-cell">Store frequency of (60 - duration%60)%60; analogous to Two Sum with mod.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">13</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/957/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#957</span> Prison Cells After N Days</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Cycle detection with state hashmap</td>
+                            <td class="insight-cell">State space is 2^8; store first occurrence of each state to detect cycle and jump.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">14</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1048/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1048</span> Longest String Chain</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">DP + hashmap for O(1) predecessor lookup</td>
+                            <td class="insight-cell">Sort by length, for each word try removing each char and check if predecessor in map.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">15</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/149/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#149</span> Max Points on a Line</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Slope frequency map with rational arithmetic</td>
+                            <td class="insight-cell">Hard because slopes must be stored as reduced fractions (gcd normalization) and vertical lines/same-point edge cases require separate handling.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">16</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/2260/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#2260</span> Minimum Consecutive Cards to Pick Up</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Last-seen index map for minimum distance</td>
+                            <td class="insight-cell">For each card track last seen index; answer is min gap between repeated values.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">17</td>
+                            <td><span class="layer-badge layer-L5">L5</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1</span> Two Sum</a><span class="badge trap">Trap ⚠️</span></td>
+                            <td><span class="diff diff-e">E</span></td>
+                            <td class="variant-cell">⚠️ Easy — but the hashmap complement pattern is the template</td>
+                            <td class="insight-cell">Included only as mental model reference — never solve this in an interview without optimising immediately to O(n).</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="art-sec triggers-sec">
+                <h3>🎯 Pattern Recognition Triggers</h3>
+                <ul class="triggers-list"><li>"Have I seen X before?" → HashSet</li><li>"Count frequency of X" → HashMap</li><li>"Group items by property" → HashMap<key, list></li><li>"Find pair summing to target in O(n)" → complement map</li><li>"Longest subarray where [condition on prefix]" → prefix + earliest-index map</li><li>"Count subarrays where sum = k" → prefix frequency map</li></ul>
+            </section>
+
+            <section class="art-sec breaks-sec">
+                <h3>⛔ When This Technique BREAKS</h3>
+                <ul class="breaks-list"><li>When order of iteration matters and HashMap gives non-deterministic order (use LinkedHashMap)</li><li>When keys are floating-point (hash collisions; use string representation of reduced fractions)</li><li>When the map grows to O(n) and memory is the bottleneck</li><li>When you need range queries over keys (use TreeMap/sorted structure instead)</li><li>Multiset semantics needed (HashMap can't track 'remove one occurrence' without careful count management)</li></ul>
+            </section>
+
+            <section class="art-sec plan-sec">
+                <h3>🗺️ 3-Phase Mastery Plan</h3>
+                <div class="phases">
+                    <div class="phase"><span class="ph-label">Phase 1 — Solve</span><p>1→2→3→4→5→6→9→14→15</p></div>
+                    <div class="phase"><span class="ph-label">Phase 2 — Drill</span><p>For each new problem: before coding, write down 'key=?, value=?' explicitly</p></div>
+                    <div class="phase"><span class="ph-label">Phase 3 — Validate</span><p>Codeforces hash-map tag, InterviewBit hashing problems</p></div>
+                </div>
+                <div class="coverage-box">
+                    <span class="cov-label">⚡ 80% Coverage Set (under 2 weeks)</span>
+                    <span class="cov-nums">Problems: 1,2,4,5,6,7,9,14,15</span>
+                </div>
+            </section>
+
+            <section class="art-sec flags-sec">
+                <h3>🚩 Red Flags / Common Mistakes</h3>
+                <ul class="redflags-list"><li>Using only one direction map for isomorphism (need bidirectional)</li><li>Forgetting (r%k+k)%k normalization for negative prefix remainders</li><li>Not seeding map with {0:1} for prefix sum problems</li><li>Using float as map key (precision errors)</li><li>Clearing map instead of initializing fresh per test case</li><li>Not handling collision between 'zero occurrences' and 'key absent' (use getOrDefault)</li><li>Building O(n²) solution when map would give O(n)</li></ul>
+            </section>
+        </article>
+        <article class="topic-article" id="t3" data-tier="T1">
+            <div class="art-header" style="--tc:#01696f">
+                <div class="art-num">#03</div>
+                <div class="art-meta">
+                    <h2 class="art-title">Binary Search</h2>
+                    <div class="art-chips">
+                        <span class="art-type">Algorithm</span>
+                        <span class="art-tier" style="color:#01696f;border-color:#01696f">T1</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="art-sec">
+                <h3>💡 Why This Topic Matters</h3>
+                <p>Binary search eliminates half the search space per step, giving O(log n) on any problem with a monotone predicate. Its power beyond sorted arrays is the key insight: if you can define f(x) = true/false such that the answer space is [false...false, true...true], you can binary search on it regardless of whether it is an array, a value range, a time axis, or an answer space. Google interviewers specifically test this because 80% of candidates only know the 'find target in sorted array' template — the real skill is recognising the hidden monotone predicate.</p>
+            </section>
+
+            <section class="art-sec">
+                <h3>🔀 Sub-Variants to Master</h3>
+                <ol class="variants-list"><li>Standard: find target in sorted array (lower/upper bound)</li><li>Find first/last occurrence (leftmost/rightmost boundary)</li><li>Search in rotated sorted array</li><li>Search in 2D matrix</li><li>Binary search on answer value (minimise maximum, maximise minimum)</li><li>Binary search on time/capacity (feasibility function)</li><li>Binary search on floating-point range</li><li>Peak finding (bitonic array)</li><li>Binary search on implicit sorted sequence</li><li>Binary search + greedy/counting (k-th smallest, allocation problems)</li></ol>
+            </section>
+
+            <section class="art-sec">
+                <h3>📋 Mastery Problem Set</h3>
+                <div class="table-wrap">
+                    <table class="prob-table">
+                        <thead><tr>
+                            <th>#</th><th>Layer</th><th>Src</th><th>Problem</th>
+                            <th>Diff</th><th>Sub-Variant</th><th>Key Insight</th>
+                        </tr></thead>
+                        <tbody><tr>
+                            <td class="sno">1</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/34/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#34</span> Find First and Last Position of Element in Sorted Array</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Left/right boundary binary search</td>
+                            <td class="insight-cell">Two separate binary searches: one for first occurrence (bias left), one for last (bias right).</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">2</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/33/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#33</span> Search in Rotated Sorted Array</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Rotated array — identify sorted half</td>
+                            <td class="insight-cell">One half is always fully sorted; check if target falls in sorted half, else search other.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">3</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/162/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#162</span> Find Peak Element</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Peak finding via slope direction</td>
+                            <td class="insight-cell">If nums[mid] < nums[mid+1], peak is to the right; always converges to a peak.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">4</td>
+                            <td><span class="layer-badge layer-L1">L1</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/74/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#74</span> Search a 2D Matrix</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Treat 2D as 1D sorted array</td>
+                            <td class="insight-cell">Convert index: row=mid//n, col=mid%n; single binary search on virtual 1D array.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">5</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/81/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#81</span> Search in Rotated Sorted Array II</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Rotated with duplicates</td>
+                            <td class="insight-cell">When nums[lo]==nums[mid]==nums[hi], shrink both ends by 1 — O(n) worst case.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">6</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/875/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#875</span> Koko Eating Bananas</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Binary search on answer (eating speed)</td>
+                            <td class="insight-cell">Feasibility: can Koko finish in h hours at speed k? Monotone → binary search on k.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">7</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1011/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1011</span> Capacity to Ship Packages Within D Days</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Binary search on answer (ship capacity)</td>
+                            <td class="insight-cell">Minimum capacity = max(weights), maximum = sum; feasibility check is greedy simulation.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">8</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/410/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#410</span> Split Array Largest Sum</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Binary search on answer (minimise max sum)</td>
+                            <td class="insight-cell">Hard because the feasibility function (greedy left-to-right split count) must be proven correct before the binary search structure is obvious.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">9</td>
+                            <td><span class="layer-badge layer-L2">L2</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1231/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1231</span> Divide Chocolate</a><span class="badge prem">Premium ✅</span></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Binary search on answer (maximise minimum)</td>
+                            <td class="insight-cell">Hard because maximising minimum is less intuitive than minimising maximum; feasibility logic is inverted.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">10</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/378/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#378</span> Kth Smallest Element in a Sorted Matrix</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Binary search on value + counting</td>
+                            <td class="insight-cell">Binary search on the value range; count elements ≤ mid using staircase traversal.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">11</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/719/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#719</span> Find K-th Smallest Pair Distance</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Binary search on answer + two-pointer count</td>
+                            <td class="insight-cell">Hard because counting pairs with distance ≤ mid requires a non-trivial two-pointer pass after sorting.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">12</td>
+                            <td><span class="layer-badge layer-L3">L3</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1201/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1201</span> Ugly Number III</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Binary search on answer + inclusion-exclusion</td>
+                            <td class="insight-cell">Count numbers ≤ n divisible by a, b, or c via inclusion-exclusion with LCM.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">13</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/4/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#4</span> Median of Two Sorted Arrays</a></td>
+                            <td><span class="diff diff-h">H</span></td>
+                            <td class="variant-cell">Binary search on partition point</td>
+                            <td class="insight-cell">Hard because you binary search on the number of elements taken from array A, and the partition validity condition (cross-comparison) is subtle to derive correctly.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">14</td>
+                            <td><span class="layer-badge layer-L4">L4</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/1539/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#1539</span> Kth Missing Positive Number</a></td>
+                            <td><span class="diff diff-m">M</span></td>
+                            <td class="variant-cell">Binary search on index with formula</td>
+                            <td class="insight-cell">Count missing numbers before index i: arr[i]-i-1; binary search for first index where count ≥ k.</td>
+                        </tr>
+                        <tr>
+                            <td class="sno">15</td>
+                            <td><span class="layer-badge layer-L5">L5</span></td>
+                            <td><span class="src-tag">LC</span></td>
+                            <td class="prob-cell"><a href="https://leetcode.com/problems/35/" target="_blank" rel="noopener noreferrer"><span class="prob-id">#35</span> Search Insert Position</a><span class="badge trap">Trap ⚠️</span></td>
+                            <td><span class="diff diff-e">E</span></td>
+                            <td class="variant-cell">⚠️ Easy — mental model only</td>
+                            <td class="insight-cell">The lower-bound template but too simple for interviews; included only as the canonical template reference.</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="art-sec triggers-sec">
+                <h3>🎯 Pattern Recognition Triggers</h3>
+                <ul class="triggers-list"><li>"Find in sorted array" → standard binary search</li><li>"Minimum X such that condition holds" → binary search on answer</li><li>"Maximum X such that condition holds" → binary search on answer (flip feasibility)</li><li>"K-th smallest in sorted matrix/pairs" → binary search on value + count</li><li>"Can we do this task in D days/units?" → feasibility function → binary search</li><li>"Floating point precision answer" → binary search on float range</li></ul>
+            </section>
+
+            <section class="art-sec breaks-sec">
+                <h3>⛔ When This Technique BREAKS</h3>
+                <ul class="breaks-list"><li>Non-monotone predicate (the search space must be strictly bipartitioned)</li><li>When the feasibility function itself is expensive (O(n log n)) making total O(n log² n) — may be too slow</li><li>Unsorted input where sorting would destroy index information</li><li>Problems requiring the exact position not just existence (binary search finds boundary, not arbitrary index)</li></ul>
+            </section>
+
+            <section class="art-sec plan-sec">
+                <h3>🗺️ 3-Phase Mastery Plan</h3>
+                <div class="phases">
+                    <div class="phase"><span class="ph-label">Phase 1 — Solve</span><p>1→2→3→6→7→8→10→13</p></div>
+                    <div class="phase"><span class="ph-label">Phase 2 — Drill</span><p>For every new problem write: lo=?, hi=?, feasible(mid)=?, return lo or hi?</p></div>
+                    <div class="phase"><span class="ph-label">Phase 3 — Validate</span><p>Codeforces binary search tag, AtCoder binary search problems</p></div>
+                </div>
+                <div class="coverage-box">
+                    <span class="cov-label">⚡ 80% Coverage Set (under 2 weeks)</span>
+                    <span class="cov-nums">Problems: 1,2,3,6,7,8,10,13</span>
+                </div>
+            </section>
+
+            <section class="art-sec flags-sec">
+                <h3>🚩 Red Flags / Common Mistakes</h3>
+                <ul class="redflags-list"><li>Infinite loop from wrong mid formula: always use lo+(hi-lo)/2</li><li>Off-by-one in boundary: lo<hi vs lo<=hi and return lo vs hi</li><li>Wrong feasibility direction (minimise max vs maximise min are mirror images)</li><li>Forgetting to handle when target not found (return -1 vs insert position)</li><li>Binary searching on unsorted or non-monotone space</li><li>Not verifying the feasibility function is correct before plugging into BS</li><li>Using floating point comparisons without epsilon (while hi-lo > 1e-9)</li></ul>
+            </section>
+        </article>
+        <div class="notice-banner">
+            <div class="nb-title">📬 Remaining 47 Topics — In Progress</div>
+            <p class="nb-sub">Reply <strong>"continue"</strong> to add the next batch of exhaustive coaching guides.</p>
+            <div class="nb-grid">
+                <div class="nb-item"><strong>#4 Sliding Window</strong>Fixed/variable, frequency map, deque-based sliding max</div>
+                <div class="nb-item"><strong>#5 Kadane's Algorithm</strong>Max subarray + all constrained variants</div>
+                <div class="nb-item"><strong>#6 Prefix Sums</strong>1D/2D, difference arrays, modular arithmetic</div>
+                <div class="nb-item"><strong>#7 Intervals</strong>Sort+sweep, sweep-line events, interval DP</div>
+                <div class="nb-item"><strong>#8 Top K Elements</strong>Min-heap, quickselect, bucket sort</div>
+                <div class="nb-item"><strong>#9 Monotonic Stack/Queue</strong>NGE, sliding max, histogram area</div>
+                <div class="nb-item"><strong>#10 Trees</strong>All traversals, LCA, diameter, serialization</div>
+                <div class="nb-item"><strong>#11–16 Graph Suite</strong>BFS · DFS · Dijkstra · Topological · Bipartite</div>
+                <div class="nb-item"><strong>#17–24 DP Suite</strong>All paradigms with full state definitions</div>
+                <div class="nb-item"><strong>#25–35 Expert Topics</strong>Trie · Segment Tree · Fenwick · KMP · Sieve</div>
+                <div class="nb-item"><strong>#36–50 Elite Topics</strong>HLD · CHT · Aho-Corasick · Li Chao Tree…</div>
+            </div>
+        </div>
+    </main></div>
+<script>
+    (function(){const r=document.documentElement,b=document.querySelector('[data-theme-toggle]');let t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';r.setAttribute('data-theme',t);b.addEventListener('click',()=>{t=t==='dark'?'light':'dark';r.setAttribute('data-theme',t);});})();
+    const arts=document.querySelectorAll('.topic-article'),navs=document.querySelectorAll('.snav-item');
+    const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){navs.forEach(n=>n.classList.remove('active'));const a=document.querySelector('.snav-item[data-id="'+x.target.id.slice(1)+'"]');if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',behavior:'smooth'});}}});},{rootMargin:'-10% 0px -75% 0px'});
+    arts.forEach(s=>io.observe(s));
+    document.getElementById('srch').addEventListener('input',function(){const q=this.value.trim().toLowerCase();navs.forEach(n=>{n.style.display=(!q||n.querySelector('.snav-name').textContent.toLowerCase().includes(q))?'':'none';});});
+</script>
+</body></html>
