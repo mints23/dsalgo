@@ -1490,7 +1490,398 @@ query(i + 1)</code></pre>
                     </div>
                 </div>
             </div>
-            <div class="topic-card" id="tp8"><div class="coming">Content for Backtracking is coming soon.</div></div>
+            <!-- ══════════════════════════════════════════
+                 TOPIC 8 — BACKTRACKING (MASTERY)
+            ═══════════════════════════════════════════ -->
+            <div class="topic-card" id="tp8">
+                <div class="topic-header">
+                    <div class="topic-num">08</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Backtracking</div>
+                            <span class="tier-badge tier-T1">Algorithms</span>
+                            <span class="topic-type">Recursion · Constraint Search · Pruning · Bitmask · DLX</span>
+                        </div>
+                        <div class="topic-meta">30 problems · 5 stages · subsets, permutations, grid, CSP, memoised backtracking</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why It Matters:</strong> Backtracking is <em>systematic constrained search with undo</em> — the universal algorithm for problems where you must explore a decision tree, commit to choices one at a time, and retract them when they violate constraints or exhaust possibilities. The core invariant is: at every node in the decision tree, the partial solution is valid; when a dead end is reached, exactly one decision is undone and the next alternative is tried. It appears in every top-tier interview because it tests recursive reasoning, state management, pruning intuition, and the ability to convert a combinatorial description into executable code. At ICPC/IOI, backtracking with aggressive pruning (branch-and-bound, constraint propagation) solves NP-complete problems like SAT, graph colouring, and exact cover — appearing in competitions disguised as scheduling, placement, or configuration problems.</div>
+
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>Backtracking is building a sentence word by word.</strong> At each position you try every valid word, write it down, move to the next position, and erase it when you get stuck — trying the next word instead. You never erase more than the last word you wrote.<br><br>
+                        <strong>How the mental model scales through the 5 stages:</strong><br>
+                        • <strong>Stage 1:</strong> You choose from a fixed set at each position; every choice is independent. The "sentence" is a permutation or combination.<br>
+                        • <strong>Stage 2:</strong> One constraint flips — elements can repeat, or you can't reuse the same position, or order doesn't matter. The choice set shrinks by one rule.<br>
+                        • <strong>Stage 3:</strong> The state itself becomes 2-dimensional — you're filling a grid, a board, or making choices across two linked structures simultaneously.<br>
+                        • <strong>Stage 4:</strong> The problem doesn't say "enumerate" or "find all." It says "is it possible?" or "find minimum cuts." You must recognise that the search space IS a backtracking tree, hidden inside a constraint satisfaction or optimisation problem.<br>
+                        • <strong>Stage 5:</strong> The naive tree is too wide — exponential branches at every node. Pruning transforms it: constraint propagation eliminates branches before exploring them, memoisation collapses subtrees, or bitmask DP replaces the explicit tree.
+                    </div>
+
+                    <div class="sec-title">Core Invariant &amp; Proof Sketch</div>
+                    <div class="core-box">
+                        <strong>Invariant:</strong> At every recursive call <code>backtrack(state, choices)</code>, the partial state satisfies all constraints imposed so far, and <code>choices</code> is exactly the set of valid extensions of state.<br><br>
+                        <strong>Soundness:</strong> Every solution added to the result satisfies all constraints because we only add when the base case is reached AND all constraints have been checked at each decision point. No invalid partial state is ever extended.<br><br>
+                        <strong>Completeness:</strong> Every valid solution is found because the algorithm explores ALL branches of the decision tree — it never skips a valid extension. Pruning only eliminates subtrees that can be proven to contain zero valid solutions.<br><br>
+                        <strong>Termination:</strong> The recursion depth is bounded by the solution length (at most n), and at each level the choice set strictly decreases (each element is either used or the index advances). The tree is finite.<br><br>
+                        <strong>Undo correctness:</strong> The undo step restores the state to exactly what it was before the choice, because backtracking modifies state in exactly one way per call and reverts that exact modification. This is the key implementation invariant — <em>state before = state after</em> for any failed branch.
+                    </div>
+
+                    <div class="sec-title">Sub-Variants to Master (18 total)</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>1. Subsets / power set enumeration</strong> — Stage 1 · O(2ⁿ · n) · recursion with include/exclude · <em>New idea:</em> binary choice tree — include element or skip it<br>
+                        <strong>2. Combinations (choose k of n)</strong> — Stage 1 · O(C(n,k) · k) · recursion with start-index · <em>New idea:</em> start-index parameter prevents reusing earlier elements<br>
+                        <strong>3. Permutations (all orderings)</strong> — Stage 1 · O(n! · n) · recursion with visited array · <em>New idea:</em> visited/used array tracks which elements are placed<br>
+                        <strong>4. Subsets with duplicates</strong> — Stage 2 · O(2ⁿ · n) · sort + skip-duplicate · <em>New idea:</em> sort input first; skip nums[i]==nums[i−1] at same recursion level<br>
+                        <strong>5. Combinations with duplicates</strong> — Stage 2 · O(2ⁿ · k) · sort + skip-duplicate · <em>New idea:</em> same duplicate-skip logic applied to combinations<br>
+                        <strong>6. Combinations with reuse (unbounded)</strong> — Stage 2 · O(target/min · n) · same index allowed · <em>New idea:</em> pass i (not i+1) as start index to allow reuse<br>
+                        <strong>7. Permutations with duplicates</strong> — Stage 2 · O(n!/duplicates!) · sort + used array + dup check · <em>New idea:</em> skip if nums[i]==nums[i−1] AND used[i−1]==False (same-level skip)<br>
+                        <strong>8. Palindrome partitioning</strong> — Stage 3 · O(n · 2ⁿ) · recursion + palindrome precomputation · <em>New idea:</em> at each position, try all valid prefix lengths; validity = palindrome check<br>
+                        <strong>9. Word search on grid</strong> — Stage 3 · O(n·m·4^L) · DFS on grid with visited marking · <em>New idea:</em> state is 2D grid position + word index; visited marking replaces used array<br>
+                        <strong>10. N-Queens</strong> — Stage 3 · O(n!) · row-by-row with column/diagonal sets · <em>New idea:</em> constraint encoded as three sets (col, diag1, diag2); O(1) per placement<br>
+                        <strong>11. Sudoku solver</strong> — Stage 3 · O(9^m) where m = empty cells · cell-by-cell with row/col/box sets · <em>New idea:</em> constraint propagation (only try digits missing from row+col+box)<br>
+                        <strong>12. Graph colouring / m-colouring</strong> — Stage 3 · O(mⁿ) · vertex-by-vertex with adjacency check · <em>New idea:</em> constraint is graph-local (neighbours can't share colour)<br>
+                        <strong>13. Exact cover / Algorithm X</strong> — Stage 4 · O(solution-dependent) · dancing links / recursive cover · <em>New idea:</em> problem reduces to covering all columns of a binary matrix exactly once<br>
+                        <strong>14. Expression evaluation / operator insertion</strong> — Stage 4 · O(4^(n−1) · n) · recursion with running value · <em>New idea:</em> multiply requires tracking the last-added term to handle operator precedence<br>
+                        <strong>15. Constraint satisfaction (CSP)</strong> — Stage 4 · varies · backtracking + forward checking + arc consistency · <em>New idea:</em> propagation before each choice reduces future domains<br>
+                        <strong>16. Bitmask-pruned backtracking</strong> — Stage 5 · O(2ⁿ · n) · bitmask state + memoisation · <em>New idea:</em> state compressed into bitmask; memoisation collapses identical subtrees<br>
+                        <strong>17. Branch and bound</strong> — Stage 5 · exponential worst-case, fast in practice · upper bound + priority queue · <em>New idea:</em> prune branches where even the best possible completion can't beat current best<br>
+                        <strong>18. Dancing Links (DLX)</strong> — Stage 5 · O(solution-dependent) · doubly-linked list with O(1) cover/uncover · <em>New idea:</em> undo is O(1) via pointer manipulation instead of array copy
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed from Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>Subsets</td><td>O(2ⁿ · n)</td><td>O(n)</td><td>Baseline binary choice tree</td></tr>
+                        <tr><td>Combinations k-of-n</td><td>O(C(n,k) · k)</td><td>O(k)</td><td>Start-index prunes left branches</td></tr>
+                        <tr><td>Permutations</td><td>O(n! · n)</td><td>O(n)</td><td>Visited array instead of start-index</td></tr>
+                        <tr><td>With duplicates (any)</td><td>O(same worst case)</td><td>O(n)</td><td>Sort + same-level skip; tree width reduced</td></tr>
+                        <tr><td>With reuse</td><td>O(target/min · n)</td><td>O(target/min)</td><td>Allows revisiting same index</td></tr>
+                        <tr><td>Grid search (word search)</td><td>O(n·m·4^L)</td><td>O(L)</td><td>2D state; 4-directional branching</td></tr>
+                        <tr><td>N-Queens</td><td>O(n!)</td><td>O(n)</td><td>Column/diagonal sets prune to O(n) checks</td></tr>
+                        <tr><td>Sudoku</td><td>O(9^m)</td><td>O(m)</td><td>Box constraint; 3 sets per cell</td></tr>
+                        <tr><td>Permutation + memo (bitmask DP)</td><td>O(2ⁿ · n)</td><td>O(2ⁿ · n)</td><td>Memoisation collapses repeated subproblems</td></tr>
+                        <tr><td>Branch and bound</td><td>Exponential worst, fast avg</td><td>O(n)</td><td>Upper-bound pruning; best-first traversal</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Mastery Problem Set (30 problems · 5 stages)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant / New Idea</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/subsets/" target="_blank">LC 78</a> Subsets</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Power set — include/exclude binary choice</td><td class="insight">backtrack(i, path): at each index either include nums[i] or skip; recurse with i+1; result.add(copy) at every node</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/combinations/" target="_blank">LC 77</a> Combinations</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">k-of-n combinations with start-index</td><td class="insight">Start-index prevents revisiting; range(start, n−k+remaining+1) is the pruning bound</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/permutations/" target="_blank">LC 46</a> Permutations</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Full permutations — visited array replaces start-index</td><td class="insight">used[i]=True before recurse; used[i]=False after; every index reachable from every position</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/subsets-ii/" target="_blank">LC 90</a> Subsets II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Subsets with duplicates — sort + same-level skip</td><td class="insight">Sorting groups duplicates; skip at same level (i &gt; start and nums[i]==nums[i−1]) prevents duplicate subsets without a hash set</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/combination-sum-ii/" target="_blank">LC 40</a> Combination Sum II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Combinations with duplicates</td><td class="insight">One-character change from #4: collect only paths summing to target; same skip rule</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/combination-sum/" target="_blank">LC 39</a> Combination Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Combinations with unbounded reuse</td><td class="insight">Change i+1 to i in recursive call — element can be reused; termination guaranteed by remaining &lt; 0 check</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/permutations-ii/" target="_blank">LC 47</a> Permutations II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Permutations with duplicates</td><td class="insight">if nums[i]==nums[i−1] and NOT used[i−1]: skip; the "not used" distinguishes same-level from different-level duplicates</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/letter-combinations-of-a-phone-number/" target="_blank">LC 17</a> Letter Combinations of Phone Number</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Mapped-alphabet combinations</td><td class="insight">Replace numeric choices with character mappings per digit; same backtracking skeleton with different choice sets</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/palindrome-partitioning/" target="_blank">LC 131</a> Palindrome Partitioning</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Partition into valid segments</td><td class="insight">Validity check before recursing: only recurse if s[start:i+1] is a palindrome; each "choice" is a valid prefix length</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/restore-ip-addresses/" target="_blank">LC 93</a> Restore IP Addresses</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Constrained segmentation</td><td class="insight">Compound constraint: segment 0–255 AND no leading zeros AND exactly 4 parts; bounded-depth tree (exactly 4 levels)</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/word-search/" target="_blank">LC 79</a> Word Search</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Grid DFS with visited marking</td><td class="insight">State = 2D grid position + word index; visited[r][c]=True before 4-dir recursion; False after; boundary + visited checks prune</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/unique-paths-iii/" target="_blank">LC 980</a> Unique Paths III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Grid traversal visiting ALL cells</td><td class="insight">Hard: track count of visited cells and verify all cells covered at base case; changes pruning logic</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/n-queens/" target="_blank">LC 51</a> N-Queens</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Row-by-row with 3 constraint sets</td><td class="insight">Hard: diagonal encoding via r−c and r+c is non-obvious; without it, O(n²) conflict checks per row</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/n-queens-ii/" target="_blank">LC 52</a> N-Queens II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">N-Queens — count only</td><td class="insight">Counter instead of board reconstruction; identical pruning; teaches separation of solution-generation vs counting</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sudoku-solver/" target="_blank">LC 37</a> Sudoku Solver</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Cell-by-cell with 3 constraint sets (row/col/box)</td><td class="insight">Hard: box_id = (r//3)*3 + (c//3); three overlapping sets must all be checked; box index formula is implementation-critical</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Stage 3 → Stage 4 jump. Next problems don't announce "use backtracking." You must recognise that the problem is a disguised search or partitioning problem. Practise identifying the decision-tree structure BEFORE reading solutions.</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/expression-add-operators/" target="_blank">LC 282</a> Expression Add Operators</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Expression building with operator precedence</td><td class="insight">Hard: multiply requires cur − last + last*digit to handle precedence without re-evaluating; the "last term" tracking is non-obvious</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/word-break-ii/" target="_blank">LC 140</a> Word Break II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sentence reconstruction from dictionary</td><td class="insight">Hard: naïve O(2ⁿ); memoisation on start index reduces to O(n² · result); first memoisation layer on backtracking</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/flip-game-ii/" target="_blank">LC 294</a> Flip Game II</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Game theory via backtracking</td><td class="insight">A position is winning iff any move leads to a losing position for opponent; exhaustive game-tree search</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/word-pattern-ii/" target="_blank">LC 291</a> Word Pattern II</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Pattern matching via bijection backtracking</td><td class="insight">Hard: maintain two maps (pattern→word and word→pattern); invalid bijection must be caught early</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/word-squares/" target="_blank">LC 425</a> Word Squares</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Constraint-guided word selection with Trie</td><td class="insight">Hard: row i and column i share a prefix; Trie lookup of valid continuations is the key optimisation</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/android-unlock-patterns/" target="_blank">LC 351</a> Android Unlock Patterns</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Graph-constrained path enumeration</td><td class="insight">Skip-point constraint: moving between two non-adjacent numbers requires the middle number to be visited; skip table precomputed</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td>4</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1097/F" target="_blank">CF 1097F</a> Alex and a TV Show</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Exact cover recognition</td><td class="insight">Reduce to "cover all required positions exactly once" — exact cover / Algorithm X structure; DLX not required but shows the structural generalisation</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Stage 4 → Stage 5. Pure backtracking TLEs. You must add bitmask memoisation, branch-and-bound pruning, or Trie-accelerated pruning.</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-squareful-arrays/" target="_blank">LC 996</a> Number of Squareful Arrays</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Bitmask-pruned permutation backtracking</td><td class="insight">Hard: adjacency constraint (pair-sum = perfect square) drastically reduces valid next-choices; bitmask enables memoisation</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/tiling-a-rectangle-with-the-fewest-squares/" target="_blank">LC 1240</a> Tiling a Rectangle with the Fewest Squares</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Branch-and-bound with best-so-far pruning</td><td class="insight">Hard: greedy (always largest square) is WRONG for some inputs; branch-and-bound required; non-obvious because greedy looks correct</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/zuma-game/" target="_blank">LC 488</a> Zuma Game</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS/backtracking hybrid with run-length pruning</td><td class="insight">Hard: state = string × hand; never insert alone — always insert to form a run of ≥ 2; without this, TLE</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/word-search-ii/" target="_blank">LC 212</a> Word Search II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Backtracking + Trie pruning</td><td class="insight">Hard: shared Trie of all words replaces per-word DFS; O(n·m·4^L·W) → O(n·m·4^L); Trie traversed during DFS simultaneously</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l4">Hard</span></td><td>5</td><td>USACO Gold</td><td class="prob-name"><a class="lc-link" href="https://usaco.org/" target="_blank">Cow Placement</a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Backtracking with forward-checking (geometric)</td><td class="insight">Each placed cow constrains future positions via dominance ordering; forward checking eliminates cells before recursing; constraint propagation distinct from backtracking itself</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/generate-parentheses/" target="_blank">LC 22</a> ⚠️ Generate Parentheses</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — constrained DFS, no undo needed</td><td class="insight">Open + close counts are sufficient state; string is built immutably; if state fits in two integers and no undo is needed, it is constrained DFS — not backtracking</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/partition-to-k-equal-sum-subsets/" target="_blank">LC 698</a> ⚠️ Partition to K Equal Sum Subsets</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — naïve backtracking TLEs; needs bitmask DP</td><td class="insight">Naïve O(k^n); must add sort-descending + equal-bucket dedup OR convert to bitmask DP O(2ⁿ·n); if n ≤ 20 and TLE, reach for bitmask DP</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/regular-expression-matching/" target="_blank">LC 10</a> ⚠️ Regular Expression Matching</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ TRAP — memoised backtracking IS DP; restate as DP</td><td class="insight">When memoised backtracking produces dp[i][j] state, restate as bottom-up DP — it's cleaner and expected</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Custom Problem Statement</div>
+                    <div class="info-box"><strong>🔧 Bridge Problem — Backtracking with Constraint Propagation (Stage 4→5 bridge):</strong> You are given an N×N grid. Place exactly K non-attacking rooks such that no two rooks share a row or column, AND each rook must be placed in a white cell (cells are 0 = black or 1 = white). Return the count of valid placements.<br>
+                        <strong>Constraints:</strong> 1 ≤ N ≤ 8, 1 ≤ K ≤ N.<br>
+                        <strong>Example:</strong> N=3, K=2, grid=[[1,0,1],[0,1,0],[1,1,1]] → 6.<br>
+                        <strong>Intended solution:</strong> Backtrack row by row. At row r, try each column c where grid[r][c]==1 and col_used[c]==False. Mark col_used[c]=True, recurse to r+1, unmark. Base case: placed K rooks → count++. Pruning: if remaining_rows &lt; K − placed, return (can't place enough). Bridges Stage 3 (N-Queens structure) into Stage 4 (recognising applicability in a new domain) with Stage 5 entry-level pruning.
+                    </div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box"><strong>Linguistic Triggers:</strong><br>
+                        • "generate all / enumerate all / find all possible" → Stage 1/2 — exhaustive enumeration of a decision tree<br>
+                        • "partition into groups / segments / subsets satisfying [constraint]" → Stage 3/4 — partitioning backtracking; each decision splits the input<br>
+                        • "place N pieces on a board such that no two [conflict]" → Stage 3 — placement backtracking with conflict sets<br>
+                        • "is it possible to [reach / form / achieve] using [limited resources]" → Stage 4 — feasibility search; decision tree over resource allocation<br>
+                        • "restore / reconstruct / decode all valid [strings/sequences]" → Stage 4 — reconstruction backtracking; validity check gates each branch
+                    </div>
+                    <div class="info-box"><strong>Structural Triggers:</strong><br>
+                        • Output is <code>List[List[...]]</code> (all combinations, all partitions) → backtracking with path collection at base case<br>
+                        • Output is a single boolean ("is it possible?") with no polynomial algorithm obvious → backtracking with early-exit on first valid solution<br>
+                        • Input is a small N (≤ 20) with exponential search space but no DP state definition → backtracking with pruning
+                    </div>
+                    <div class="info-box"><strong>Constraint Triggers:</strong><br>
+                        • N ≤ 20 with output as a count or existence → backtracking (possibly with bitmask DP if overlapping subproblems detected)<br>
+                        • N ≤ 9 for board-filling problems (Sudoku, N-Queens) → backtracking with constraint sets; O(9^N) feasible
+                    </div>
+                    <div class="warn-box"><strong>Anti-Triggers (when NOT to use backtracking):</strong><br>
+                        🚩 "minimum number of operations to reach target" → NOT backtracking (exponential) → BFS (unweighted) or Dijkstra (weighted)<br>
+                        🚩 "count the number of ways to [fill / partition]" where N &gt; 20 → NOT plain backtracking → DP with memoisation; count is too large to enumerate<br>
+                        🚩 "find the shortest path / minimum cost path" → NOT backtracking → BFS / Dijkstra / Bellman-Ford; backtracking has no shortest-path guarantee
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="core-box" style="font-family:monospace;font-size:.88em;white-space:pre-wrap;line-height:1.55">
+<strong>Q1:</strong> Does the problem ask to ENUMERATE, CONSTRUCT, or CHECK
+    EXISTENCE of solutions in a combinatorial space?
+  → NO:  Not a backtracking problem. Stop.
+  → YES: Continue.
+
+<strong>Q2:</strong> Is N ≤ ~20 (making exponential search feasible)?
+  → NO (N &gt; 20): Backtracking will TLE. Go to Q9 (DP/BFS alternative).
+  → YES: Continue.
+
+<strong>Q3:</strong> Does the problem ask for ALL solutions or ONE solution?
+  → ALL: Full enumeration backtracking — collect at base case.
+  → ONE: Backtracking with EARLY EXIT on first valid solution.
+
+<strong>Q4:</strong> Is the choice at each step drawn from a SET (subsets/combinations)
+    or a SEQUENCE (permutations/orderings)?
+  → SET (order doesn't matter): Use START-INDEX to avoid revisiting.
+    → Reusable? YES → pass same i. NO → pass i+1.
+    → Duplicates? YES → sort + same-level skip.
+    → Stage 1/2. O(2ⁿ) to O(n!).
+  → SEQUENCE (order matters): Use VISITED ARRAY.
+    → Duplicates? YES → sort + skip if nums[i]==nums[i-1] and not used[i-1].
+    → Stage 1/2. O(n!).
+
+<strong>Q5:</strong> Does the state involve a 2D GRID or BOARD?
+  → YES: Grid backtracking. Use 2D visited array or in-place marking.
+    → Fixed depth (N-Queens, Sudoku)? Use constraint SETS for O(1) checks.
+    → Variable path (Word Search)? Use DFS with visited marking.
+    → Stage 3. O(n!) to O(9^m).
+  → NO: Continue.
+
+<strong>Q6:</strong> Is there a CONSTRAINT determining valid choices
+    (not just "not visited")?
+  → YES: Constraint-guided backtracking.
+    → Can you PROPAGATE forward before recursing?
+       YES → Forward checking / constraint propagation (Stage 5).
+       NO  → Check at each node (Stage 3/4).
+  → NO: Pure enumeration (Stage 1/2).
+
+<strong>Q7:</strong> Does the problem require tracking RUNNING STATE
+    across decisions (e.g., running sum, current expression value)?
+  → YES: Stage 4 — pass running state as parameter; undo on backtrack.
+         Watch for operator-precedence traps (Expression Add Operators).
+  → NO: Continue.
+
+<strong>Q8:</strong> Are there OVERLAPPING SUBPROBLEMS in the search tree
+    (same partial state reached via different paths)?
+  → YES: Stage 5 — add memoisation on the state (bitmask or tuple).
+         This converts backtracking to bitmask DP.
+         Expected: O(2ⁿ · n).
+  → NO: Pure backtracking without memo.
+
+<strong>Q9 (N too large):</strong> Can the problem be solved with DP, BFS, or greedy?
+  → DP: Overlapping subproblems with optimal substructure.
+  → BFS: Shortest path / minimum steps in state space.
+  → Greedy: Local optimal = global optimal (exchange argument holds).
+
+<strong>Stage identification summary:</strong>
+  Q4 (set/sequence, no grid) → Stage 1/2. O(2ⁿ) to O(n!).
+  Q5 (grid/board) → Stage 3. O(n!) to O(9^m).
+  Q7 (running state, disguised) → Stage 4. Exponential with pruning.
+  Q8 (overlapping subproblems) → Stage 5. O(2ⁿ · n).
+  If your solution is slower than O(2ⁿ · n) for N ≤ 20,
+  look for the Stage 5 memoisation or pruning optimisation.
+                    </div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] N &gt; 20 for enumeration problems</strong> — O(2²⁰) ≈ 10⁶ is feasible; O(2³⁰) ≈ 10⁹ is not. → Use bitmask DP if overlapping subproblems, or meet-in-the-middle (split into two halves of size n/2, enumerate each, combine).</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Counting problems with large N</strong> — Backtracking counts by enumerating every solution — O(result size), can be astronomical. Use DP where the count is accumulated without enumeration.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Shortest-path or minimum-cost problems on a graph</strong> — Backtracking finds valid solutions but not minimum-cost ones efficiently. Use BFS (unweighted minimum steps) or Dijkstra (weighted).</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Polynomial solutions disguised as search</strong> — Some "NP-hard-looking" problems have greedy or DP solutions. Always check: optimal substructure (→ DP), exchange argument (→ greedy) before reaching for backtracking.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Backtracking without memoisation on repeated states</strong> — If same (remaining, constraint-state) is reached via multiple paths, pure backtracking recomputes it. Convert to memoised recursion / bitmask DP. Classic symptom: TLE on N ≈ 15–20.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Sudoku-style without constraint propagation</strong> — Bare backtracking Sudoku is O(9^81) worst case. Without "only try digits missing from row/col/box," TLE on hard puzzles. Forward checking is mandatory at this stage.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Undo bugs making state corrupted</strong> — If undo is incomplete (global variable modified in one branch, not restored), subsequent branches see corrupted state. Symptom: wrong answers that are hard to reproduce. Every mutation in the choose step must be explicitly reversed in unchoose.</div>
+
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="info-box"><strong>Stage 1 — Subset Enumeration (Invariant Maintenance)</strong><br>
+                        <em>Claim:</em> <code>backtrack(i, path)</code> adds to result exactly all subsets of nums[i:] that extend path.<br>
+                        <em>Proof by strong induction on n − i:</em><br>
+                        • <em>Base case</em> (i = n): No elements remain; path itself is the only valid extension → add path to result. ✓<br>
+                        • <em>Inductive step:</em> Assume correct for all calls with i' &gt; i. At index i, we make two recursive calls: <em>include</em> — backtrack(i+1, path+[nums[i]]) correctly enumerates all subsets of nums[i+1:] extended by path+[nums[i]] by induction; <em>exclude</em> — backtrack(i+1, path) correctly enumerates all subsets of nums[i+1:] extended by path. Together they cover all subsets of nums[i:] extended by path. ✓<br>
+                        • <em>Completeness:</em> every include/exclude combination is tried. <em>No duplicates:</em> each path corresponds to a unique include/exclude sequence. □
+                    </div>
+                    <div class="info-box"><strong>Stage 3 — N-Queens (Constraint-Set Invariant)</strong><br>
+                        <em>Claim:</em> The algorithm places exactly one queen per row such that no two queens share a column, diagonal, or anti-diagonal.<br>
+                        <em>Proof by invariant maintenance:</em><br>
+                        • <em>Invariant:</em> Before placing queen in row r, sets cols, diag (r−c), anti_diag (r+c) contain exactly the columns/diagonals attacked by queens in rows 0..r−1.<br>
+                        • <em>Placement:</em> we only place at column c if c ∉ cols, (r−c) ∉ diag, (r+c) ∉ anti_diag — ensuring no conflict.<br>
+                        • <em>Update:</em> add c, r−c, r+c to the three sets, maintaining invariant for row r+1.<br>
+                        • <em>Undo:</em> after recursion, remove c, r−c, r+c, restoring invariant for trying next column in row r. ✓<br>
+                        • <em>Completeness:</em> all columns 0..n−1 are tried for each row. No valid placement is skipped. □
+                    </div>
+                    <div class="info-box"><strong>Stage 5 — Memoised Backtracking (Overlapping Subproblem Collapse)</strong><br>
+                        <em>Claim:</em> Adding memoisation on (index, state) to backtracking produces the same result as without memoisation.<br>
+                        <em>Proof by substitution:</em> If <code>backtrack(i, state)</code> is called twice with identical arguments, both operate on identical remaining choices and constraints. By the Stage 1 inductive proof, both produce identical results. Therefore storing and returning the cached result is correct. ✓<br>
+                        <em>Complexity improvement:</em> Without memo, the same (i, state) subtree may be recomputed exponentially many times. With memo, each unique (i, state) is computed once → O(states · branching factor) total.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box"><strong>Bug 1 (Stage 1) — Not copying the path when adding to results (reference bug)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: all entries in result point to the same list object
+result.append(path)     # path is mutated later → all results become identical
+# FIX: always append a copy
+result.append(path[:])  # or list(path) or path.copy()</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 2 (Stage 2) — Duplicate skipping: wrong condition (across-levels instead of same-level)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: skips valid elements when previous sibling was used at a DIFFERENT level
+if i &gt; 0 and nums[i] == nums[i-1]:
+    continue
+# FIX: skip only at same recursion level
+if i &gt; start and nums[i] == nums[i-1]:
+    continue</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 3 (Stage 2) — Permutations with duplicates: wrong used-array condition</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: skips too aggressively — misses valid permutations
+if i &gt; 0 and nums[i] == nums[i-1] and used[i-1]:
+    continue
+# FIX: skip if previous equal element is NOT used (same-level duplicate)
+if i &gt; 0 and nums[i] == nums[i-1] and not used[i-1]:
+    continue</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 4 (Stage 2) — Combination sum: no termination on negative remaining</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: recurses indefinitely when remaining &lt; 0
+def backtrack(start, remaining):
+    for i in range(start, len(candidates)):
+        path.append(candidates[i])
+        backtrack(i, remaining - candidates[i])  # no base case for negative!
+# FIX: add early termination
+    if remaining &lt; 0: return
+    if remaining == 0: result.append(path[:]); return</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 5 (Stage 3) — Grid backtracking: forgetting to unmark visited cell</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: cells remain marked, blocking future valid paths
+visited[r][c] = True
+for dr, dc in directions:
+    backtrack(r+dr, c+dc, idx+1)
+# visited[r][c] = False  ← MISSING
+# FIX: always restore
+visited[r][c] = False</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 6 (Stage 3) — N-Queens: wrong diagonal encoding</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: (row, col) tuple is not the diagonal invariant
+diag.add((row, col))
+# FIX: use scalar invariants
+diag.add(row - col)        # same r-c = same diagonal
+anti_diag.add(row + col)   # same r+c = same anti-diagonal</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 7 (Stage 3) — Sudoku: box index formula off</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: wrong box grouping
+box_id = row * 3 + col            # mixes rows and columns
+# FIX
+box_id = (row // 3) * 3 + (col // 3)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 8 (Stage 4) — Expression Add Operators: multiply without adjusting last term</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: multiply applied to cumulative sum, not just the last term
+backtrack(pos+length, cur * num, num)  # cur is wrong base for multiply
+# FIX: track `last` (the last operand added) separately
+# cur - last + last * num  →  removes last addition, replaces with multiplication
+backtrack(pos+length, cur - last + last * num, last * num)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 9 (Stage 5) — Memoisation with mutable path in state key</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: tuple(path) includes accumulation which varies — wrong key
+memo[tuple(path)] = result
+# FIX: key should be the REMAINING state, not the accumulated path
+memo[(index, frozenset(used))] = result</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 10 (Stage 5) — Bitmask: using OR to "undo" instead of XOR or AND-NOT</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: OR cannot undo a set bit
+mask |= (1 &lt;&lt; i)  # set bit
+# ... recurse ...
+mask |= (1 &lt;&lt; i)  # BUG: OR again does nothing to undo
+# FIX: use XOR (only works if bit was set) or AND-NOT
+mask ^= (1 &lt;&lt; i)        # toggles bit back off
+mask &amp;= ~(1 &lt;&lt; i)       # unconditionally clears the bit (safer)</code></pre>
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] Appending path reference instead of path copy</strong> — <code>result.append(path)</code> stores a reference to a list that will be mutated. All results become identical. <em>Correct model:</em> "I'm storing a snapshot — always path[:]."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Skipping duplicates with i &gt; 0 instead of i &gt; start</strong> — Using i &gt; 0 skips elements at the beginning of deeper recursion levels, silently dropping valid combinations. <em>Correct model:</em> "Skip a duplicate only if it's at the SAME level — i &gt; start enforces same-level scope."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Missing the undo step for grid problems</strong> — Marking visited=True but forgetting =False means cells remain blocked for sibling branches. Symptom: fewer results than expected. <em>Correct model:</em> "Every mutation before a recursive call must be reversed after it — no exceptions."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Treating a counting problem as enumeration</strong> — "How many valid arrangements exist?" can sometimes be solved via DP without enumeration. Backtracking counts by generating every solution — exponential. <em>Correct model:</em> "If N &gt; 15, check for DP before backtracking."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Not recognising a game-theory problem as backtracking</strong> — "Can player 1 guarantee a win?" is a minimax tree. Candidates try BFS or greedy. <em>Correct model:</em> "Optimal play = exhaustive game-tree search. A position is winning iff any child is losing for the opponent."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Running backtracking without pruning on constraint problems</strong> — Unconstrained Sudoku is O(9^81) — effectively infinite. <em>Correct model:</em> "Constraint propagation is mandatory, not optional. Always narrow the choice set before recursing."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Confusing "backtracking with memo" with DP</strong> — When you memoise backtrack(index, state), you have written top-down DP. Not recognising this signals incomplete mastery. <em>Correct model:</em> "Memoised backtracking IS DP. Name it correctly and explain the state definition."</div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="info-box"><strong>Stage 2 Follow-Ups (Constraint Mutations)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>"What if elements can be reused? What changes in your code?"</td><td>Change <code>backtrack(i+1, ...)</code> to <code>backtrack(i, ...)</code> — one-character change; explain why termination is still guaranteed (remaining decreases monotonically).</td></tr>
+                        <tr><td>2</td><td>"The input has duplicates. How do you avoid duplicate results without using a set?"</td><td>Sort the input; at each level skip nums[i] if nums[i]==nums[i−1] and i &gt; start; explain WHY i &gt; start (not i &gt; 0).</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 3 Follow-Ups (State Expansion)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>3</td><td>"Extend Word Search to return ALL paths that spell the word, not just one."</td><td>Remove early-exit (return True); collect all valid paths; deep-copy path at base case; complexity becomes O(n·m·4^L·results).</td></tr>
+                        <tr><td>4</td><td>"Solve N-Queens for N=100 — clearly backtracking won't work. What changes?"</td><td>Use mathematical constructions (explicit queen placement formulas exist for all N ≥ 4); backtracking is infeasible beyond N ≈ 15.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 4 Follow-Ups (Hidden Reductions)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>5</td><td>"How would you solve Sudoku faster than pure backtracking?"</td><td>Constraint propagation (AC-3 / arc consistency): after placing a digit, propagate to all related cells; reduces branching factor from 9 to ~2–3 on average.</td></tr>
+                        <tr><td>6</td><td>"Can you model this as an exact cover problem? What does that give you?"</td><td>Exact cover reduces to binary matrix; Knuth's Algorithm X (Dancing Links) solves with efficient undo (O(1) cover/uncover); DLX is the fastest known Sudoku solver.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 5 Follow-Ups (Optimisation Pressure)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>7</td><td>"Your backtracking is O(n!). Can memoisation help here?"</td><td>Only if overlapping subproblems exist — same remaining set reached via different orderings. If state = bitmask of used elements, memo table has 2ⁿ entries; total O(2ⁿ · n).</td></tr>
+                        <tr><td>8</td><td>"N = 20 and your bitmask DP is O(2²⁰ · 20) ≈ 2×10⁷. What if N = 40?"</td><td>Meet in the middle: enumerate subsets of first 20 (2²⁰) and last 20 (2²⁰), then combine. Still exponential but halved exponent: O(2^(n/2)).</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Beyond Stage 5 (Adversarial / Distributed)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>9</td><td>"You're solving Sudoku puzzles submitted by users in real time. How do you scale this?"</td><td>Each puzzle is independent — embarrassingly parallel. Worker pool; each worker runs constraint propagation + backtracking. Hardest puzzles can be solved in &lt; 1 ms with DLX.</td></tr>
+                        <tr><td>10</td><td>"An adversary constructs the worst-case input for your N-Queens solver. What does it look like; how do you defend?"</td><td>Worst case: no pruning fires until the last placement. Defence: forward checking; worst-case N-Queens is still O(n!) but average case drops dramatically; for N &gt; 20, use explicit construction formulas.</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box">
+                        <strong>Phase 1 — Solve (strictly by Stage across all sub-variants):</strong><br>
+                        <em>Stage 1 first:</em> S.No 1 (78 Subsets) → S.No 2 (77 Combinations) → S.No 3 (46 Permutations). Write all three from the SAME template: <code>backtrack(start_or_index, path)</code>. The only difference should be 2–3 lines. If implementations look very different, you haven't internalised the template.<br>
+                        <em>Stage 2 next:</em> S.No 4 → 5 → 6 → 7 (all duplicate/reuse variants). You should derive each from the previous with one change. Then S.No 8 (Phone), 9 (Palindrome), 10 (IP).<br>
+                        <em>Stage 3 next:</em> S.No 11 (Word Search) → 12 (Unique Paths III) → 13 (N-Queens) → 15 (Sudoku). Grid problems introduce 2D state; N-Queens introduces constraint sets.<br>
+                        <em>Stage 4 next:</em> S.No 16 (Expressions) → 17 (Word Break II) → 18 (Flip Game) → 19 (Word Pattern II) → 21 (Android Unlock). Hardest recognition problems. Time yourself; if &gt; 40 min, review the pattern before continuing.<br>
+                        <em>Stage 5 last:</em> S.No 23 (Squareful Arrays) → 24 (Tiling Rectangle) → 26 (Word Search II with Trie). Implement each optimisation explicitly — do not look up the Trie integration.<br><br>
+                        <strong>Phase 2 — Drill (speed and recognition):</strong><br>
+                        Stage 1: under 10 min. Stage 2: under 15 min. Stage 3: under 25 min (N-Queens: under 20). Stage 4: under 35 min. <em>Template drill:</em> write the complete backtracking template (choose/recurse/unchoose) from memory in under 2 minutes, daily for 1 week. <em>Recognition drill:</em> given only the title, identify (a) sub-variant, (b) Stage, (c) key pruning needed. Target 90% before Phase 3. <em>Undo drill:</em> for every problem, explicitly write "What exactly do I undo?" as a comment before coding.<br><br>
+                        <strong>Phase 3 — Validate (unseen sources per Stage):</strong><br>
+                        Stage 1/2: AtCoder ABC tagged "brute-force + backtracking" — any 3 unseen. Stage 3: USACO Silver grid-placement problems from recent years. Stage 4: Codeforces Div 2 D/E tagged "backtracking + implementation" — 3 problems. Stage 5: Google Kickstart archives — "arrangement" or "placement" problems requiring pruned search.
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                        These three problems are NOT in the table above. Solving all three cold (no hints, no editorial, 45 min each) certifies full mastery.<br><br>
+                        <strong>Test 1 — LC 1659: Maximize Grid Happiness</strong> (Stage 3 + Stage 5)<br>
+                        <em>Why valid:</em> Naïve backtracking (place each person, check all neighbours) is O(3^(m·n)) — TLE. The correct solution uses bitmask DP on the current row state, treating the previous row as a bitmask. A candidate who reaches Stage 5 naturally arrives at this — solving it cold proves they can identify when backtracking needs to become DP.<br><br>
+                        <strong>Test 2 — CF 1097F: Alex and a TV Show</strong> (Stage 4 + Stage 5)<br>
+                        <em>Why valid:</em> Looks like a set-cover backtracking problem but is solved via Möbius inversion on a bitset. The candidate must first recognise exact-cover structure (Stage 4), then apply the bitset optimisation (Stage 5). Highest-level "backtracking to combinatorics" reduction tested at Codeforces Div 1 D level.<br><br>
+                        <strong>Test 3 — LC 489: Robot Room Cleaner</strong> (Stage 3 + Stage 4)<br>
+                        <em>Why valid:</em> A backtracking problem where the state (grid layout) is hidden. The candidate must track relative position manually, simulate the grid in memory, and implement the undo step as a physical robot movement sequence. Tests that the mental model is robust enough when state is not directly accessible — the hardest form of Stage 4 recognition, analogous to implicit-graph problems.
+                    </div>
+                </div>
+            </div>
             <div class="topic-card" id="tp9"><div class="coming">Content for Greedy is coming soon.</div></div>
             <!-- Advanced Techniques 10-14 -->
             <div class="topic-card" id="tp10"><div class="coming">Content for Sieve of Eratosthenes is coming soon.</div></div>
