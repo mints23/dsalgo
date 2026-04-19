@@ -1882,7 +1882,400 @@ mask &amp;= ~(1 &lt;&lt; i)       # unconditionally clears the bit (safer)</code
                     </div>
                 </div>
             </div>
-            <div class="topic-card" id="tp9"><div class="coming">Content for Greedy is coming soon.</div></div>
+            <!-- ══════════════════════════════════════════
+                 TOPIC 9 — GREEDY (MASTERY)
+            ═══════════════════════════════════════════ -->
+            <div class="topic-card" id="tp9">
+                <div class="topic-header">
+                    <div class="topic-num">09</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Greedy</div>
+                            <span class="tier-badge tier-T1">Algorithms</span>
+                            <span class="topic-type">Exchange Argument · Sort Key · Heap · Regret · Matroid</span>
+                        </div>
+                        <div class="topic-meta">32 problems · 5 stages · activity selection, heap greedy, regret, matroid, greedy + binary search</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why It Matters:</strong> Greedy algorithms make the locally optimal choice at each step — the proof that local optimality cascades into global optimality is an <em>exchange argument</em>: any optimal solution can be transformed into the greedy solution by swapping choices one at a time without worsening the result. Greedy is the most dangerous topic in competitive programming because it is simultaneously the easiest to apply and the easiest to apply wrongly — a greedy that looks correct on examples can fail on a single adversarial case. It appears in every Google interview because it tests mathematical reasoning (can you prove your greedy?), not just implementation. At ICPC/IOI, the hardest greedy problems require recognising that a problem with no obvious greedy structure reduces to a canonical greedy form (scheduling, matroid, exchange-argument) after a non-obvious transformation.</div>
+
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>Greedy is a vending machine that always dispenses the "best available" item.</strong> The key question is never "which item is best?" — it's "what does 'best' mean in this problem, and does picking it now guarantee we never regret it later?"<br><br>
+                        <strong>How the mental model scales through the 5 stages:</strong><br>
+                        • <strong>Stage 1:</strong> "Best" is obvious — largest value, smallest cost, earliest deadline. Pick greedily in sorted order. No regret possible.<br>
+                        • <strong>Stage 2:</strong> "Best" changes based on one flipped constraint — earliest end instead of largest value, or smallest ratio instead of smallest absolute value. The sort key changes; the algorithm skeleton is identical.<br>
+                        • <strong>Stage 3:</strong> Two competing greedy criteria must be balanced simultaneously. The state tracks two quantities; the sort key is a composite function of both.<br>
+                        • <strong>Stage 4:</strong> The problem doesn't look like a greedy problem. You must first transform the input or reframe the objective before the "best available" principle becomes visible.<br>
+                        • <strong>Stage 5:</strong> The greedy choice requires knowing the current minimum/maximum of a dynamic set — a data structure (heap, segment tree, sorted set) makes each greedy step O(log n) instead of O(n).
+                    </div>
+
+                    <div class="sec-title">Core Invariant &amp; Proof Sketch — The Exchange Argument</div>
+                    <div class="core-box">
+                        <strong>Invariant:</strong> Let G = greedy solution, O = any optimal solution. We show G is at least as good as O.<br><br>
+                        <strong>3-step template applicable to ANY greedy problem:</strong><br>
+                        • <strong>Step 1 (Align):</strong> Order both solutions by the greedy sort key. Find the first position k where G and O differ — G chose element g, O chose element o, with greedy_key(g) ≤ greedy_key(o) (G chose "better" by its criterion).<br>
+                        • <strong>Step 2 (Exchange):</strong> Swap o for g in O at position k. Show that after the swap, O' is still a valid solution AND cost(O') ≤ cost(O) (or value(O') ≥ value(O)). The entire proof lives here.<br>
+                        • <strong>Step 3 (Iterate):</strong> Repeat until O has been transformed into G. Since each swap didn't worsen O, cost(G) ≤ cost(O). Since O was optimal, G is also optimal. □<br><br>
+                        <strong>Why this matters:</strong> If you cannot execute Step 2, your greedy is wrong. The exchange argument IS the proof. Every greedy problem at Google requires you to sketch this argument when asked "how do you know this is correct?"
+                    </div>
+
+                    <div class="sec-title">Sub-Variants to Master (15 total)</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>1. Sort + linear scan (activity selection)</strong> — Stage 1 · O(n log n) · sort array · <em>New idea:</em> sort by end time; keep if start ≥ last end<br>
+                        <strong>2. Sort by ratio / composite key (fractional knapsack)</strong> — Stage 1 · O(n log n) · sort by value/weight · <em>New idea:</em> sort key is a ratio, not a raw value<br>
+                        <strong>3. Two-pointer greedy (matching min to max)</strong> — Stage 2 · O(n log n) · two pointers on sorted array · <em>New idea:</em> optimal pairing uses two sorted ends simultaneously<br>
+                        <strong>4. Greedy with constraint flip (earliest deadline first)</strong> — Stage 2 · O(n log n) · sort by deadline · <em>New idea:</em> sort key changes from value to deadline; same skeleton, different comparator<br>
+                        <strong>5. Prefix-greedy (always extend current reach)</strong> — Stage 2 · O(n) · linear scan with reach variable · <em>New idea:</em> maintain max_reach greedily; answer is steps taken when reach is exhausted<br>
+                        <strong>6. Stack-based greedy (remove to optimise)</strong> — Stage 3 · O(n) · monotone stack · <em>New idea:</em> greedy removal uses a stack to maintain order; each element compared to stack top<br>
+                        <strong>7. Heap-based greedy (always process best available)</strong> — Stage 3 · O(n log n) · min/max heap · <em>New idea:</em> "best available" is dynamic — heap maintains sorted order across insertions<br>
+                        <strong>8. Two-heap greedy (balance two populations)</strong> — Stage 3 · O(n log n) · two heaps · <em>New idea:</em> two competing criteria; median or balance point maintained via dual heaps<br>
+                        <strong>9. Greedy on sorted events (sweep line)</strong> — Stage 3 · O(n log n) · sort events + active set · <em>New idea:</em> process start/end events in order; greedy assigns resources at each event<br>
+                        <strong>10. Greedy with exchange argument on strings</strong> — Stage 4 · O(n log n) · custom comparator sort · <em>New idea:</em> comparator derived from exchange argument, not natural order (e.g., ab &lt; ba iff a+b &lt; b+a)<br>
+                        <strong>11. Regret-based greedy (undo a previous choice)</strong> — Stage 4 · O(n log n) · heap + virtual undo · <em>New idea:</em> make a greedy choice, then "undo" it by adding a negative-weight virtual item; enables globally optimal correction<br>
+                        <strong>12. Matroid greedy (independent set maximisation)</strong> — Stage 4 · O(n log n) · sort + independence oracle · <em>New idea:</em> greedy on a matroid is always optimal; recognising matroid structure IS the insight<br>
+                        <strong>13. Greedy + binary search (optimise the sort-key threshold)</strong> — Stage 5 · O(n log² n) · binary search on answer + greedy check · <em>New idea:</em> binary search on a parameter; greedy verifies feasibility at each midpoint<br>
+                        <strong>14. Greedy + segment tree (range min/max for greedy choice)</strong> — Stage 5 · O(n log n) · segment tree · <em>New idea:</em> greedy choice requires range query on dynamic set; segment tree replaces O(n) scan<br>
+                        <strong>15. Online greedy (decisions without future knowledge)</strong> — Stage 5 · O(n log n) · sorted set / BIT · <em>New idea:</em> items arrive in stream; greedy must use only past information; sorted set enables O(log n) best-match lookup
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed from Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>Sort + linear scan</td><td>O(n log n)</td><td>O(1)</td><td>Baseline: sort then greedy scan</td></tr>
+                        <tr><td>Sort by ratio</td><td>O(n log n)</td><td>O(1)</td><td>Sort key is ratio, not scalar</td></tr>
+                        <tr><td>Two-pointer greedy</td><td>O(n log n)</td><td>O(1)</td><td>Two sorted pointers instead of one</td></tr>
+                        <tr><td>Prefix-reach greedy</td><td>O(n)</td><td>O(1)</td><td>No sort needed; single-pass with reach variable</td></tr>
+                        <tr><td>Stack-based greedy</td><td>O(n)</td><td>O(n)</td><td>Stack replaces comparison with top</td></tr>
+                        <tr><td>Heap-based greedy</td><td>O(n log n)</td><td>O(n)</td><td>Dynamic "best available" via heap</td></tr>
+                        <tr><td>Two-heap greedy</td><td>O(n log n)</td><td>O(n)</td><td>Two heaps for dual-criterion balance</td></tr>
+                        <tr><td>Sweep line greedy</td><td>O(n log n)</td><td>O(n)</td><td>Events sorted; active set managed</td></tr>
+                        <tr><td>String comparator greedy</td><td>O(n log n)</td><td>O(n)</td><td>Comparator derived from exchange argument</td></tr>
+                        <tr><td>Regret-based greedy</td><td>O(n log n)</td><td>O(n)</td><td>Virtual undo item added to heap</td></tr>
+                        <tr><td>Greedy + binary search</td><td>O(n log² n)</td><td>O(1)</td><td>Binary search wraps greedy check</td></tr>
+                        <tr><td>Greedy + segment tree</td><td>O(n log n)</td><td>O(n)</td><td>Range query replaces O(n) scan</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Mastery Problem Set (32 problems · 5 stages)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant / New Idea</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/two-city-scheduling/" target="_blank">LC 1029</a> Two City Scheduling</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Sort by cost-difference (composite key)</td><td class="insight">THE baseline — sort key is (cost_A − cost_B); cheapest half to A, rest to B. Exchange argument proves optimality; greedy on a composite key</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LC 435</a> Non-overlapping Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Activity selection (sort by end)</td><td class="insight">Sort by END time (not start or value). Keep interval if start ≥ last_end; exchange argument: earliest-ending is always safe</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452</a> Minimum Arrows to Burst Balloons</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Activity selection (touching = overlap)</td><td class="insight">One comparator flip from #2: start &lt;= last_end (not &lt;) changes semantics; same skeleton, different boundary condition</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/jump-game/" target="_blank">LC 55</a> Jump Game</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix-reach greedy</td><td class="insight">Replace interval tracking with max_reach variable; no sort needed. Single pass: reach = max(reach, i + nums[i]); return reach ≥ n−1; O(n)</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/jump-game-ii/" target="_blank">LC 45</a> Jump Game II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix-reach greedy (count steps)</td><td class="insight">Extends #4: track cur_end and next_end; steps++ when i == cur_end; O(n)</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/partition-labels/" target="_blank">LC 763</a> Partition Labels</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix-reach on last-occurrence map</td><td class="insight">Build last-occurrence map; same reach-extension greedy with last[s[i]] instead of nums[i]; partition when i == reach</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/queue-reconstruction-by-height/" target="_blank">LC 406</a> Queue Reconstruction by Height</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two-attribute sort with insertion</td><td class="insight">Sort by height desc, k asc; insert each person at index k. Taller people are unaffected by shorter insertions — the enabling invariant</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/gas-station/" target="_blank">LC 134</a> Gas Station</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Circular scan with running total</td><td class="insight">Two observations fused: if total gas ≥ total cost, solution exists; start from first index after every negative-tank reset</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/lemonade-change/" target="_blank">LC 860</a> Lemonade Change</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Greedy with state tracking</td><td class="insight">Track counts of $5, $10; greedy uses LARGEST denomination first when making change. State across greedy decisions</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/boats-to-save-people/" target="_blank">LC 881</a> Boats to Save People</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two-pointer greedy on sorted array</td><td class="insight">Sort; pair heaviest + lightest if they fit; else heaviest alone. Exchange argument: pairing the extremes never worsens the count</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-ii/" target="_blank">LC 253</a> Meeting Rooms II</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Heap-based greedy (room assignment)</td><td class="insight">Min-heap of end-times; heap size = rooms used. Heap enables O(log n) "find earliest-ending room"; greedy assigns to that room or opens new one</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/task-scheduler/" target="_blank">LC 621</a> Task Scheduler</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Frequency-driven greedy with idle slots</td><td class="insight">Most-frequent task constrains minimum length; formula (max_freq−1) * (n+1) + count_of_max_freq, take max with len(tasks)</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/reorganize-string/" target="_blank">LC 767</a> Reorganize String</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interleaving greedy via max-heap</td><td class="insight">Always pick two most-frequent characters alternately using max-heap; no fixed "idle" — just interleave top-2 frequencies</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-number-of-events-that-can-be-attended/" target="_blank">LC 1353</a> Max Events That Can Be Attended</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Sweep + min-heap greedy</td><td class="insight">Events arrive by start day; on each day, add available events to heap; attend min-end event to maximise future options</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/course-schedule-iii/" target="_blank">LC 630</a> Course Schedule III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Heap-based regret greedy</td><td class="insight">Hard: "evict largest" insight requires tracking past choices via max-heap; if new course doesn't fit, swap out the longest-taken course. Pure forward greedy fails</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Stage 3 → Stage 4 jump. The sort key is NOT given. You must derive it from the exchange argument BEFORE coding. Practise writing the 3-step exchange argument for each problem first.</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/largest-number/" target="_blank">LC 179</a> Largest Number</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">String comparator from exchange argument</td><td class="insight">Custom comparator a+b vs b+a as strings; exchange argument proves this is the ONLY valid comparator. No natural ordering applies</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/candy/" target="_blank">LC 135</a> Candy</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-pass greedy with conflicting constraints</td><td class="insight">Hard: neither pass alone is sufficient. Left-to-right handles left-neighbour; right-to-left handles right-neighbour; combine with max(). Directional-constraint insight</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/remove-duplicate-letters/" target="_blank">LC 316</a> Remove Duplicate Letters</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Monotone stack greedy with frequency tracking</td><td class="insight">Stack maintains lexicographic order; only pop if character appears later (last-occurrence constraint)</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/remove-k-digits/" target="_blank">LC 402</a> Remove K Digits</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Monotone stack greedy with budget</td><td class="insight">Same stack skeleton as #18 but constraint is exactly k removals (budget, not last-occurrence); pop while stack[-1] &gt; cur AND k &gt; 0; trim tail for remaining k</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/furthest-building-you-can-reach/" target="_blank">LC 1642</a> Furthest Building You Can Reach</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Regret greedy: ladders as "undo tokens"</td><td class="insight">Treat each ladder as a retrospective upgrade of the worst-used jump; min-heap of past jumps; swap heap-top with current if beneficial</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-refueling-stops/" target="_blank">LC 871</a> Minimum Number of Refueling Stops</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy with delayed decision (max-heap of passed stations)</td><td class="insight">Hard: decision is deferred — you don't refuel when you pass a station; you refuel retrospectively from best available. The "lazy refuel" insight is non-obvious</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-taps-to-open-to-water-a-garden/" target="_blank">LC 1326</a> Minimum Number of Taps</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Interval coverage greedy (Jump Game in disguise)</td><td class="insight">Hard: each tap [i−ranges[i], i+ranges[i]] becomes an interval; problem reduces to Jump Game II after transformation. Recognising the reduction IS the insight</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l3">Combo</span></td><td>4</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1041/D" target="_blank">CF 1041D</a> Glider</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy + sliding window on sorted events</td><td class="insight">Hard: sort thermal columns; sliding window of width H; greedily count columns in window. Brute force O(n²) → O(n log n) via the sliding-window insight</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Stage 4 → Stage 5. The greedy check must now live INSIDE binary search or use a segment tree / sorted set for O(log n) queries. Pure O(n) per-step scans TLE.</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/single-threaded-cpu/" target="_blank">LC 1834</a> Single-Threaded CPU</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Greedy + heap on sorted task arrivals</td><td class="insight">Simulation with two sorted structures: arrival-sorted array + min-heap of (duration, index). At each CPU-free moment, pick shortest available task</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-iii/" target="_blank">LC 2402</a> Meeting Rooms III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy with two heaps (free + busy rooms)</td><td class="insight">Hard: both earliest-ending AND lowest-numbered room must be tracked simultaneously via two heaps — free room numbers + (end_time, room) for busy</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimize-deviation-in-array/" target="_blank">LC 1675</a> Minimize Deviation in Array</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy on sorted set with bounded operations</td><td class="insight">Hard: the normalisation insight (all odds → multiplied by 2 once) is non-obvious; sorted set enables O(log n) per greedy step of halving max</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/" target="_blank">LC 2071</a> Maximum Number of Tasks You Can Assign</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy + binary search on task count + deque</td><td class="insight">Hard: binary search on answer k wraps a non-trivial greedy check using sorted workers + pills via deque. Greedy-within-binary-search fusion is a Stage 5 signature pattern</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l4">Hard</span></td><td>5</td><td>USACO Gold</td><td class="prob-name"><a class="lc-link" href="https://usaco.org/index.php?page=viewproblem2&amp;cpid=839" target="_blank">Talent Show</a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Fractional knapsack + binary search on ratio</td><td class="insight">Hard: binary search on a CONTINUOUS parameter (ratio threshold); greedy feasibility check is the inner loop. Classic binary-search-on-answer template</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l4">Hard</span></td><td>4</td><td>Custom</td><td class="prob-name trap-name">🔧 Weighted Matroid Greedy (Max Spanning Forest)</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Matroid greedy (graphic matroid)</td><td class="insight">Hard: recognising edge-acyclicity as a graphic matroid unlocks Kruskal — greedy on a matroid is provably optimal. See full statement below</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#ffe6e6,#ffd0d0);padding:.55rem .8rem;font-weight:600;text-align:center">⚠️ TRAP ZONE — Problems that LOOK greedy but either aren't, or require a specific non-greedy algorithm. Recognise them in &lt; 30 seconds.</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/" target="_blank">LC 122</a> ⚠️ Best Time to Buy and Sell Stock II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — "sum all upswings" works ONLY with unlimited free transactions</td><td class="insight">Any constraint (k transactions, cooldown, fee) immediately breaks the greedy → use DP. Clean greedy is a special-case coincidence, not the general pattern</td></tr>
+                        <tr><td class="num-cell">31</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/previous-permutation-with-one-swap/" target="_blank">LC 1053</a> ⚠️ Previous Permutation With One Swap</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — careful case analysis, NOT sort / exchange argument</td><td class="insight">Right-to-left scan for the drop point; specific algorithm with exact rules — no exchange argument applies</td></tr>
+                        <tr><td class="num-cell">32</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/monotone-increasing-digits/" target="_blank">LC 738</a> ⚠️ Monotone Increasing Digits</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — right-to-left scan with cascade, NOT left-to-right digit greedy</td><td class="insight">Setting digits greedily LEFT-to-RIGHT cascades violations. Correct direction is RIGHT-to-LEFT: find drop point, set trailing 9s</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Custom Problem Statement (#29)</div>
+                    <div class="info-box"><strong>🔧 Weighted Matroid Greedy — Maximum Weight Spanning Forest (Stage 4):</strong> Given an undirected graph with N vertices and M weighted edges, find the maximum-weight spanning forest (a set of edges with no cycle, not necessarily connected, with maximum total weight).<br>
+                        <strong>Constraints:</strong> 2 ≤ N ≤ 10⁵, 1 ≤ M ≤ 3×10⁵, 1 ≤ weight ≤ 10⁹.<br>
+                        <strong>Example:</strong> N=4, M=5, edges=[(1,2,10), (2,3,6), (1,3,5), (3,4,4), (1,4,3)] → 20 (edges: (1,2,10) + (2,3,6) + (3,4,4)).<br>
+                        <strong>Intended solution:</strong> Sort edges by weight descending. Greedily add each edge if it doesn't form a cycle (Union-Find check). This is Kruskal's algorithm for maximum spanning forest. <em>Why greedy works:</em> the set of acyclic subgraphs of a graph forms a graphic matroid — and greedy always finds the maximum-weight independent set in a matroid. <em>Exchange argument:</em> any two spanning forests of the same size can exchange edges one at a time without losing the forest property.
+                    </div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box"><strong>Linguistic Triggers:</strong><br>
+                        • "minimum number of [operations / jumps / arrows] to [achieve]" → Stage 1/2 greedy — activity selection or reach-extension; local minimum choice is never regretted<br>
+                        • "maximum number of [events / tasks / intervals] you can [attend / complete]" → Stage 2/3 — activity selection sorted by end time; heap for dynamic scheduling<br>
+                        • "arrange / order / sequence to [maximise / minimise] total" → Stage 4 — sort key derived from exchange argument; comparator a·B vs b·A or a+b vs b+a<br>
+                        • "at each step, you can [action]; find minimum steps" → Stage 2 — prefix-reach greedy; reach = max(reach, f(i))<br>
+                        • "assign [resources] to [tasks] optimally" → Stage 3/5 — heap-based greedy; assign best-available resource at each step
+                    </div>
+                    <div class="info-box"><strong>Structural Triggers:</strong><br>
+                        • Input is a list of items each with two attributes (value + weight, start + end, cost_A + cost_B) → sort by a function of both attributes; exchange argument determines the function<br>
+                        • Output is a single number (min count, max count) NOT a specific arrangement → likely greedy with proof, not backtracking<br>
+                        • Problem has a "never regret" property visible in examples (choosing X now never prevents a better choice later) → greedy applicable
+                    </div>
+                    <div class="info-box"><strong>Constraint Triggers:</strong><br>
+                        • N ≤ 10⁵ with no obvious DP state → greedy is the intended solution; DP states would require O(n²) or more<br>
+                        • Items have two attributes and you must select ALL items (not a subset) in an optimal order → custom comparator sort; exchange argument for sort key
+                    </div>
+                    <div class="warn-box"><strong>Anti-Triggers (when NOT to use greedy):</strong><br>
+                        🚩 "maximum value subset of weight ≤ W" → NOT greedy (fractional knapsack is greedy, 0/1 knapsack is NOT) → use 0/1 Knapsack DP<br>
+                        🚩 "minimum cost path from source to destination" → NOT greedy scan → Dijkstra (non-negative) / Bellman-Ford (negative)<br>
+                        🚩 "number of ways to [achieve target]" → NOT greedy (greedy gives one way, not a count) → DP with counting recurrence
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="core-box" style="font-family:monospace;font-size:.88em;white-space:pre-wrap;line-height:1.55">
+<strong>Q1:</strong> Does the problem ask for an OPTIMAL (min/max) outcome achievable
+    by making sequential choices?
+  → NO:  Not a greedy problem. Stop.
+  → YES: Continue.
+
+<strong>Q2:</strong> Does the problem have OPTIMAL SUBSTRUCTURE without OVERLAPPING
+    SUBPROBLEMS (i.e., choices don't interact with each other)?
+  → NO (choices interact): → Use DP.
+  → YES (choices are independent once sorted): Continue.
+
+<strong>Q3:</strong> Can you identify a SORT KEY such that processing in that order
+    never creates regret (a later element is NEVER hurt by an earlier choice)?
+  → YES (obvious: end time, ratio, etc.): → Stage 1/2.
+     Sort, then linear scan. Expected: O(n log n).
+  → MAYBE (sort key requires exchange argument): → Stage 4.
+     Derive comparator: "does choosing a before b improve result?"
+
+<strong>Q4:</strong> Does the greedy choice depend on the CURRENT BEST AVAILABLE item
+    in a DYNAMIC collection (items arrive over time or are unlocked)?
+  → YES: → Stage 3/5 — use a HEAP.
+     Min-heap if smallest-cost; max-heap if largest-value.
+     Expected: O(n log n).
+  → NO: Continue.
+
+<strong>Q5:</strong> Does making a greedy choice sometimes turn out to be WRONG
+    and need to be UNDONE based on future information?
+  → YES: → Stage 4 — REGRET GREEDY.
+     Make the greedy choice; push an "undo token" to a heap;
+     if a better option arrives, swap via the heap.
+     Examples: Course Schedule III, Furthest Building, Min Refueling Stops.
+  → NO: Continue.
+
+<strong>Q6:</strong> Is the problem a STRING ORDERING or ARRANGEMENT problem?
+  → YES: → Stage 4 — EXCHANGE ARGUMENT COMPARATOR.
+     For two items a, b, ask: "Is a+b better than b+a?"
+     Derive the comparator from this comparison.
+     Sort by custom comparator. Expected: O(n log n).
+  → NO: Continue.
+
+<strong>Q7:</strong> Is the greedy check INSIDE a binary search on the answer?
+  → YES: → Stage 5 — GREEDY + BINARY SEARCH.
+     Binary search on threshold/count; greedy verifies feasibility.
+     Expected: O(n log² n) or O(n log n · log(value_range)).
+  → NO: → Stage 5 — GREEDY + SEGMENT TREE / SORTED SET.
+     Greedy choice requires range min/max on dynamic collection.
+
+<strong>Stage identification summary:</strong>
+  Q3 YES (obvious sort key) → Stage 1/2. O(n log n).
+  Q4 YES (dynamic heap) → Stage 3. O(n log n).
+  Q5 YES (regret/undo) → Stage 4. O(n log n).
+  Q6 YES (string comparator) → Stage 4. O(n log n).
+  Q7 YES (binary search wrapper) → Stage 5. O(n log² n).
+  If your solution is O(n²), look for the heap or sorted-set
+  optimisation that makes each greedy step O(log n).
+                    </div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] 0/1 Knapsack disguised as fractional knapsack</strong> — Greedy by value/weight ratio is optimal for fractional but provably WRONG for 0/1. Always check: are items divisible? If not, use 0/1 Knapsack DP.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] Activity selection with weighted intervals</strong> — Greedy (sort by end, take non-overlapping) maximises COUNT but not total WEIGHT. For weighted intervals, use Weighted Job Scheduling DP (sort by end + binary search + DP).</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Greedy on circular arrays without handling wrap-around</strong> — Circular problems (Gas Station, circular interval coverage) silently fail without wrap-around handling. Strategy: run the greedy twice on the doubled array, or use the "total feasibility + start-point" two-observation approach.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Greedy on strings without the exchange-argument comparator</strong> — Alphabetical or length-based order for "largest number" or "minimum cost arrangement" gives wrong answers. Always derive the comparator from the exchange argument: a+b vs b+a.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Regret greedy without the "virtual undo" mechanism</strong> — Problems like Min Refueling Stops require decisions that look non-greedy. Without the deferred-decision heap mechanism, the solution seems to require DP. Recognise: "collect all options passed; pick best when forced to decide."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Exchange argument comparator that is not a total order</strong> — If a &lt; b is not transitive or antisymmetric, std::sort / Python's sorted gives undefined behaviour. Always verify: key(a) &lt; key(b) and key(b) &lt; key(c) implies key(a) &lt; key(c).</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Greedy + binary search: checking feasibility incorrectly</strong> — A bug in the inner greedy check produces a wrong binary-search boundary. Test the greedy check independently before wrapping in binary search.</div>
+
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="info-box"><strong>Stage 1 — Activity Selection (Exchange Argument)</strong><br>
+                        <em>Claim:</em> Sorting by end time and greedily keeping non-overlapping intervals maximises the count.<br>
+                        • Let G = greedy solution (sorted by end), O = optimal (same sort). Suppose they first differ at position k: G chose interval g, O chose o, with end(g) ≤ end(o).<br>
+                        • Swap o for g in O → O'. Since end(g) ≤ end(o), interval g ends no later than o. Therefore any interval compatible with o after k is also compatible with g. O' is valid and |O'| = |O|.<br>
+                        • Repeat for all differing positions. G transforms to O without reducing count. ∴ G is optimal. □
+                    </div>
+                    <div class="info-box"><strong>Stage 4 — Largest Number (String Comparator)</strong><br>
+                        <em>Claim:</em> Sorting strings by the comparator a+b &gt; b+a produces the largest concatenation.<br>
+                        • Consider any two adjacent strings a, b in the sorted order. If a+b ≥ b+a, then a comes before b.<br>
+                        • Swapping them produces ...b+a... whose concatenation is ≤ ...a+b.... So no swap improves the result — sorted order is globally optimal by the bubble-sort argument.<br>
+                        • <em>Transitivity:</em> must be verified; string concatenation comparison over the same alphabet IS transitive. □
+                    </div>
+                    <div class="info-box"><strong>Stage 4 — Regret Greedy: Minimum Refueling Stops</strong><br>
+                        <em>Claim:</em> The "collect all passed stations in max-heap, refuel from best when empty" strategy minimises refueling stops.<br>
+                        • <em>Invariant:</em> At every moment, the heap holds exactly the stations we could have refueled at and are still available for retrospective use.<br>
+                        • Retrospectively choosing the highest-capacity passed station is equivalent to having made the optimal real-time choice at that station.<br>
+                        • <em>Proof:</em> Consider any optimal O that refuels at station i before our greedy does. Our greedy has the same tank level when reaching i (same route, same prior choices). If greedy later picks a higher-capacity station j &gt; i, it has at least as much fuel at all subsequent points. □
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box"><strong>Bug 1 (Stage 1) — Activity selection: sorting by START instead of END</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: sorts by start — classic wrong answer
+intervals.sort(key=lambda x: x[0])
+# FIX: sort by END time
+intervals.sort(key=lambda x: x[1])</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 2 (Stage 2) — Jump Game II: incrementing steps at wrong position</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: steps for every index, not every jump boundary
+for i in range(n):
+    next_end = max(next_end, i + nums[i])
+    steps += 1
+# FIX: step only when crossing current boundary
+    if i == cur_end and i &lt; n - 1:
+        steps += 1
+        cur_end = next_end</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 3 (Stage 2) — Gas Station: not resetting tank when finding new start</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: tank carries over across candidate start resets
+for i in range(n):
+    tank += gas[i] - cost[i]
+    if tank &lt; 0:
+        start = i + 1
+        # tank = 0  ← MISSING
+# FIX: reset tank to 0 when choosing new start
+        tank = 0</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 4 (Stage 1) — Two City Scheduling: sorting with wrong sign</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># Correct: ascending on (cost_A - cost_B) → small diff = cheaper for A, goes to A
+people.sort(key=lambda x: x[0] - x[1])
+# BUG: flipped sign sends the wrong half to A
+people.sort(key=lambda x: x[1] - x[0])</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 5 (Stage 4) — Largest Number: using integer comparison instead of string concat</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: plain numeric/lexicographic sort
+nums.sort(reverse=True)
+# FIX: compare as concatenated strings
+from functools import cmp_to_key
+nums.sort(key=cmp_to_key(
+    lambda a, b: 1 if str(a)+str(b) &gt; str(b)+str(a) else -1),
+    reverse=True)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 6 (Stage 3) — Task Scheduler: formula misses when all frequencies equal</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: formula can be less than len(tasks) when idle slots = 0
+result = (max_freq - 1) * (n + 1) + count_max_freq
+return result
+# FIX: take max with actual task count
+return max(result, len(tasks))</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 7 (Stage 3) — Meeting Rooms II: not reusing freed rooms</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: always pushes, never reuses
+for start, end in intervals:
+    heapq.heappush(heap, end)
+# FIX: reuse freed room if available
+for start, end in intervals:
+    if heap and heap[0] &lt;= start:
+        heapq.heapreplace(heap, end)
+    else:
+        heapq.heappush(heap, end)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 8 (Stage 4) — Remove K Digits: not stripping leading zeros</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: "0200" returned as-is
+result = ''.join(stack)
+return result
+# FIX:
+return result.lstrip('0') or '0'</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 9 (Stage 4) — Course Schedule III: not tracking cumulative time</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: only checks single course fit; ignores cumulative
+for duration, end in courses:
+    if duration &lt;= end:
+        taken.append(duration)
+# FIX: track running total; regret-swap if exceeded
+    total_time += duration
+    heapq.heappush(max_heap, -duration)
+    if total_time &gt; end:
+        total_time += heapq.heappop(max_heap)  # pops largest</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 10 (Stage 5) — Minimize Deviation: forgetting to re-add halved max</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: pops max, halves it, but doesn't add back
+while max_val % 2 == 0:
+    sorted_set.remove(max_val)
+    max_val //= 2
+    # sorted_set.add(max_val)  ← MISSING
+# FIX: always re-add the halved value
+    sorted_set.add(max_val)
+    deviation = sorted_set[-1] - sorted_set[0]</code></pre>
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] Applying greedy to 0/1 knapsack</strong> — Ratio-based greedy is a common instinct. It is ONLY correct when items are divisible or structure is a matroid. For 0/1 knapsack, two medium items beat one large. <em>Correct model:</em> "Greedy on ratios requires provable independence — verify via exchange argument or matroid."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] Forgetting that exchange argument requires TOTALITY</strong> — If the comparator is not transitive, sort() produces implementation-defined results. <em>Correct model:</em> "If a &lt; b and b &lt; c then a &lt; c. Test with three examples before trusting your comparator."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Not considering the regret mechanism</strong> — Min Refueling Stops and Course Schedule III LOOK like DP because "future info seems necessary." Regret greedy gives the optimal answer because the "best retrospective choice" equals the "best real-time choice." <em>Correct model:</em> "If the best retrospective and best real-time choice are the same element, regret greedy is correct."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Left-to-right greedy on digit problems</strong> — Remove K Digits, Monotone Increasing Digits require right-to-left or a monotone stack because cascading effects propagate rightward. <em>Correct model:</em> "Digit problems with cascading effects need a stack (to undo recent choices) or right-to-left processing."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Missing the input transformation</strong> — Jump Game variants, Min Taps, Talent Show require a non-trivial pre-processing step before greedy. <em>Correct model:</em> "First ask: what is the canonical form? Transform input, THEN apply greedy."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Using &lt; instead of &lt;= for interval overlap</strong> — Balloon problems use &lt;= (touching counts); meeting-room problems use &lt;. One character determines correctness. <em>Correct model:</em> "Always check: does the problem treat touching endpoints as overlapping? Match the comparator precisely."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Two-pass greedy: both passes in the same direction</strong> — For Candy, running both passes left-to-right misses the right-to-left constraint. <em>Correct model:</em> "Directional constraints require one pass in each direction; merge with max() to satisfy both simultaneously."</div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="info-box"><strong>Stage 2 Follow-Ups (Constraint Mutations)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>"What if each interval has a value — maximise total value of non-overlapping intervals?"</td><td>Greedy by end-time now fails (maximises COUNT not VALUE). Use Weighted Job Scheduling DP: sort by end, dp[i] = max(dp[i−1], val[i] + dp[last_non_overlap(i)]) with binary search.</td></tr>
+                        <tr><td>2</td><td>"What if the gas station problem is on a LINE, not a circle?"</td><td>No wrap-around; find leftmost start where running sum never goes negative. Single pass, O(n).</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 3 Follow-Ups (State Expansion)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>3</td><td>"Extend Meeting Rooms II: each room has a capacity; tasks have worker-counts."</td><td>Heap stores (end_time, capacity); assign to the room with earliest end that has sufficient capacity. Sorted set or multi-key heap.</td></tr>
+                        <tr><td>4</td><td>"Task Scheduler but tasks have dependencies (must complete A before B)."</td><td>Frequency approach breaks — dependencies create a DAG. Use topological sort + greedy (always pick highest-frequency available task).</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 4 Follow-Ups (Hidden Reductions)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>5</td><td>"Prove your Largest Number comparator is correct."</td><td>Exchange argument on any adjacent pair a, b: swapping produces b+a ≤ a+b by comparator. Since no swap improves, sorted order is globally optimal.</td></tr>
+                        <tr><td>6</td><td>"What if Candy requires each child gets at most 3 candies?"</td><td>Adds upper bound to directional greedy. Two-pass still works but each pass also enforces ≤ 3: min(max(left_pass, right_pass), 3) at each position.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 5 Follow-Ups (Optimisation Pressure)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>7</td><td>"Minimize Deviation: what if numbers can also be doubled (not just halved)?"</td><td>All odd numbers can be multiplied by 2 once (doubling more is wasteful). Normalise all odds first; then only halving is needed. Same algorithm.</td></tr>
+                        <tr><td>8</td><td>"What if tasks in the scheduler arrive online and you must schedule in real time?"</td><td>Same min-heap; tasks added as they arrive. This is Shortest Remaining Processing Time (SRPT) — optimal for minimising average completion time.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Beyond Stage 5 (Adversarial / Distributed)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>9</td><td>"You're scheduling tasks across 1000 machines in a distributed system. How does greedy scale?"</td><td>Each machine runs a local greedy scheduler; a global coordinator uses a heap of (next_available_time, machine_id). MapReduce-style partitioning: O(n log k) for k machines.</td></tr>
+                        <tr><td>10</td><td>"An adversary designs task sequences to maximise idle time in Task Scheduler. What's the worst case?"</td><td>All tasks frequency 1 and n large → max idle. Adversary sets max_freq ≈ ceil(total / (n+1)). Defence: no algorithm beats max(len(tasks), (max_freq−1)*(n+1)+count_max) — this bound is tight.</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box">
+                        <strong>Phase 1 — Solve (strictly by Stage across all sub-variants):</strong><br>
+                        <em>Stage 1 first:</em> S.No 2 (435) → S.No 3 (452) → S.No 4 (55) → S.No 5 (45) → S.No 1 (1029). After each, write the one-line exchange argument. If you cannot write it, re-solve.<br>
+                        <em>Stage 2 next:</em> S.No 6 (763) → S.No 7 (406) → S.No 8 (134) → S.No 9 (860) → S.No 10 (881). Focus on identifying what ONE thing changed from the previous problem.<br>
+                        <em>Stage 3 next:</em> S.No 11 (253) → S.No 12 (621) → S.No 13 (767) → S.No 14 (1353) → S.No 15 (630). Every problem here introduces a heap. Implement the heap from scratch for the first two.<br>
+                        <em>Stage 4 next:</em> S.No 16 (179) → S.No 17 (135) → S.No 18 (316) → S.No 19 (402) → S.No 20 (1642) → S.No 21 (871) → S.No 22 (1326). For each, write the exchange argument BEFORE looking at the solution.<br>
+                        <em>Stage 5 last:</em> S.No 24 (1834) → S.No 25 (2402) → S.No 26 (1675) → S.No 27 (2071) → S.No 28 (Talent Show) → S.No 29 (Matroid).<br><br>
+                        <strong>Phase 2 — Drill (speed and recognition):</strong><br>
+                        Stage 1/2: under 12 min. Stage 3: under 20 min. Stage 4: under 35 min. <em>Exchange argument drill:</em> for every problem solved, write the 3-step argument in under 3 minutes — your interview proof. <em>Sort-key drill:</em> given a problem, identify the sort key in under 60 seconds before writing code — the sort key IS the solution. <em>Anti-greedy recognition:</em> for trap problems (S.No 30–32), identify in under 30 seconds WHY greedy fails and what replaces it.<br><br>
+                        <strong>Phase 3 — Validate (unseen sources per Stage):</strong><br>
+                        Stage 1/2: AtCoder ABC D/E tagged "greedy" — any 3 unseen. Stage 3: Codeforces Div 2 D tagged "greedy + data structures" — 3 problems. Stage 4: USACO Gold greedy problems from recent years. Stage 5: Codeforces Div 1 C/D tagged "greedy + binary search" — 2 problems.
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                        These three problems are NOT in the table above. Solving all three cold (no hints, no editorial, 45 min each) certifies full mastery.<br><br>
+                        <strong>Test 1 — LC 1686: Stone Game VI</strong> (Stage 3 + Stage 4)<br>
+                        <em>Why valid:</em> The greedy is to sort stones by alice_value + bob_value descending and alternate picks. This is NOT obvious — sorting by either player's value alone is wrong. The sort key comes purely from the exchange argument: "does Alice gain more by taking stone i before j?" Deriving this cold proves Stage 4 mastery. Implementing the alternating simulation proves Stage 3.<br><br>
+                        <strong>Test 2 — CF 1257E: The Contest</strong> (Stage 4 + Stage 5)<br>
+                        <em>Why valid:</em> Requires binary searching on a threshold combined with a greedy feasibility check that itself needs a data structure. A candidate who has not internalised the "greedy inside binary search" pattern (Stage 5) will not recognise the approach. Solving cold under 45 minutes certifies Stage 4+5 fusion.<br><br>
+                        <strong>Test 3 — USACO Gold: Rental Service</strong> (Stage 3 + Stage 4)<br>
+                        <em>Why valid:</em> Disguises a multi-criteria greedy as a farm optimisation problem. Candidate must (1) recognise the greedy structure, (2) derive the correct ordering (sort cows by milk, high-milk cows rented first), and (3) use prefix sums to optimise matching. All three stages firing simultaneously on an unseen USACO problem is the highest bar for greedy mastery.
+                    </div>
+                </div>
+            </div>
             <!-- Advanced Techniques 10-14 -->
             <div class="topic-card" id="tp10"><div class="coming">Content for Sieve of Eratosthenes is coming soon.</div></div>
             <div class="topic-card" id="tp11"><div class="coming">Content for Fenwick Tree / BIT is coming soon.</div></div>
