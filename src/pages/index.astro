@@ -769,7 +769,7 @@
                     <div class="warn-box">🚩 <strong>Missing max(0, gain) in the tree variant</strong> — Always take max(0, childGain) when propagating from children. Forgetting this includes loss-making subtrees in the path sum.</div>
                 </div></div>
             <!-- ══════════════════════════════════════════
-                 TOPIC 6 — MERGE INTERVALS
+                 TOPIC 6 — MERGE INTERVALS (MASTERY)
             ═══════════════════════════════════════════ -->
             <div class="topic-card" id="tp6">
                 <div class="topic-header">
@@ -778,120 +778,336 @@
                         <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
                             <div class="topic-title">Merge Intervals</div>
                             <span class="tier-badge tier-T1">Algorithms</span>
-                            <span class="topic-type">Greedy · Sweep Line</span>
+                            <span class="topic-type">Greedy · Sweep · DP · Segment Tree</span>
                         </div>
-                        <div class="topic-meta">31 problems · merge, insert, depth, scheduling, coverage, calendar conflicts</div>
+                        <div class="topic-meta">37 problems · merge, insert, sweep, coverage, weighted DP, online CRUD, 2-D, circular</div>
                     </div>
                 </div>
                 <div class="topic-body">
-                    <div class="info-box"><strong>Why It Matters:</strong> Merge Intervals is the canonical technique for problems where ranges, time windows, or segments must be collapsed, queried, or scheduled. The core invariant is simple: sort intervals by start time, then greedily merge any new interval that overlaps with the running "current" interval by extending its end to max(current.end, next.end). It appears in nearly every FAANG interview loop because it models real-world problems (calendar scheduling, CPU task assignment, memory allocation, genomic range queries) and because the technique sits at a productive intersection of sorting, greedy reasoning, and sweep-line thinking. Extensions — like inserting into a pre-sorted list, partitioning into groups, or counting overlapping depth — test the engineer's ability to reason about the invariant rather than just recite the algorithm.</div>
-                    <div class="core-box"><strong>Core Invariant:</strong> Sort by start. Maintain a "current" interval. For each next interval: if next.start ≤ current.end, merge by setting current.end = max(current.end, next.end); otherwise, push current to result and start a new current = next. <strong>Key variants:</strong> sort-by-end for removal/coverage; two-pointer for intersection; sweep line with +1/−1 for depth.</div>
+                    <div class="info-box"><strong>Why It Matters:</strong> Merge Intervals models the fundamental computer science primitive of managing contiguous ranges on a linear axis — time slots, memory addresses, genomic base pairs, network port ranges, log timestamps. The core invariant is devastatingly simple: after sorting by start, two closed intervals [a,b] and [c,d] overlap iff c ≤ b. Every single variant in this topic — from classic merge to sweep-line to segment trees — is a direct consequence of this one inequality. It appears at Google, Meta, Stripe, and Jane Street because it tests greedy reasoning, proof justification, and the ability to escalate a simple idea into an online/streaming/2-D context under pressure.</div>
 
-                    <div class="sec-title">Sub-Variants to Master</div>
-                    <div class="pill-grid">
-                        <span class="pill">Merge all overlapping intervals</span>
-                        <span class="pill">Insert into sorted non-overlapping list</span>
-                        <span class="pill">Count minimum rooms / max overlap depth</span>
-                        <span class="pill">Remove minimum to make non-overlapping</span>
-                        <span class="pill">Cover range with minimum intervals</span>
-                        <span class="pill">Partition into fewest groups (colouring)</span>
-                        <span class="pill">Interval intersection (two sorted lists)</span>
-                        <span class="pill">Employee free time (multiple lists)</span>
-                        <span class="pill">Weighted interval scheduling (DP)</span>
-                        <span class="pill">Interval DP (burst balloons, stone merge)</span>
-                        <span class="pill">Interval stabbing / point-coverage</span>
-                        <span class="pill">Online stream insertion (TreeMap)</span>
-                        <span class="pill">Scheduling with gaps (video stitching)</span>
-                        <span class="pill">Minimum arrows to burst balloons</span>
-                        <span class="pill">Meeting scheduler between two people</span>
-                        <span class="pill">k-th earliest event time</span>
-                        <span class="pill">Circular intervals (modular wrap)</span>
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>Think of intervals as paint strokes on a number line.</strong> Merging is asking: after all strokes dry, what are the distinct painted segments? Every sub-variant reduces to this image:<br>
+                        • <strong>Classic merge</strong> → what are the final painted segments?<br>
+                        • <strong>Count overlaps</strong> → at which point is the paint thickest?<br>
+                        • <strong>Insert interval</strong> → add one new stroke, re-report the segments<br>
+                        • <strong>Remove overlaps</strong> → erase minimum strokes so no two wet strokes touch<br>
+                        • <strong>Gap detection</strong> → where are the unpainted gaps?<br>
+                        • <strong>Weighted scheduling</strong> → which strokes to keep to maximise total value?<br><br>
+                        When stuck on any interval problem, return to this image and ask: "What am I computing about this paint?"
                     </div>
 
+                    <div class="sec-title">Core Invariant &amp; Proof Sketch</div>
+                    <div class="core-box">
+                        <strong>Invariant:</strong> After sorting intervals by start time, for any two consecutive intervals I<sub>i</sub> = [a<sub>i</sub>, b<sub>i</sub>] and I<sub>i+1</sub> = [a<sub>i+1</sub>, b<sub>i+1</sub>], they overlap iff a<sub>i+1</sub> ≤ b<sub>i</sub>.<br><br>
+                        <strong>Proof sketch (why sorting by start is sufficient):</strong> Suppose intervals are sorted: a<sub>1</sub> ≤ a<sub>2</sub> ≤ ... ≤ a<sub>n</sub>. If I<sub>i</sub> and I<sub>j</sub> overlap with j &gt; i+1, then a<sub>j</sub> ≤ b<sub>i</sub>. But a<sub>i+1</sub> ≤ a<sub>j</sub> ≤ b<sub>i</sub>, so I<sub>i</sub> and I<sub>i+1</sub> also overlap. Therefore, any non-consecutive overlap is caught by a chain of consecutive overlaps.<br><br>
+                        <strong>Consequence:</strong> We never need to look back more than one step — the greedy single-pass is complete.<br>
+                        <strong>Corollary:</strong> The merged result is unique (order of merging does not matter), which justifies the greedy approach's correctness without needing an exchange argument.
+                    </div>
+
+                    <div class="sec-title">Sub-Variants to Master (18 total with complexity)</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>1. Classic merge</strong> — collapse overlapping into disjoint set · O(n log n) · sorted array + linear scan<br>
+                        <strong>2. Insert &amp; merge</strong> — insert one into already-merged list · O(n) · three-phase walk<br>
+                        <strong>3. Count overlaps / min rooms</strong> — max active at any point · O(n log n) · min-heap of end-times OR diff array + prefix<br>
+                        <strong>4. Interval removal (Activity Selection)</strong> — remove fewest to eliminate overlaps · O(n log n) · sort by end + greedy keep<br>
+                        <strong>5. Interval coverage</strong> — cover [s,e] with fewest intervals · O(n log n) · sort by start, greedy extend reach<br>
+                        <strong>6. Gap / missing-range detection</strong> — unpainted segments within boundary · O(n log n) · sorted merge + sentinels<br>
+                        <strong>7. Interval intersection</strong> — present in BOTH sorted lists · O(m+n) · two-pointer<br>
+                        <strong>8. Interval subtraction</strong> — subtract one interval from another · O(n) · linear scan + fragment split<br>
+                        <strong>9. Weighted non-overlapping selection</strong> — maximise total weight · O(n log n) · DP + binary search (Weighted Job Scheduling)<br>
+                        <strong>10. Point stabbing</strong> — count intervals containing query point · O((n+q) log n) · diff array + coord compression<br>
+                        <strong>11. Online interval insert</strong> — streaming merged state · O(log n) per insert · TreeMap / balanced BST<br>
+                        <strong>12. Online interval CRUD</strong> — add/query/remove dynamically · O(log n + k) per op · sorted map of disjoint intervals<br>
+                        <strong>13. Sweep-line + active set</strong> — skyline, rectangle area · O(n log n) · sorted multiset / segment tree<br>
+                        <strong>14. Range update, point query</strong> — apply +val to [l,r] · O(n+q) · difference array + prefix sum<br>
+                        <strong>15. Range update, range query</strong> — simultaneous update/query · O(n log n) per op · segment tree with lazy propagation<br>
+                        <strong>16. 2-D interval merge (rectangle union)</strong> — union area · O(n log n) · sweep + coord compression + segment tree<br>
+                        <strong>17. Circular intervals</strong> — wrap around modular domain · O(n log n) · split + linear merge + restitch<br>
+                        <strong>18. Multi-list interval merge</strong> — K sorted lists simultaneously · O(N log n) · heap or flatten + sort
+                    </div>
                     <div class="sec-title">Problem Set</div>
                     <div class="tbl-wrap"><table>
                         <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
                         <tbody>
-                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/merge-intervals/" target="_blank">LC 56</a></td><td class="prob-name">Merge Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Core merge: sort by start + linear sweep</td><td class="insight">If current.end ≥ next.start, extend current.end = max(current.end, next.end); else push and restart</td></tr>
-                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/insert-interval/" target="_blank">LC 57</a></td><td class="prob-name">Insert Interval</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Insert + merge into sorted list</td><td class="insight">Three phases: append left non-overlapping, merge all overlapping, append right; O(n) no sort needed</td></tr>
-                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/interval-list-intersections/" target="_blank">LC 986</a></td><td class="prob-name">Interval List Intersections</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two-list intersection via two pointers</td><td class="insight">Intersection exists when max(start1,start2) ≤ min(end1,end2); advance pointer with smaller end</td></tr>
-                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LC 435</a></td><td class="prob-name">Non-overlapping Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Remove minimum to make non-overlapping</td><td class="insight">Sort by end; greedily keep intervals ending earliest; removals = total − kept</td></tr>
-                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452</a></td><td class="prob-name">Minimum Number of Arrows to Burst Balloons</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Pierce all intervals with minimum points</td><td class="insight">Equivalent to #435; sort by end, advance arrow position only when next balloon starts after current arrow</td></tr>
-                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-ii/" target="_blank">LC 253</a></td><td class="prob-name">Meeting Rooms II</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Maximum overlap depth (min rooms)</td><td class="insight">Sort starts and ends separately; two-pointer sweep counts concurrent meetings at peak</td></tr>
-                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms/" target="_blank">LC 252</a></td><td class="prob-name">Meeting Rooms</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Detect any overlap (feasibility check)</td><td class="insight">Sort by start; if any intervals[i].start &lt; intervals[i−1].end → overlap exists</td></tr>
-                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/employee-free-time/" target="_blank">LC 759</a></td><td class="prob-name">Employee Free Time</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Merge across multiple sorted lists + find gaps</td><td class="insight">Merge all intervals; gaps between merged intervals = free time; Hard: input is list of sorted lists, requires flattening or min-heap multi-way merge before gap extraction</td></tr>
-                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-scheduler/" target="_blank">LC 1229</a></td><td class="prob-name">Meeting Scheduler</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Intersect two calendars; find first slot of size duration</td><td class="insight">Two-pointer intersection of free times; check if intersection length ≥ duration</td></tr>
-                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/remove-interval/" target="_blank">LC 1272</a></td><td class="prob-name">Remove Interval</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Subtract/cut an interval from a list</td><td class="insight">Three cases: no overlap, partial left overlap, partial right overlap, full containment</td></tr>
-                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/determine-if-two-events-have-conflict/" target="_blank">LC 2446</a></td><td class="prob-name">Determine if Two Events Have Conflict</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Basic overlap check (two intervals)</td><td class="insight">Two intervals overlap iff start1 ≤ end2 AND start2 ≤ end1</td></tr>
-                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td><span class="lc-link">🔧 Custom</span></td><td class="prob-name">Count Interval Depth at Query Points</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval stabbing + prefix event sweep</td><td class="insight">Coordinate-compress all starts, ends+1, and query points; difference array + prefix sum; answer via binary search; see custom statement below</td></tr>
-                        <tr><td class="num-cell">13</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/remove-covered-intervals/" target="_blank">LC 1288</a></td><td class="prob-name">Remove Covered Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Containment detection (not just overlap)</td><td class="insight">Sort by start asc, then end desc; an interval is covered if a previous interval's end ≥ its end</td></tr>
-                        <tr><td class="num-cell">14</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-number-of-events-that-can-be-attended/" target="_blank">LC 1353</a></td><td class="prob-name">Maximum Number of Events That Can Be Attended</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Greedy event attendance with min-heap</td><td class="insight">Sort by start; min-heap of end times; each day attend event ending soonest</td></tr>
-                        <tr><td class="num-cell">15</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/video-stitching/" target="_blank">LC 1024</a></td><td class="prob-name">Video Stitching</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cover range [0, T] with minimum intervals (gaps allowed)</td><td class="insight">Sort by start; greedy: among clips starting ≤ current_reach, pick one extending furthest</td></tr>
-                        <tr><td class="num-cell">16</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/jump-game-ii/" target="_blank">LC 45</a></td><td class="prob-name trap-name">⚠️ Jump Game II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Same greedy as cover but NOT intervals</td><td class="insight">Jumps can be modeled as intervals [i, i+nums[i]], but this is reach-extension greedy, not merge</td></tr>
-                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/two-best-non-overlapping-events/" target="_blank">LC 2054</a></td><td class="prob-name">Two Best Non-Overlapping Events</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max sum of 2 non-overlapping intervals</td><td class="insight">Sort by end; binary search for last event ending before current start; DP + suffix max</td></tr>
-                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/divide-intervals-into-minimum-number-of-groups/" target="_blank">LC 2406</a></td><td class="prob-name">Divide Intervals Into Minimum Number of Groups</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval colouring = max simultaneous overlaps</td><td class="insight">Sort start and end events; sweep with counter; peak = minimum groups needed (same as meeting rooms II)</td></tr>
-                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-integers-in-ranges/" target="_blank">LC 2276</a></td><td class="prob-name">Count Integers in Ranges</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Online interval insertion into sorted set (TreeMap)</td><td class="insight">Maintain non-overlapping intervals in TreeMap; on each add(l,r), find/merge overlapping neighbors; Hard: O(log n) per op with TreeMap ceiling/floor lookups and careful boundary handling</td></tr>
-                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/data-stream-as-disjoint-intervals/" target="_blank">LC 352</a></td><td class="prob-name">Data Stream as Disjoint Intervals</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Online insertion + merge (same as #2276)</td><td class="insight">TreeMap: key = start, value = end; on add, find overlapping intervals and merge into one entry</td></tr>
-                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-iii/" target="_blank">LC 732</a></td><td class="prob-name">My Calendar III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sweep line with TreeMap to find max k-booking</td><td class="insight">Delta array using TreeMap; +1 at start, -1 at end+1; running prefix sum gives overlap depth; Hard: ordered event map + prefix-sum maximum in O(log n) per op requires non-trivial combination</td></tr>
-                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-ii/" target="_blank">LC 731</a></td><td class="prob-name">My Calendar II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prevent triple-booking: maintain single + double bookings</td><td class="insight">Two interval lists: bookings and overlaps; reject if new booking overlaps any existing overlap</td></tr>
-                        <tr><td class="num-cell">23</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-i/" target="_blank">LC 729</a></td><td class="prob-name">My Calendar I</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prevent double-booking (online sorted insertion)</td><td class="insight">TreeMap: find floor and ceiling of new interval; check for conflict with both neighbors</td></tr>
-                        <tr><td class="num-cell">24</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/the-skyline-problem/" target="_blank">LC 218</a></td><td class="prob-name">The Skyline Problem</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sweep line + multiset on building heights</td><td class="insight">Events = (x, +h) for start and (x, −h) for end; maintain active heights in max-heap/TreeMap; Hard: coincident x-coordinates require meticulous event-sort comparator logic (starts before ends, taller before shorter)</td></tr>
-                        <tr><td class="num-cell">25</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-interval-to-include-each-query/" target="_blank">LC 1851</a></td><td class="prob-name">Minimum Interval to Include Each Query</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sort queries + offline sweep + min-heap</td><td class="insight">Sort both intervals and queries; add intervals starting ≤ query to min-heap keyed by size; evict expired; Hard: offline reindexing back to original order alongside live min-heap eviction adds complexity</td></tr>
-                        <tr><td class="num-cell">26</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-the-number-of-good-partitions/" target="_blank">LC 2963</a></td><td class="prob-name">Count the Number of Good Partitions</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Last occurrence merging → count non-overlapping groups</td><td class="insight">Interval = [first_occurrence, last_occurrence]; merge → answer = 2^(mergedCount-1); Hard: connecting partition logic to merge-intervals count then to exponential combinatorics is a two-step insight reduction</td></tr>
-                        <tr><td class="num-cell">27</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/split-array-largest-sum/" target="_blank">LC 410</a></td><td class="prob-name trap-name">⚠️ Split Array Largest Sum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Looks like interval partitioning but is binary search + greedy</td><td class="insight">Optimal split found by binary searching answer and greedy feasibility check; merge-interval framing is misleading</td></tr>
-                        <tr><td class="num-cell">28</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-taps-to-open-to-water-a-garden/" target="_blank">LC 1326</a></td><td class="prob-name">Minimum Number of Taps to Open to Water a Garden</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Interval cover [0, n] with minimum intervals (same as Video Stitching)</td><td class="insight">Model each tap as interval [i-ranges[i], i+ranges[i]]; apply greedy interval cover; Hard: "tap" framing disguises interval cover pattern, and interval construction from ranges array is non-obvious</td></tr>
-                        <tr><td class="num-cell">29</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/palindrome-rearrangement-queries/" target="_blank">LC 2983</a></td><td class="prob-name">Palindrome Rearrangement Queries</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Interval subtraction + frequency analysis</td><td class="insight">Symmetry-based interval pairing; checks if symmetric halves can be made equal after range swaps; Hard: combining interval difference regions with character frequency matching in symmetric positions requires multiple layered observations</td></tr>
-                        <tr><td class="num-cell">30</td><td><span class="l5">⚠️Trap</span></td><td><span class="lc-link">🔧 Custom</span></td><td class="prob-name trap-name">⚠️ Weighted Interval Scheduling</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Weighted intervals require DP, NOT greedy merge</td><td class="insight">Max-weight non-overlapping subset cannot be solved with greedy merge; requires dp[i] = max(dp[i-1], weight[i] + dp[last non-overlapping]) with binary search; see custom statement below</td></tr>
-                        <tr><td class="num-cell">31</td><td><span class="l5">⚠️Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/burst-balloons/" target="_blank">LC 312</a></td><td class="prob-name trap-name">⚠️ Burst Balloons</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Looks like interval merge but is Interval DP</td><td class="insight">Optimal bursting is NOT merge; it's dp[l][r] = max over last-burst k of (nums[l-1]*nums[k]*nums[r+1] + dp[l][k-1] + dp[k+1][r]); Hard: "last balloon" DP formulation is counter-intuitive and unrelated to greedy merging</td></tr>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/merge-intervals/" target="_blank">LC 56</a></td><td class="prob-name">Merge Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic merge</td><td class="insight">Sort by start; maintain running end = max(end, cur[1]); append when gap appears</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/insert-interval/" target="_blank">LC 57</a></td><td class="prob-name">Insert Interval</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Insert &amp; merge</td><td class="insight">Three-phase walk: copy before, merge overlapping, copy after; no sort needed</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LC 435</a></td><td class="prob-name">Non-overlapping Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval removal (Activity Selection)</td><td class="insight">Sort by end; greedily keep earliest-ending; answer = n − kept</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/interval-list-intersections/" target="_blank">LC 986</a></td><td class="prob-name">Interval List Intersections</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval intersection</td><td class="insight">Two pointers; intersection = [max(a,c), min(b,d)] if valid; advance pointer with smaller end</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms/" target="_blank">LC 252</a></td><td class="prob-name">Meeting Rooms</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Overlap detection (binary)</td><td class="insight">Sort by start; any intervals[i].start &lt; intervals[i-1].end = conflict</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-ii/" target="_blank">LC 253</a></td><td class="prob-name">Meeting Rooms II</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Count overlaps / min rooms</td><td class="insight">Min-heap of end-times; heap size at peak = answer; equivalent to sweep +1/−1</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452</a></td><td class="prob-name">Minimum Arrows to Burst Balloons</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval removal (touching = overlap)</td><td class="insight">Same as 435 but cur.start &lt;= prev.end (not strict &lt;); one comparator change, different semantics</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/partition-labels/" target="_blank">LC 763</a></td><td class="prob-name">Partition Labels</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Disguised merge on char-range intervals</td><td class="insight">Build [first, last] per char; merge; partition boundaries = gaps between merged blocks</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/remove-interval/" target="_blank">LC 1272</a></td><td class="prob-name">Remove Interval</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Interval subtraction</td><td class="insight">Each existing interval produces ≤ 2 fragments: part before cut-start, part after cut-end</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/meeting-scheduler/" target="_blank">LC 1229</a></td><td class="prob-name">Meeting Scheduler</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Intersection + gap with duration filter</td><td class="insight">Intersect two availability lists; first intersection with length ≥ duration is answer</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/summary-ranges/" target="_blank">LC 228</a></td><td class="prob-name">Summary Ranges</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Gap / range compression</td><td class="insight">Compress consecutive integers into [a,b] ranges; foundation for missing-range detection</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/missing-ranges/" target="_blank">LC 163</a></td><td class="prob-name">Find Missing Ranges</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Gap detection with boundary sentinels</td><td class="insight">Walk sorted list; emit gap [prev+1, cur−1] whenever it exists; handle lo/hi sentinels</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/divide-intervals-into-minimum-number-of-groups/" target="_blank">LC 2406</a></td><td class="prob-name">Divide Intervals Into Minimum Groups</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Count overlaps via sweep-line</td><td class="insight">Events: +1 at start, −1 at end+1; sort events; running sum peak = groups needed</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/car-pooling/" target="_blank">LC 1094</a></td><td class="prob-name">Car Pooling</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Difference array on sparse axis</td><td class="insight">+passengers at pickup, −passengers at dropoff; check no prefix sum exceeds capacity</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/employee-free-time/" target="_blank">LC 759</a></td><td class="prob-name">Employee Free Time</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Multi-list merge + gap detection</td><td class="insight">Flatten all employees' schedules, merge globally, return gaps; Hard: input is list-of-lists requiring flatten before merge</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l2">Variants</span></td><td><span class="lc-link">🔧 Custom</span></td><td class="prob-name">Circular Interval Merge</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Circular intervals</td><td class="insight">Split [L,R] where L&gt;R into [L,M−1] and [0,R]; linear merge; restitch boundary; see custom statement below</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-profit-in-job-scheduling/" target="_blank">LC 1235</a></td><td class="prob-name">Maximum Profit in Job Scheduling</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Weighted non-overlapping (DP + binary search)</td><td class="insight">Sort by end; dp[i] = max(dp[i-1], profit_i + dp[bisect(ends, start_i)]); Hard: fuses DP state design, sort, and binary search into one algorithm</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-addition/" target="_blank">LC 370</a></td><td class="prob-name">Range Addition</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Difference array (range update, point query)</td><td class="insight">d[l]+=val, d[r+1]-=val; prefix sum at end; each interval is one update operation</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-i/" target="_blank">LC 729</a></td><td class="prob-name">My Calendar I</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Online insertion (BST sorted set)</td><td class="insight">TreeMap: find predecessor/successor; new interval must not overlap either neighbour</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-ii/" target="_blank">LC 731</a></td><td class="prob-name">My Calendar II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Online insertion + double-booking tracking</td><td class="insight">Maintain second list of overlapping intervals; new interval must not intersect it</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/data-stream-as-disjoint-intervals/" target="_blank">LC 352</a></td><td class="prob-name">Data Stream as Disjoint Intervals</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Online point insert → merge with neighbours</td><td class="insight">Each addNum merges with at most 2 neighbours in sorted set; Hard: bridging two existing intervals simultaneously has subtle boundary cases</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/the-skyline-problem/" target="_blank">LC 218</a></td><td class="prob-name">The Skyline Problem</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sweep-line + sorted multiset / lazy-delete heap</td><td class="insight">Events at starts (add height) and ends (remove height); query current max after each event; Hard: removing stale heights from a max-heap requires lazy deletion or a sorted multiset</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/falling-squares/" target="_blank">LC 699</a></td><td class="prob-name">Falling Squares</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Online interval union + range max (segment tree)</td><td class="insight">Each square's height = side + max height in its x-range; range-max query + range-max update; Hard: requires segment tree with lazy propagation for range-max, not a plain merge</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-iii/" target="_blank">LC 732</a></td><td class="prob-name">My Calendar III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Online intervals + range update, global max</td><td class="insight">Difference array or segment tree with lazy propagation; must answer max-overlap count after each insert online; Hard: online constraint forbids offline sort; lazy segment tree is required</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-module/" target="_blank">LC 715</a></td><td class="prob-name">Range Module</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Online interval CRUD (sorted map)</td><td class="insight">Sorted map of disjoint intervals; add, query, remove all in O(log n + k); Hard: three operations must co-exist with correct boundary arithmetic and no off-by-one</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/amount-of-new-area-painted-each-day/" target="_blank">LC 2158</a></td><td class="prob-name">Amount of New Area Painted Each Day</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Online merge + painted-length delta tracking</td><td class="insight">Jump-pointer: after painting a segment, store pointer to next unpainted position; Hard: naïve revisit is O(n²); amortised O(n log n) only with the jump-pointer</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/rectangle-area-ii/" target="_blank">LC 850</a></td><td class="prob-name">Rectangle Area II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">2-D interval merge (sweep + coord compression)</td><td class="insight">Sweep vertical lines; per x-slab compute y-coverage via 1-D merge of active y-intervals; Hard: 2-D extension requires coordinate compression on both axes and active-set management</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule-iii/" target="_blank">LC 630</a></td><td class="prob-name">Course Schedule III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Greedy scheduling + max-heap eviction</td><td class="insight">Sort by deadline; max-heap of durations; if budget exceeded, evict the longest course (not the current one); Hard: eviction-of-largest insight is non-obvious and cannot be derived from standard interval merge intuition</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://codeforces.com/problemset/problem/915/E" target="_blank">CF 915E</a></td><td class="prob-name">Physical Education Lessons</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Online interval union on huge axis (set of free intervals)</td><td class="insight">Maintain std::set of free intervals; each "mark used" query shrinks set and tracks total free count; Hard: axis up to 2×10⁹ forbids arrays; must use a balanced BST of live free-interval objects</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://usaco.org/index.php?page=viewproblem2&amp;cpid=104" target="_blank">USACO Silver</a></td><td class="prob-name">Haybale Stacking</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Difference array with range-add</td><td class="insight">Each operation adds 1 to [l, r]; final array is prefix sum of difference array; USACO-level because n up to 10⁶ and 10⁵ operations must all be O(n) total</td></tr>
+                        <tr><td class="num-cell">31</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://usaco.org/index.php?page=viewproblem2&amp;cpid=786" target="_blank">USACO Silver</a></td><td class="prob-name">Lifeguards</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Weighted interval removal (remove exactly 1 to minimise coverage loss)</td><td class="insight">Merge all intervals; identify contribution of each to total coverage; removing a non-overlapping interval loses its full length; removing a partially-overlapping one loses overlap delta</td></tr>
+                        <tr><td class="num-cell">32</td><td><span class="l4">Hard</span></td><td><span class="lc-link">🔧 Custom</span></td><td class="prob-name">Point-Stabbing Count Queries</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Point stabbing offline</td><td class="insight">Coordinate-compress all endpoints + query points; difference array +1 at L, −1 at R+1; prefix sums; binary search each query; Hard: combining compression + diff array + binary search for per-query O(log n); see statement below</td></tr>
+                        <tr><td class="num-cell">33</td><td><span class="l4">Hard</span></td><td><span class="lc-link">🔧 Custom</span></td><td class="prob-name">Minimum Interval Coverage of Target Range</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Interval coverage (fewest intervals to cover [s,e])</td><td class="insight">Sort by start; greedy: among intervals with start ≤ current_covered_end+1, pick one maximising end; see statement below</td></tr>
+                        <tr><td class="num-cell">34</td><td><span class="l5">⚠️Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/burst-balloons/" target="_blank">LC 312</a></td><td class="prob-name trap-name">⚠️ Burst Balloons</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Interval DP, not merge</td><td class="insight">Intervals [i,j] are DP sub-problems, NOT ranges to merge; "last balloon burst" inversion → dp[i][j] = max coins; Hard: backwards DP formulation is counter-intuitive and unrelated to sweep/merge</td></tr>
+                        <tr><td class="num-cell">35</td><td><span class="l5">⚠️Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/remove-covered-intervals/" target="_blank">LC 1288</a></td><td class="prob-name trap-name">⚠️ Remove Covered Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Containment ≠ overlap</td><td class="insight">Sort by start desc then end asc; check b ≤ max_end_seen, NOT standard overlap condition; applying classic merge logic gives wrong count</td></tr>
+                        <tr><td class="num-cell">36</td><td><span class="l5">⚠️Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/sliding-window-median/" target="_blank">LC 480</a></td><td class="prob-name trap-name">⚠️ Sliding Window Median</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ "Window" is index range, not value interval</td><td class="insight">Technique is dual-heap balance (two heaps maintaining lower/upper halves); do not model as interval merge; Hard: independent of interval topic entirely</td></tr>
+                        <tr><td class="num-cell">37</td><td><span class="l5">⚠️Trap</span></td><td><span class="lc-link">🔧 Concept</span></td><td class="prob-name trap-name">⚠️ Weighted "merge" intervals</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Greedy merge fails with values</td><td class="insight">If a problem adds "profit per interval, maximise total profit of non-overlapping subset", classic merge is WRONG; use Weighted Job Scheduling DP (see #17); Hard: misclassification is the most common interview mistake at Hard level</td></tr>
                         </tbody></table></div>
 
                     <div class="sec-title">Custom Problem Statements</div>
-                    <div class="info-box"><strong>🔧 #12 — Count Interval Depth at Query Points:</strong> Given N intervals [start_i, end_i] and Q query points, return for each query point p the number of intervals containing p. Constraints: 1 ≤ N, Q ≤ 10⁵, 0 ≤ start_i ≤ end_i ≤ 10⁹, 0 ≤ p ≤ 10⁹. Example: intervals [[1,5],[2,8],[4,7]]; query 3 → 2; query 6 → 2; query 9 → 0. Key Insight: Coordinate-compress all starts, ends+1, and query points. Build a difference array (+1 at start, -1 at end+1). Sort and take prefix sums. Answer each query by binary searching the compressed coordinate array. This is the offline sweep-line extension of merge intervals.</div>
-                    <div class="info-box"><strong>🔧 #30 — Weighted Interval Scheduling:</strong> Given N intervals with start, end, and weight, select a maximum-weight subset of non-overlapping intervals. Constraints: 1 ≤ N ≤ 10⁵, 0 ≤ start_i &lt; end_i ≤ 10⁹, 1 ≤ weight_i ≤ 10⁴. Example: [[1,3,5],[2,5,6],[4,6,5],[6,8,4]] → 10 ([1,3] weight 5 + [4,6] weight 5). Key Insight: Sort by end. dp[i] = max weight using intervals 1..i where interval i is included. Binary search for last j where end[j] ≤ start[i]. dp[i] = max(dp[i-1], weight[i] + dp[j]). Greedy merge cannot optimise weights.</div>
+                    <div class="info-box"><strong>🔧 #16 — Circular Interval Merge:</strong> Given a circle with M units (0 to M−1) and N intervals [L_i, R_i]; an interval is circular if L_i &gt; R_i (wraps around). Return the merged disjoint intervals covering the union. If the full circle is covered, return ["FULL"]. Constraints: 1 ≤ N ≤ 10⁵, 2 ≤ M ≤ 10⁹, 0 ≤ L_i, R_i &lt; M. Example: M=24, [[22,3],[1,5],[4,10],[15,20]] → [[1,10],[15,20],[22,3]]. Key Insight: Split every circular [L,R] with L&gt;R into [L, M−1] and [0, R]. Run standard linear merge over [0, M−1]. Then re-stitch: if first merged interval starts at 0 and last ends at M−1, merge them into one circular interval. O(n log n).</div>
+                    <div class="info-box"><strong>🔧 #32 — Point-Stabbing Count Queries:</strong> Given N intervals [L_i, R_i] and Q query points p_j, return for each query the count of intervals containing p_j. Constraints: 1 ≤ N, Q ≤ 10⁵, 1 ≤ L_i ≤ R_i ≤ 10⁹. Example: intervals=[[1,5],[2,8],[4,10],[7,12]], queries=[3,6,11] → [2, 3, 2]. Key Insight: Coordinate-compress all endpoints + query points. Create difference array: +1 at L_i, −1 at R_i+1. Prefix-sum gives count at each compressed coordinate. For each query, binary search its compressed position. O((N+Q) log N).</div>
+                    <div class="info-box"><strong>🔧 #33 — Minimum Interval Coverage of Target Range:</strong> Given a target range [S, E] and N intervals [L_i, R_i], find the minimum number of intervals needed to completely cover [S, E]. Each interval may be used at most once. If impossible, return -1. Constraints: 1 ≤ N ≤ 10⁵, −10⁹ ≤ S ≤ E ≤ 10⁹. Example: S=1, E=10, [[1,3],[2,6],[5,10],[8,12]] → 2. Key Insight: Sort intervals by start. Greedy: at each step, among all intervals with start ≤ current_covered_end + 1, pick the one maximising end. Advance current_covered_end. O(n log n).</div>
 
-                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="sec-title">Complexity Cheat Sheet</div>
                     <div class="tbl-wrap"><table>
-                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>Key Bottleneck</th></tr></thead>
                         <tbody>
-                        <tr><td class="trigger-phrase">"Merge/combine all overlapping ranges..."</td><td class="trigger-variant">Sort by start; linear sweep; merge when current.end ≥ next.start</td><td class="trigger-breaks">Never breaks for plain merge</td></tr>
-                        <tr><td class="trigger-phrase">"Insert a new interval into a sorted list..."</td><td class="trigger-variant">Three-phase O(n) insertion: skip left, merge overlapping, copy right</td><td class="trigger-breaks">If list is unsorted → must sort first (O(n log n))</td></tr>
-                        <tr><td class="trigger-phrase">"Minimum rooms / workers / resources needed simultaneously..."</td><td class="trigger-variant">Maximum overlap depth; sort start/end events, two-pointer sweep</td><td class="trigger-breaks">If queries are online with updates → need segment tree</td></tr>
-                        <tr><td class="trigger-phrase">"Remove fewest intervals so none overlap..."</td><td class="trigger-variant">Sort by end (not start); greedy keep earliest-ending intervals</td><td class="trigger-breaks">If intervals have weights → requires DP, not greedy</td></tr>
-                        <tr><td class="trigger-phrase">"Cover a full range [0, N] using minimum intervals..."</td><td class="trigger-variant">Greedy coverage: among intervals starting ≤ current_reach, extend to farthest end</td><td class="trigger-breaks">If gaps are not allowed → stricter coverage variant</td></tr>
-                        <tr><td class="trigger-phrase">"Find free / available time slots..."</td><td class="trigger-variant">Merge all busy intervals; gaps = free time</td><td class="trigger-breaks">If multiple calendars → merge each calendar first, then intersect gaps</td></tr>
-                        <tr><td class="trigger-phrase">"How many intervals contain point p / events active at time t..."</td><td class="trigger-variant">Sweep line: +1 at start, −1 at end+1; prefix sum gives depth</td><td class="trigger-breaks">If many queries → offline sweep with coordinate compression</td></tr>
-                        <tr><td class="trigger-phrase">"Calendar conflicts / booking system / prevent double-booking..."</td><td class="trigger-variant">Maintain sorted interval set (TreeMap); check overlap with floor/ceiling</td><td class="trigger-breaks">If triple-booking or k-booking → maintain multiple overlap lists or delta map</td></tr>
-                        <tr><td class="trigger-phrase">"Two sorted interval lists — find all overlapping pairs..."</td><td class="trigger-variant">Two-pointer intersection: advance pointer with smaller end</td><td class="trigger-breaks">If lists are unsorted → sort first</td></tr>
-                        <tr><td class="trigger-phrase">"N buildings — output the silhouette / skyline..."</td><td class="trigger-variant">Sweep line + max-heap or TreeMap on heights</td><td class="trigger-breaks">If buildings are static → can pre-process; if dynamic → segment tree</td></tr>
+                        <tr><td>Classic merge</td><td>O(n log n)</td><td>O(n)</td><td>Sort dominates</td></tr>
+                        <tr><td>Insert &amp; merge</td><td>O(n)</td><td>O(n)</td><td>Linear scan of existing list</td></tr>
+                        <tr><td>Count overlaps (heap)</td><td>O(n log n)</td><td>O(n)</td><td>Heap operations</td></tr>
+                        <tr><td>Count overlaps (sweep)</td><td>O(n log n)</td><td>O(n)</td><td>Sort events</td></tr>
+                        <tr><td>Interval removal (greedy)</td><td>O(n log n)</td><td>O(1) extra</td><td>Sort by end</td></tr>
+                        <tr><td>Interval coverage (greedy)</td><td>O(n log n)</td><td>O(1) extra</td><td>Sort by start</td></tr>
+                        <tr><td>Gap detection</td><td>O(n log n)</td><td>O(n)</td><td>Sort + linear scan</td></tr>
+                        <tr><td>Interval intersection</td><td>O(m + n)</td><td>O(m + n)</td><td>Two-pointer</td></tr>
+                        <tr><td>Interval subtraction</td><td>O(n)</td><td>O(n)</td><td>Linear scan</td></tr>
+                        <tr><td>Weighted job scheduling</td><td>O(n log n)</td><td>O(n)</td><td>DP + binary search</td></tr>
+                        <tr><td>Point stabbing (offline)</td><td>O((n+q) log n)</td><td>O(n+q)</td><td>Coordinate compression</td></tr>
+                        <tr><td>Online insert (TreeMap)</td><td>O(log n) per op</td><td>O(n)</td><td>BST operations</td></tr>
+                        <tr><td>Online CRUD (Range Module)</td><td>O(log n + k) per op</td><td>O(n)</td><td>Boundary merging</td></tr>
+                        <tr><td>Sweep + multiset (Skyline)</td><td>O(n log n)</td><td>O(n)</td><td>Multiset insert/delete</td></tr>
+                        <tr><td>Segment tree lazy (Calendar III)</td><td>O(log n) per op</td><td>O(n)</td><td>Lazy propagation</td></tr>
+                        <tr><td>2-D sweep (Rectangle Area)</td><td>O(n log n)</td><td>O(n)</td><td>Coord compression + seg tree</td></tr>
+                        <tr><td>Circular intervals</td><td>O(n log n)</td><td>O(n)</td><td>Split + merge + restitch</td></tr>
+                        <tr><td>Difference array (Range Add)</td><td>O(n + q)</td><td>O(n)</td><td>Prefix sum pass</td></tr>
                         </tbody></table></div>
 
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box"><strong>Linguistic Triggers (keywords in problem statement):</strong><br>
+                        • "merge all overlapping intervals" → Classic merge; sort by start, greedy extend<br>
+                        • "minimum number of rooms / machines / conference halls" → Count max simultaneous active intervals; sweep-line or min-heap<br>
+                        • "non-overlapping" or "no two intervals overlap" → Either removal (greedy) or weighted selection (DP)<br>
+                        • "free time / available slots / gaps" → Merge first, enumerate gaps between merged blocks<br>
+                        • "insert … into sorted list of intervals" → Three-phase walk (before, overlap, after)
+                    </div>
+                    <div class="info-box"><strong>Structural Triggers (shape of input/output):</strong><br>
+                        • Input is <code>int[][] intervals</code> or <code>List&lt;List&lt;Integer&gt;&gt;</code> of [start, end] pairs → Almost always an interval problem<br>
+                        • Output is a list of intervals → Almost certainly merge or insert variant<br>
+                        • Output is a single integer count where input is intervals → Sweep-line / difference array
+                    </div>
+                    <div class="info-box"><strong>Constraint Triggers (N and value ranges):</strong><br>
+                        • N ≤ 10⁵ and values up to 10⁹ → Coordinate compression required; cannot use plain array for difference array<br>
+                        • N ≤ 10⁵ and online queries → TreeMap / sorted set, not re-sort every time
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="core-box" style="font-family:monospace;font-size:.88em;white-space:pre-wrap;line-height:1.55">
+<strong>Q1:</strong> Does the problem involve ranges/intervals [start, end] on a linear axis?
+  → NO:  Not an interval problem. Stop.
+  → YES: Continue.
+
+<strong>Q2:</strong> Are intervals given all at once (offline) or arrive one-by-one (online)?
+  → OFFLINE: Continue to Q3.
+  → ONLINE:  Go to Q8.
+
+<strong>Q3:</strong> Do you need to COMBINE/COLLAPSE intervals?
+  → YES: Q4.    → NO:  Q5.
+
+<strong>Q4:</strong> Do the intervals carry values/profits?
+  → NO:  Classic Merge (#1) or Insert (#2).
+  → YES: Weighted Job Scheduling DP (#17).
+
+<strong>Q5:</strong> Do you need to COUNT something (rooms, overlaps, groups)?
+  → YES: Sweep-line with +1/−1 events OR min-heap of end-times (#6, #13).
+  → NO:  Q6.
+
+<strong>Q6:</strong> Do you need to REMOVE intervals (minimise overlaps)?
+  → YES: Greedy Activity Selection — sort by end (#3, #7).
+  → NO:  Q7.
+
+<strong>Q7:</strong> Do you need COVERAGE (cover a target range with fewest intervals)?
+  → YES: Greedy interval covering — sort by start, extend reach (#33).
+  → NO:  GAPS? → Gap detection (#11, #12).
+         INTERSECTION of two lists? → Two-pointer (#4).
+         SUBTRACTION? → Fragment scan (#9).
+
+<strong>Q8 (Online):</strong> Do you need only INSERT and QUERY overlap?
+  → YES: TreeMap / SortedList BST (#19, #20).
+  → NO:  Q9.
+
+<strong>Q9 (Online):</strong> Do you need INSERT + REMOVE + QUERY?
+  → YES: Range Module / sorted map of disjoint intervals (#25).
+  → NO:  Q10.
+
+<strong>Q10 (Online):</strong> Do you need RANGE UPDATE + RANGE MAX QUERY?
+  → YES: Segment Tree with lazy propagation (#24, #23).
+  → NO:  SKYLINE / HEIGHT tracking? → Sorted multiset (#22).
+                    </div>
+
                     <div class="sec-title">When This Technique BREAKS</div>
-                    <div class="warn-box">🚩 <strong>Weighted intervals (maximise total value)</strong> — Greedy merge cannot optimise weights; requires DP with binary search for last non-overlapping interval. Standard merge gives wrong answers for weighted variants.</div>
-                    <div class="warn-box">🚩 <strong>Non-contiguous selection (subsequence, not subarray)</strong> — If the problem allows skipping intervals freely with no coverage requirement, it's a DP/knapsack problem, not interval merging.</div>
-                    <div class="warn-box">🚩 <strong>Interval DP (burst balloons, stone merge)</strong> — Problems where optimal solution depends on ORDER of merging require O(n³) interval DP, not O(n log n) sweep.</div>
-                    <div class="warn-box">🚩 <strong>Online queries with modifications AND range queries</strong> — Static merge/sort cannot answer queries after insertions; need a segment tree or interval tree.</div>
-                    <div class="warn-box">🚩 <strong>Touching-but-not-overlapping boundary ambiguity</strong> — Whether [1,3] and [3,5] are "overlapping" depends on open/closed interval semantics. Verify the problem's definition before using ≥ vs >.</div>
-                    <div class="warn-box">🚩 <strong>Circular intervals</strong> — Intervals that wrap around a modular boundary (e.g., [350°, 30°] in angles) require special handling: split into two linear intervals or rotate the domain.</div>
+                    <div class="warn-box">🚩 <strong>Intervals have weights and you want maximum total value</strong> — Greedy merge selects wrong intervals. Use Weighted Job Scheduling DP (binary search + DP sorted by end-time).</div>
+                    <div class="warn-box">🚩 <strong>Intervals arrive online with O(log n) per-op requirement</strong> — Static sort-and-merge is O(n) rebuild per insert. Use TreeMap / SortedList for O(log n) predecessor/successor lookup.</div>
+                    <div class="warn-box">🚩 <strong>Axis is huge (up to 10⁹) and you need a difference array</strong> — Plain array of size 10⁹ causes MLE. Use coordinate compression or a Fenwick tree on compressed coordinates.</div>
+                    <div class="warn-box">🚩 <strong>Circular/modular intervals</strong> — Sort-by-start fails at wrap-around. Split circular intervals at 0/M boundary, run linear merge, then restitch.</div>
+                    <div class="warn-box">🚩 <strong>Intervals are 2-D (rectangles)</strong> — 1-D merge gives wrong area. Use sweep-line on x-axis + 1-D interval merge/segment tree on y-axis.</div>
+                    <div class="warn-box">🚩 <strong>Containment detection (is A fully inside B?)</strong> — Standard overlap check c ≤ b catches containment AND partial overlap — you need the stricter check a ≤ c AND d ≤ b. Classic merge logic silently gives wrong answer here.</div>
+                    <div class="warn-box">🚩 <strong>"Burst Balloons" style problems</strong> — The intervals represent DP sub-problems, not ranges to merge. Use Interval DP (dp[i][j]), not sweep-line.</div>
+                    <div class="warn-box">🚩 <strong>Streaming with hard memory limits</strong> — Storing all intervals for offline sort is impossible. Use reservoir-style online merge or accept approximate answers with a bounded-error sketch.</div>
+
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="info-box"><strong>1. Classic Greedy Merge (#1)</strong><br>
+                        <em>Claim:</em> The sort + single-pass algorithm produces the unique minimum set of disjoint intervals covering the same union.<br>
+                        <em>Invariant:</em> After processing the first k intervals (sorted by start), <code>result</code> contains the correct merged intervals for those k intervals.<br>
+                        <em>Inductive step:</em> At interval k+1 with start s and end e: if s &gt; result.last.end, no previously processed interval reaches s (since all starts ≤ s by sort), so k+1 is disjoint → append. If s ≤ result.last.end, they overlap; <code>max(result.last.end, e)</code> is the correct merged end because no future interval (start ≥ s) can "fill" a gap inside [result.last.start, s−1].<br>
+                        <em>Uniqueness:</em> The merged output is unique because the union set is fixed and the greedy produces the coarsest partition.
+                    </div>
+                    <div class="info-box"><strong>2. Activity Selection / Non-overlapping Removal (#3)</strong><br>
+                        <em>Claim:</em> Greedy "keep the interval with earliest end-time" maximises the number of kept non-overlapping intervals.<br>
+                        <em>Exchange argument:</em> Let G = greedy solution, O = any optimal, both sorted by end-time. If they agree on the first k intervals but differ at k+1 — G picks g, O picks o with end(g) ≤ end(o) (greedy choice). Swap o for g in O: g doesn't overlap with O's (k+2)-th interval (since end(g) ≤ end(o) and O was valid). Count doesn't decrease.<br>
+                        <em>Conclusion:</em> G can be transformed into O without reducing count → G is optimal.
+                    </div>
+                    <div class="info-box"><strong>3. Weighted Job Scheduling DP (#17)</strong><br>
+                        <em>Claim:</em> <code>dp[i] = max(dp[i−1], profit[i] + dp[p(i)])</code> where p(i) = latest job ending before start[i] gives maximum profit.<br>
+                        <em>Observation:</em> For job i, either it is NOT included (best = dp[i−1]) or it IS included (best = profit[i] + best using only jobs ending before start[i] = dp[p(i)]). These two cases are exhaustive and disjoint, so dp[i] is correct.<br>
+                        <em>Complexity:</em> p(i) found via binary search on end-times in O(log n), giving O(n log n) total.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box"><strong>Bug 1 — Forgetting to append the final in-progress interval</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG (running variables variant)
+start, end = intervals[0]
+for cur in intervals[1:]:
+    if cur[0] &lt;= end:
+        end = max(end, cur[1])
+    else:
+        result.append([start, end])
+        start, end = cur
+# FIX: append the last interval AFTER the loop
+result.append([start, end])</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 2 — Wrong overlap condition (strict vs non-strict)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: misses touching intervals like [1,3],[3,5]
+if cur[0] &lt; end:   # should be &lt;=
+# FIX:
+if cur[0] &lt;= end:</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 3 — Sorting by wrong key (start vs end)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG for Activity Selection (Non-overlapping Intervals)
+intervals.sort(key=lambda x: x[0])  # sort by START — wrong for greedy removal
+# FIX: sort by END
+intervals.sort(key=lambda x: x[1])</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 4 — Mutating input array in-place (breaks caller)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG
+intervals.sort()  # mutates original
+# FIX
+intervals = sorted(intervals, key=lambda x: x[0])</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 5 — Meeting Rooms II: push without popping (room not reused)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: allocates new room even when one is free
+for start, end in intervals:
+    heapq.heappush(heap, end)
+# FIX: pop if earliest-ending room is free
+for start, end in intervals:
+    if heap and heap[0] &lt;= start:
+        heapq.heapreplace(heap, end)
+    else:
+        heapq.heappush(heap, end)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 6 — Insert Interval: off-by-one in overlap check</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># CORRECT non-overlap:
+if new[0] &gt; interval[1] or new[1] &lt; interval[0]:
+# BUG variant (excludes touching):
+if new[0] &gt;= interval[1] or new[1] &lt;= interval[0]:</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 7 — Difference array: applying −1 at r instead of r+1</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG
+diff[l] += val
+diff[r] -= val    # should be r+1
+# FIX
+diff[l] += val
+diff[r + 1] -= val</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 8 — Weighted Job Scheduling: binary searching wrong array</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: binary searching on start times
+idx = bisect_right(starts, jobs[i][0]) - 1
+# FIX: binary search on END times to find last job ending before current start
+idx = bisect_right(ends, jobs[i][0]) - 1</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 9 — Integer overflow in rectangle area</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// BUG: int * int for large coordinates
+int area = width * height;          // overflows if width, height &gt; 46340
+// FIX
+long area = (long) width * height;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 10 — My Calendar I: checking only one neighbour</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: only checks predecessor
+prev = tree.floor(start)
+if prev and prev.end &gt; start: return False
+# FIX: must also check successor
+nxt = tree.ceiling(start)
+if nxt and nxt.start &lt; end: return False</code></pre>
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box">🚩 <strong>Applying greedy merge to weighted intervals</strong> — Classic merge has no notion of value — it merges all overlapping intervals regardless. If any interval carries a weight and you need to SELECT a subset, you must use Weighted Job Scheduling DP. This is the single most common wrong approach at the Hard level.</div>
+                    <div class="warn-box">🚩 <strong>Confusing "overlap" with "containment"</strong> — [1,10] and [3,5] overlap AND contain each other. Problems asking to remove covered intervals (LC 1288) require checking a ≤ c AND d ≤ b, not just c ≤ b. Using the overlap check here silently over-counts removals.</div>
+                    <div class="warn-box">🚩 <strong>Forgetting the heap pop in Meeting Rooms II</strong> — Not popping before pushing means you never reuse a freed room, inflating the answer. Always check heap[0] ≤ cur.start before deciding to push vs. heapreplace.</div>
+                    <div class="warn-box">🚩 <strong>Online vs offline conflation</strong> — Collecting all intervals and sorting at the end is wrong for streaming problems (My Calendar, Range Module). It breaks the online contract and will fail any follow-up that asks "what if intervals arrive in real time?"</div>
+                    <div class="warn-box">🚩 <strong>Difference array with values up to 10⁹</strong> — Allocating <code>diff = [0] * (10**9 + 1)</code> causes MLE. Coordinate-compress the endpoints first, then build the difference array on compressed indices only.</div>
+                    <div class="warn-box">🚩 <strong>Not handling the empty input or single-interval edge cases</strong> — Many interval bugs surface only when len(intervals) == 0 or == 1. Always handle these before the loop.</div>
+                    <div class="warn-box">🚩 <strong>Circular interval wraparound</strong> — Treating [22, 3] on a 24-hour clock as a normal interval with start &gt; end causes incorrect sort ordering and false non-overlap conclusions. Always split first.</div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Follow-Up Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>"What's the time complexity? Can you do better than O(n log n)?"</td><td>Sort is the bottleneck; O(n log n) is optimal in comparison-based model (proven by sort lower bound). If input is already sorted, O(n).</td></tr>
+                        <tr><td>2</td><td>"What if intervals are given as a stream — you can't store all of them?"</td><td>Use a balanced BST (TreeMap); insert each interval and merge with neighbours in O(log n). Memory = O(k) where k = current distinct merged intervals.</td></tr>
+                        <tr><td>3</td><td>"What if N = 10⁹ intervals?"</td><td>Can't store; need a streaming/summarisation approach. If intervals are uniform random, reservoir sampling. If structured (e.g. monotone starts), sliding window. Discuss trade-off between exactness and memory.</td></tr>
+                        <tr><td>4</td><td>"How would you parallelise this for a distributed system?"</td><td>Partition intervals by coordinate ranges across machines; each machine merges its partition; a coordinator merges boundary intervals between adjacent partitions. O(n/k) per machine, O(k) merge at coordinator.</td></tr>
+                        <tr><td>5</td><td>"What if intervals can be added AND removed dynamically?"</td><td>Range Module (#25): sorted map of disjoint intervals. Each add/remove is O(log n + k) where k = number of intervals affected.</td></tr>
+                        <tr><td>6</td><td>"For every point x, how many intervals contain x?"</td><td>Offline: difference array + coordinate compression, O((n+q) log n). Online per-query: Fenwick tree / segment tree on compressed coordinates.</td></tr>
+                        <tr><td>7</td><td>"What if endpoints are floating point?"</td><td>Algorithm is identical — float comparison works the same. Beware epsilon issues; use exact rational arithmetic or a problem-specific epsilon if needed.</td></tr>
+                        <tr><td>8</td><td>"Prove your greedy is correct for Activity Selection."</td><td>Exchange argument: any optimal solution can have its choices swapped one-by-one with greedy's choices without reducing the count (see Proof section).</td></tr>
+                        <tr><td>9</td><td>"How would you handle 2-D intervals (rectangles)?"</td><td>Sweep line on x-axis; maintain active y-intervals in a segment tree; compute y-coverage via interval merge on segment tree after each x-event. O(n log n).</td></tr>
+                        <tr><td>10</td><td>"What if the problem asks for the MEDIAN overlap count at any point, not the max?"</td><td>Sweep-line with sorted multiset of depths; at each event record the depth; find median of all recorded depths. Or offline: sort events, track depth array, find median via order statistics.</td></tr>
+                        </tbody></table></div>
 
                     <div class="sec-title">3-Phase Mastery Plan</div>
                     <div class="info-box">
-                        <strong>Phase 1 — Solve (in order):</strong> #1 → #2 → #3 → #4 → #5 → #6 → #13 → #15 → #17 → #22 → #23 → #8 → #20 → #25 → #24 → #28 → #31<br>
-                        Problems 1–3 establish the three pillars: merge, insert, intersect. Problems 4–5 teach the sort-by-end greedy (fundamentally different from sort-by-start merge). Problem 6 trains maximum-depth sweep — the most commonly asked interval variant at Google. Problem 13 introduces containment (not just overlap). Problems 15 + 28 teach the coverage greedy — same algorithm, two different disguises. Problems 20 → 22 → 23 build the online TreeMap insertion skill progressively (easy → hard). Problem 24 (Skyline) is the peak implementation challenge — tackle last in Phase 1.<br><br>
-                        <strong>Phase 2 — Drill:</strong> Before coding, classify each problem as one of these 5 actions: merge / insert / depth / remove / cover. Separately drill sort-by-start vs. sort-by-end; know which variant to use for which action. Time yourself: #1, #2, #3 should be solvable in ≤ 10 minutes each after first pass; #4, #5, #6 in ≤ 15 minutes.<br><br>
-                        <strong>Phase 3 — Validate:</strong> LeetCode contest archive — filter "interval" tag in contest problems; solve 3 unseen problems under 25-minute time limit. Codeforces — problems tagged [greedy][sortings] rated 1500–1800 — many are interval scheduling/coverage in disguise. USACO Silver — "Rental Service", "Paired Up" — use sweep-line + greedy on sorted events.
+                        <strong>Phase 1 — Solve (Build Core Intuition):</strong><br>
+                        Order: #1 → #2 → #3 → #7 → #4 → #6 → #13 → #14 → #8 → #12 → #17 → #19 → #20 → #24 → #25 → #22 → #28<br>
+                        #1 internalises the one invariant: c ≤ b = overlap. #2 masters the three-phase walk. #3 teaches exchange-argument proof for greedy. #7 is the one-character difference from #3. #4 is two-pointer on two sorted lists. #6 min-heap pattern (prove heap size = room count). #13 sweep-line variant — solve BOTH ways. #14 difference array; link to intervals. #8 first disguised interval; practise recognition. #12 gap detection with sentinels. #17 full Weighted Job Scheduling; implement DP + bisect. #19, #20, #24 My Calendar I/II/III — online-insertion ramp. #25 Range Module — hardest online CRUD. #22 Skyline — implement with BOTH heap and multiset. #28 Course Schedule III — eviction-of-largest insight.<br><br>
+                        <strong>Phase 2 — Drill (Speed + Pattern Recognition):</strong><br>
+                        Re-solve #1, #3, #6, #17 on a timer: under 12 minutes each from blank editor. For every problem solved, write its one-line invariant AND its decision-tree path (which Q in the Decision Framework does it resolve at?). Do blind classification: take 10 random LeetCode interval problems; before reading constraints carefully, classify them to a sub-variant using only the title and first sentence. Check classification rate. Implement difference array and sweep-line patterns from memory without referencing any code.<br><br>
+                        <strong>Phase 3 — Validate (Unseen Sources):</strong><br>
+                        AtCoder ABC/ARC problems tagged "intervals" — solve any 5 unseen. Codeforces Div 2 D/E with tags sortings + greedy — solve 3 problems where statements don't mention "interval" but solution requires it. USACO Silver/Gold: "Haybale Stacking", "Lifeguards", "Rental Service" without editorial. Google Kickstart / Hash Code archives — search scheduling or resource-allocation rounds.
                     </div>
 
-                    <div class="sec-title">80% Coverage Set</div>
-                    <div class="coverage-box"><strong>Minimum 10 problems:</strong> <span class="pill">LC 56</span><span class="pill">LC 57</span><span class="pill">LC 986</span><span class="pill">LC 435</span><span class="pill">LC 253</span><span class="pill">LC 759</span><span class="pill">LC 1024</span><span class="pill">LC 352</span><span class="pill">LC 218</span><span class="pill">LC 312 ⚠️</span></div>
-
-                    <div class="sec-title">Red Flags</div>
-                    <div class="warn-box">🚩 <strong>Sorting by end time when you should sort by start (or vice versa)</strong> — Core merge and insert require sort-by-start; minimum removal and arrow/pierce problems require sort-by-end. Mixing these up silently produces wrong answers on all non-trivial inputs.</div>
-                    <div class="warn-box">🚩 <strong>Using current.end ≥ next.start for open intervals</strong> — If interval boundaries are exclusive (open), [1,3) and [3,5) do not overlap; the correct condition is current.end > next.start. Always confirm open vs. closed from the problem statement.</div>
-                    <div class="warn-box">🚩 <strong>Forgetting to take max when extending the merged end</strong> — Writing current.end = next.end instead of current.end = max(current.end, next.end) fails when a shorter interval is fully contained within the current one (e.g., [1,10] followed by [2,4]).</div>
-                    <div class="warn-box">🚩 <strong>Three-phase insert: adding the merged interval too early</strong> — In LC 57, the merged interval must be finalised (after absorbing all overlapping intervals) before being appended; appending it during the merge loop causes duplicates or premature termination.</div>
-                    <div class="warn-box">🚩 <strong>Maximum depth with single sorted event list instead of two separate start/end lists</strong> — Using one event list with tie-breaking instead of the cleaner two-pointer approach over separately sorted starts and ends leads to subtle off-by-one errors at coincident start/end times.</div>
-                    <div class="warn-box">🚩 <strong>Applying greedy merge to a weighted interval problem</strong> — The most conceptually dangerous mistake: greedy merge optimises for coverage or count, never for total weight. If the problem has values/weights attached to intervals, always reach for DP first.</div>
-                    <div class="warn-box">🚩 <strong>Not handling the "no intervals" or "single interval" edge case</strong> — Many implementations start with result.add(intervals[0]) and crash on empty input. Always guard with if (intervals.length == 0) return new int[0][] before any logic.</div>
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                        These three problems are NOT in the table above. Solving all three cold (no hints, no editorial, 45 minutes each) certifies full mastery.<br><br>
+                        <strong>Test 1 — LeetCode 1851: Minimum Interval to Include Each Query.</strong> Why valid: requires simultaneously sorting intervals by SIZE (not start), sorting queries offline, using a min-heap to track active intervals, and answering each query at the right moment. Tests offline sorting, sweep + heap, and query answering fused into one problem in a non-obvious way. A candidate who has only memorised solutions will not recognise the approach.<br><br>
+                        <strong>Test 2 — Codeforces 1000C: Covered Points Count.</strong> Why valid: endpoints up to 10¹⁸ — far beyond any array. Requires coordinate compression, difference array, prefix sum, and careful output of (point, depth) pairs for all points with depth ≥ 2. Pure sweep-line problem disguised as geometry. The 10¹⁸ constraint eliminates any candidate who hasn't internalised coordinate compression as mandatory.<br><br>
+                        <strong>Test 3 — USACO Gold (2019 February): Springboards.</strong> Why valid: interval problem fused with DP and 2-D coordinate queries. You must find, for each springboard, the best previous springboard whose interval "dominates" it, combining sweep-line with a Fenwick tree for 2-D range minimum queries. Highest-difficulty fusion of interval thinking with advanced data structures — the exact ceiling of what Google/Meta Hard interviews reach. Solving it cold demonstrates that your mastery is not just interview-deep but competition-deep.
+                    </div>
                 </div></div>
             <div class="topic-card" id="tp7"><div class="coming">Content for Prefix Sums is coming soon.</div></div>
             <div class="topic-card" id="tp8"><div class="coming">Content for Backtracking is coming soon.</div></div>
