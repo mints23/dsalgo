@@ -1109,7 +1109,387 @@ if nxt and nxt.start &lt; end: return False</code></pre>
                         <strong>Test 3 — USACO Gold (2019 February): Springboards.</strong> Why valid: interval problem fused with DP and 2-D coordinate queries. You must find, for each springboard, the best previous springboard whose interval "dominates" it, combining sweep-line with a Fenwick tree for 2-D range minimum queries. Highest-difficulty fusion of interval thinking with advanced data structures — the exact ceiling of what Google/Meta Hard interviews reach. Solving it cold demonstrates that your mastery is not just interview-deep but competition-deep.
                     </div>
                 </div></div>
-            <div class="topic-card" id="tp7"><div class="coming">Content for Prefix Sums is coming soon.</div></div>
+            <!-- ══════════════════════════════════════════
+                 TOPIC 7 — PREFIX SUMS (MASTERY)
+            ═══════════════════════════════════════════ -->
+            <div class="topic-card" id="tp7">
+                <div class="topic-header">
+                    <div class="topic-num">07</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Prefix Sums</div>
+                            <span class="tier-badge tier-T1">Algorithms</span>
+                            <span class="topic-type">Pre-computation · Hash Map · Difference Array · 2D · BIT</span>
+                        </div>
+                        <div class="topic-meta">30 problems · 5 stages · range queries, difference arrays, prefix XOR, 2D, dynamic BIT</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why It Matters:</strong> Prefix Sums is the foundational pre-computation primitive of competitive programming. The core invariant is: <code>sum(i, j) = prefix[j+1] − prefix[i]</code> — any contiguous subarray sum reduces to a single O(1) subtraction after O(n) preprocessing. This single identity unlocks an enormous class of problems: range sum queries, subarray count problems, 2D rectangle queries, difference arrays for range updates, and hash-map-augmented subarray problems. It appears in virtually every Google/Meta interview round because it tests whether a candidate instinctively pre-computes rather than recomputes — a fundamental signal of algorithmic maturity. At the ICPC/IOI level, prefix sums compose with segment trees, sparse tables, and Fenwick trees to form the backbone of nearly all range query algorithms.</div>
+
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>A prefix sum array is a "running water level"</strong> — <code>prefix[i]</code> is the total water accumulated up to position i. The water between two banks i and j is simply the level at j minus the level at i. You measure the river once; you answer every query in one subtraction.<br><br>
+                        <strong>How the mental model scales through the 5 stages:</strong><br>
+                        • <strong>Stage 1:</strong> <code>prefix[j+1] − prefix[i] = sum of arr[i..j]</code>. One array, one subtraction.<br>
+                        • <strong>Stage 2:</strong> The "water" is not integers but modular residues, XORs, or parities. The subtraction becomes a modular operation or XOR — same shape, different algebra.<br>
+                        • <strong>Stage 3:</strong> The river becomes a 2D lake. <code>prefix[r][c]</code> = total water in the rectangle from (0,0) to (r,c). Inclusion-exclusion replaces the single subtraction.<br>
+                        • <strong>Stage 4:</strong> The problem never says "subarray sum." You must recognise that a condition like <code>sum(i,j) = k</code> is secretly <code>prefix[j] − prefix[i] = k → prefix[i] = prefix[j] − k</code>. The water level is hidden inside a counting or existence question.<br>
+                        • <strong>Stage 5:</strong> There are 10⁹ positions but only 10⁵ updates. The river is sparse. A Fenwick tree or segment tree replaces the static array — the identity <code>prefix[j] − prefix[i]</code> still holds, but each level query is now O(log n).
+                    </div>
+
+                    <div class="sec-title">Core Invariant &amp; Proof Sketch</div>
+                    <div class="core-box">
+                        <strong>Invariant:</strong> For a 1-indexed array <em>a</em>, define <code>prefix[0] = 0</code> and <code>prefix[i] = a[1] + a[2] + ... + a[i]</code>. Then for any 0 ≤ i ≤ j ≤ n:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<code>sum(i+1, j) = prefix[j] − prefix[i]</code><br><br>
+                        <strong>Proof sketch (by telescoping):</strong> By definition, <code>prefix[j] = a[1] + ... + a[j]</code> and <code>prefix[i] = a[1] + ... + a[i]</code>. Subtracting: <code>prefix[j] − prefix[i] = a[i+1] + ... + a[j]</code> — the shared prefix <code>a[1..i]</code> cancels exactly.<br><br>
+                        <strong>Generalisation:</strong> This telescoping works for any associative operation with an inverse: addition (subtraction), XOR (XOR again), multiplication (division if non-zero). It does NOT work for max/min because there is no inverse — this is the fundamental limitation.<br><br>
+                        <strong>2D corollary:</strong> <code>rect(r1,c1,r2,c2) = prefix[r2][c2] − prefix[r1−1][c2] − prefix[r2][c1−1] + prefix[r1−1][c1−1]</code> by inclusion-exclusion on the same telescoping identity applied twice.
+                    </div>
+
+                    <div class="sec-title">Sub-Variants to Master (15 total)</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>1. 1D range sum query</strong> — Stage 1 · O(n) build, O(1) query · static array · <em>New idea:</em> prefix array definition; telescoping subtraction<br>
+                        <strong>2. 1D range sum with modular/XOR algebra</strong> — Stage 2 · O(n) build, O(1) query · static array · <em>New idea:</em> the "subtraction" changes algebra (XOR is its own inverse; mod requires careful handling)<br>
+                        <strong>3. Subarray sum equals K (count)</strong> — Stage 2 · O(n) · hash map on prefix values · <em>New idea:</em> count pairs (i,j) where prefix[j] − prefix[i] = k → frequency map of prefix values<br>
+                        <strong>4. Subarray sum divisible by K (modular)</strong> — Stage 2 · O(n) · hash map on prefix mod K · <em>New idea:</em> (prefix[j] − prefix[i]) % K = 0 → same prefix mod → group by remainder<br>
+                        <strong>5. 2D rectangle sum query</strong> — Stage 3 · O(nm) build, O(1) query · 2D prefix array · <em>New idea:</em> inclusion-exclusion on four corners; prefix is now 2-indexed<br>
+                        <strong>6. 2D rectangle sum count / submatrix target</strong> — Stage 3 · O(n²m) with hash map · 2D prefix + hash map · <em>New idea:</em> fix two rows, reduce to 1D subarray-sum-equals-K on column sums<br>
+                        <strong>7. Difference array (range add, point query)</strong> — Stage 3 · O(n+q) · difference array + prefix sum · <em>New idea:</em> prefix sum's INVERSE operation — store differences, recover values via prefix sum<br>
+                        <strong>8. Difference array 2D (rectangle add, point query)</strong> — Stage 3 · O(nm+q) · 2D difference array · <em>New idea:</em> 2D inclusion-exclusion on the difference array<br>
+                        <strong>9. Prefix sum on transformed values (sqrt, log, boolean)</strong> — Stage 4 · O(n) · static array · <em>New idea:</em> the array being summed is not the raw input — requires a transformation first<br>
+                        <strong>10. Prefix XOR (subarray XOR queries)</strong> — Stage 2 · O(n) build, O(1) query · static array · <em>New idea:</em> XOR is its own inverse, so xor(i,j) = prefix_xor[j] ^ prefix_xor[i−1]<br>
+                        <strong>11. Prefix XOR + hash map (count subarray XOR = k)</strong> — Stage 4 · O(n) · hash map · <em>New idea:</em> same shape as subarray-sum-equals-K but with XOR algebra; requires recognising the reduction<br>
+                        <strong>12. Sparse prefix sum (dynamic updates + queries)</strong> — Stage 5 · O(log n) per op · Fenwick tree / segment tree · <em>New idea:</em> prefix array is no longer static; each update requires partial reconstruction<br>
+                        <strong>13. Prefix sum on a tree (path sum queries)</strong> — Stage 4 · O(n) DFS build, O(1) query with LCA · Euler tour + static prefix · <em>New idea:</em> "prefix" runs down a root-to-node path; sum(u,v) = depth[u] + depth[v] − 2·depth[LCA]<br>
+                        <strong>14. Sliding window prefix (fixed or variable length)</strong> — Stage 4 · O(n) · prefix array + two pointers · <em>New idea:</em> prefix enables O(1) window sum; two-pointer finds the valid window bounds<br>
+                        <strong>15. Circular prefix sum</strong> — Stage 2 · O(n) · prefix array with modular indexing · <em>New idea:</em> wrap-around subarray splits into two segments; handle via total_sum − complement
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed from Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>1D range sum query</td><td>O(n) build + O(1)/query</td><td>O(n)</td><td>Baseline</td></tr>
+                        <tr><td>Modular / XOR algebra</td><td>O(n) + O(1)/query</td><td>O(n)</td><td>Algebra of "subtraction" changes</td></tr>
+                        <tr><td>Subarray sum = K (count)</td><td>O(n)</td><td>O(n)</td><td>Add hash map on prefix values</td></tr>
+                        <tr><td>Subarray sum % K = 0</td><td>O(n)</td><td>O(n)</td><td>Hash map keys are remainders, not values</td></tr>
+                        <tr><td>2D rectangle sum</td><td>O(nm) + O(1)/query</td><td>O(nm)</td><td>Second index dimension added</td></tr>
+                        <tr><td>2D submatrix sum = target</td><td>O(n²m)</td><td>O(nm)</td><td>Compress rows, reduce to 1D via hash map</td></tr>
+                        <tr><td>Difference array 1D</td><td>O(n+q)</td><td>O(n)</td><td>Reverse direction: differences → prefix sum</td></tr>
+                        <tr><td>Difference array 2D</td><td>O(nm+q)</td><td>O(nm)</td><td>2D inclusion-exclusion on differences</td></tr>
+                        <tr><td>Prefix XOR + hash map</td><td>O(n)</td><td>O(n)</td><td>XOR replaces addition; same hash-map pattern</td></tr>
+                        <tr><td>Tree path prefix sum</td><td>O(n) DFS + O(log n) LCA</td><td>O(n)</td><td>Linear → tree topology; needs LCA</td></tr>
+                        <tr><td>Sparse / dynamic updates</td><td>O(log n)/op</td><td>O(n)</td><td>Static array → Fenwick/segment tree</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Mastery Problem Set (30 problems · 5 stages)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant / New Idea</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-immutable/" target="_blank">LC 303</a> Range Sum Query Immutable</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">1D range sum — THE baseline prefix[i] definition</td><td class="insight">Build prefix[0..n] with sentinel; query(i,j) = prefix[j+1] − prefix[i]</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/subarray-sum-equals-k/" target="_blank">LC 560</a> Subarray Sum Equals K</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">1D sum + hash map — count pairs</td><td class="insight">prefix[j] − prefix[i] = k → look up prefix[j] − k in map; running frequency map</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/subarray-sums-divisible-by-k/" target="_blank">LC 974</a> Subarray Sums Divisible by K</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Modular prefix sum — group by remainder</td><td class="insight">(prefix[j] − prefix[i]) % K = 0 ↔ same remainder; negative mod pitfall</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/continuous-subarray-sum/" target="_blank">LC 523</a> Continuous Subarray Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Modular prefix, existence + length constraint</td><td class="insight">Check prefix%K seen before index i−1; store first-occurrence index not count</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/contiguous-array/" target="_blank">LC 525</a> Contiguous Array</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Boolean transform + prefix sum</td><td class="insight">Transform 0→−1; longest subarray with sum=0 becomes prefix[i] = prefix[j]</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/running-sum-of-1d-array/" target="_blank">LC 1480</a> ⚠️ Running Sum of 1D Array</td><td><span class="diff-m">Easy</span></td><td></td><td class="variant-cell">⚠️ TRAP — literally the prefix array itself</td><td class="insight">Included to recognise trivial cases fast; if the ANSWER is the prefix array, no query structure needed</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sum-of-all-odd-length-subarrays/" target="_blank">LC 1588</a> Sum of All Odd Length Subarrays</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix sum counting — contribution per index</td><td class="insight">Count how many odd-length subarrays contain index i; sum by contribution rather than by range</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-value-to-get-positive-step-by-step-sum/" target="_blank">LC 1413</a> Minimum Value to Get Positive Step by Step Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix minimum — lowest water level</td><td class="insight">min(prefix[0..n]) gives lowest level; offset so it never drops below 1</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-2d-immutable/" target="_blank">LC 304</a> Range Sum Query 2D Immutable</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">2D prefix sum — inclusion-exclusion on 4 corners</td><td class="insight">prefix[r][c] = arr + top + left − top-left; query uses 4-point formula</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-submatrices-that-sum-to-target/" target="_blank">LC 1074</a> Number of Submatrices That Sum to Target</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">2D prefix + hash map — row-pair compression</td><td class="insight">Fix row pair, apply 1D subarray-sum=K on column sums; Hard: O(n²m) combines #2 + #9</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/range-addition/" target="_blank">LC 370</a> Range Addition</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Difference array 1D — invert the direction</td><td class="insight">diff[l] += val, diff[r+1] −= val; final array = prefix sum of diff</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/car-pooling/" target="_blank">LC 1094</a> Car Pooling</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Difference array with capacity feasibility</td><td class="insight">Prefix sum of diff must never exceed capacity; sparse axis (stops ≤ 1000)</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l2">Variants</span></td><td>3</td><td>🔧 Custom</td><td class="prob-name">2D Range Add, Point Query</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">2D difference array — inclusion-exclusion on 4 corners</td><td class="insight">diff[r1][c1] += v, diff[r1][c2+1] −= v, diff[r2+1][c1] −= v, diff[r2+1][c2+1] += v; see statement below</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/product-of-array-except-self/" target="_blank">LC 238</a> Product of Array Except Self</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix product — no division allowed</td><td class="insight">Two-pass prefix/suffix product; division explicitly banned → forces the two-array approach</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/product-of-the-last-k-numbers/" target="_blank">LC 1352</a> Product of the Last K Numbers</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix product with dynamic appends; zero-reset</td><td class="insight">When a zero is appended, reset prefix product list; zero invalidates all history before it</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/make-sum-divisible-by-p/" target="_blank">LC 1590</a> Make Sum Divisible by P</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Modular prefix + minimum window — hidden reduction</td><td class="insight">Looks like sum; is secretly subarray-removal: prefix[j] − prefix[i] ≡ total%P; hash map on residues</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/longest-well-performing-interval/" target="_blank">LC 1124</a> Longest Well-Performing Interval</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Transform + prefix + monotone stack</td><td class="insight">Transform hours&gt;8→+1, ≤8→−1; longest prefix[j]&gt;prefix[i] via monotone stack for O(n)</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sum-of-total-strength-of-wizards/" target="_blank">LC 2281</a> Sum of Total Strength of Wizards</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Prefix of prefix (second-order accumulation)</td><td class="insight">Hard: prefix[prefix[]] for sum of all subarray sums with fixed minimum; combined with monotone stack; double-prefix insight is non-obvious</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/can-make-palindrome-from-substring/" target="_blank">LC 1177</a> Can Make Palindrome from Substring</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Prefix XOR on bitmask — character parity</td><td class="insight">prefix_mask[j] ^ prefix_mask[i] = character parity in [i,j]; bitwise prefix XOR on compact state</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-wonderful-substrings/" target="_blank">LC 1915</a> Number of Wonderful Substrings</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prefix XOR bitmask + hash map</td><td class="insight">Count subarrays with at most one odd-frequency character; hash map on bitmask states + iterate all single-bit-flip variants</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-of-range-sum/" target="_blank">LC 327</a> Count of Range Sum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Prefix sum + merge sort / BIT — range condition</td><td class="insight">Hard: equality hash map fails for inequality; need sorted structure (merge sort on prefix or BIT with coord compression)</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/split-array-with-equal-sum/" target="_blank">LC 548</a> Split Array with Equal Sum</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Prefix sum + set intersection — three-way split</td><td class="insight">Hard: fix middle split point; check valid left &amp; right splits exist via prefix sets; O(n²) with set-intersection insight</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Stage 4 → Stage 5 jump. The next problems require <em>dynamic</em> prefix structures (Fenwick / BIT). Make sure you can implement a BIT from scratch before proceeding.</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-mutable/" target="_blank">LC 307</a> Range Sum Query Mutable</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dynamic prefix (Fenwick tree)</td><td class="insight">update(i, delta) and query(i) both O(log n); BIT uses lowbit trick i &amp; (−i)</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-2d-mutable/" target="_blank">LC 308</a> Range Sum Query 2D Mutable</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">2D dynamic prefix (2D BIT)</td><td class="insight">Hard: 2D BIT with nested lowbit walks; update and query both O(log n · log m)</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/longest-increasing-subsequence-ii/" target="_blank">LC 2407</a> Longest Increasing Subsequence II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Prefix max over value range (segment tree)</td><td class="insight">Hard: "prefix" is now over VALUES not INDICES; map value → segment tree position; combines LIS DP with range-max query</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l4">Hard</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/295/A" target="_blank">CF 295A</a> Greg and Array</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Second-order difference array — range-of-ranges</td><td class="insight">Apply difference array twice: operations apply to ranges of indices of operations; prefix-sum twice to recover</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l4">Hard</span></td><td>5</td><td>USACO Silver</td><td class="prob-name"><a class="lc-link" href="https://usaco.org/index.php?page=viewproblem2&amp;cpid=104" target="_blank">Haybale Stacking</a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Difference array on large N</td><td class="insight">Axis up to 10⁶; O(n+q) difference array; no coordinate compression needed; validates static vs dynamic choice</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank">LC 239</a> ⚠️ Sliding Window Maximum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ TRAP — prefix-max has no inverse; use monotone deque</td><td class="insight">max(i..j) cannot be answered by prefix-max subtraction; use monotone deque for sliding window</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/" target="_blank">LC 862</a> ⚠️ Shortest Subarray with Sum at Least K</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ TRAP — inequality ≥ K; hash map fails; monotone deque on prefix</td><td class="insight">≥ K (not = K) → hash map lookup fails; monotone deque on prefix array for O(n); equality→hash map, inequality→deque</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-subarray/" target="_blank">LC 53</a> ⚠️ Maximum Subarray</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — prefix works but Kadane's is canonical</td><td class="insight">Use Kadane's O(1) space; max(prefix[j] − min(prefix[0..j−1])) works but reaching for prefix here signals over-application</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Custom Problem Statements</div>
+                    <div class="info-box"><strong>🔧 #13 — 2D Range Add, Point Query:</strong> Given an N×M grid initialised to all zeros, process Q operations. Each operation is (r1, c1, r2, c2, v): add v to every cell (r, c) where r1 ≤ r ≤ r2 and c1 ≤ c ≤ c2. After all operations, answer P point queries: what is the value at cell (r, c)?<br>
+                        <strong>Constraints:</strong> 1 ≤ N, M ≤ 1000, 1 ≤ Q, P ≤ 10⁵, 1 ≤ v ≤ 100.<br>
+                        <strong>Example:</strong> N=3, M=3; ops=[(1,1,2,2,5), (2,2,3,3,3)]; queries=[(1,1),(2,2),(3,3)] → [5, 8, 3].<br>
+                        <strong>Intended solution:</strong> Maintain 2D difference array <code>diff[N+2][M+2]</code>. For each op (r1,c1,r2,c2,v):<br>
+                        &nbsp;&nbsp;<code>diff[r1][c1] += v; diff[r1][c2+1] −= v; diff[r2+1][c1] −= v; diff[r2+1][c2+1] += v</code><br>
+                        After all ops, compute 2D prefix sum of diff to recover the grid. O(NM + Q) total.
+                    </div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box"><strong>Linguistic Triggers:</strong><br>
+                        • "sum of elements between index i and j" → Stage 1 — direct range query; build prefix array<br>
+                        • "number of subarrays with sum equal to k" → Stage 2 — prefix[j] − prefix[i] = k; hash map on prefix values<br>
+                        • "add v to all elements in range [l,r], then query point" → Stage 3 — difference array (inverse prefix)<br>
+                        • "submatrix sum" or "rectangle sum" → Stage 3 — 2D prefix with inclusion-exclusion<br>
+                        • "count subarrays where [some property of sum holds]" → Stage 4 — transform property into prefix condition; check what algebra applies
+                    </div>
+                    <div class="info-box"><strong>Structural Triggers:</strong><br>
+                        • Input is an array + multiple (l, r) range queries with no updates → Stage 1/2, static prefix array<br>
+                        • Input is an array + multiple (l, r, v) range updates + point queries → Stage 3, difference array<br>
+                        • Input is a 2D grid + rectangle queries or updates → Stage 3, 2D prefix or 2D difference array
+                    </div>
+                    <div class="info-box"><strong>Constraint Triggers:</strong><br>
+                        • N ≤ 10⁵ with Q ≤ 10⁵ queries AND updates → Stage 5; static prefix rebuild is O(n) per update → use Fenwick tree<br>
+                        • Values up to 10⁹ and N ≤ 10⁵ with no updates → Stage 1–4; static prefix is fine
+                    </div>
+                    <div class="warn-box"><strong>Anti-Triggers (when NOT to use prefix sums):</strong><br>
+                        🚩 "maximum subarray" or "maximum of subarray [i..j]" → NOT prefix sum (max has no inverse) → Kadane's algorithm or sparse table (static) or segment tree (dynamic)<br>
+                        🚩 "number of subarrays with sum ≥ k" → NOT hash-map prefix (inequality ≠ equality) → Monotone deque on prefix (LC 862) or binary search + BIT<br>
+                        🚩 "sum of all subsets" → NOT prefix sum; it's a bitmask/combinatorics problem counting each element's contribution across 2ⁿ subsets
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="core-box" style="font-family:monospace;font-size:.88em;white-space:pre-wrap;line-height:1.55">
+<strong>Q1:</strong> Does the problem ask about a contiguous range (subarray,
+    submatrix, path segment) of an array/grid?
+  → NO:  Not a prefix sum problem. Stop.
+  → YES: Continue.
+
+<strong>Q2:</strong> Are there UPDATES to array values between queries?
+  → YES: Go to Q8 (dynamic prefix — Stage 5).
+  → NO:  Continue.
+
+<strong>Q3:</strong> Is the query asking for RANGE SUM (or equivalent: XOR,
+    product, count of property)?
+  → NO:  Go to Q7.
+  → YES: Continue.
+
+<strong>Q4:</strong> Is the answer a single range sum value?
+  → YES: Stage 1 — build prefix array, answer = prefix[j+1] − prefix[i].
+         Expected complexity: O(n) build + O(1)/query.
+  → NO:  Continue (you need to count pairs or find a target).
+
+<strong>Q5:</strong> Is the condition an EQUALITY (sum = k, sum % k = 0, XOR = k)?
+  → YES: Stage 2 — hash map on prefix values.
+         Key: transform "sum(i,j) = k" → "prefix[j] − k exists in map".
+         Expected complexity: O(n).
+  → NO:  Go to Q6.
+
+<strong>Q6:</strong> Is the condition an INEQUALITY (sum ≥ k, sum in [lo, hi])?
+  → YES: ⚠️ Hash map BREAKS here.
+         Stage 5 — monotone deque (if sliding window) or
+         merge sort / BIT with coordinate compression (if arbitrary).
+         Expected complexity: O(n log n).
+  → NO:  Recheck problem statement.
+
+<strong>Q7:</strong> Are you applying RANGE UPDATES (add v to [l,r]) and then
+    reading point values?
+  → YES: Stage 3 — difference array.
+         diff[l] += v, diff[r+1] −= v; final values = prefix sum of diff.
+         Expected complexity: O(n + q).
+  → NO:  Is the input 2D?
+         → YES: Stage 3 — 2D prefix or 2D difference array.
+         → NO:  Does the problem have a hidden linear structure?
+                → YES: Stage 4 — identify the transformation first.
+
+<strong>Q8 (Dynamic):</strong> Do you need POINT UPDATES + PREFIX QUERIES?
+  → YES: Stage 5 — Fenwick tree (BIT). O(log n) per op.
+  → NO:  Do you need RANGE UPDATES + RANGE QUERIES?
+         → YES: Stage 5 — Segment tree with lazy propagation.
+                Expected complexity: O(log n) per op.
+
+<strong>Stage identification summary:</strong>
+  Q4 YES → Stage 1. O(n) build, O(1) query.
+  Q5 YES → Stage 2. O(n) total.
+  Q7 YES → Stage 3. O(n+q).
+  Hidden transform needed → Stage 4. O(n) after transform.
+  Updates present → Stage 5. O(log n) per op.
+  If your solution is slower than these bounds, look for the
+  Stage 5 data structure optimisation.
+                    </div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="warn-box">🚩 <strong>Range MAX or MIN queries (no inverse exists)</strong> — max(i..j) cannot be expressed as f(prefix[j]) − f(prefix[i]) because max has no inverse operation. [Stage 1–2 mistake] → Sparse Table (O(1), static) or Segment Tree (O(log n), dynamic).</div>
+                    <div class="warn-box">🚩 <strong>Inequality conditions on subarray sums (≥ k, ≤ k, ∈ [lo,hi])</strong> — Hash map lookup requires exact equality. [Stage 2 mistake] → Monotone Deque for contiguous window variants; Merge Sort on Prefix Array / BIT with coordinate compression for arbitrary ranges.</div>
+                    <div class="warn-box">🚩 <strong>Dynamic updates to the array (online, streaming)</strong> — Rebuilding the entire prefix array after each update is O(n) per update = O(nq) total. [Stage 5 mistake] → Fenwick Tree (BIT) for point updates + prefix queries; Segment Tree for range updates + range queries.</div>
+                    <div class="warn-box">🚩 <strong>Non-associative operations (e.g. GCD, LCM of a range)</strong> — GCD has no simple inverse (gcd(a,b) − gcd(a,c) ≠ gcd(b,c)). [Stage 1 mistake] → Sparse Table for static GCD/LCM range queries in O(1).</div>
+                    <div class="warn-box">🚩 <strong>2D difference array with overlapping boundaries</strong> — A common Stage 3 mistake is applying 1D logic to 2D — forgetting the +v at (r2+1, c2+1) (inclusion-exclusion term). [Stage 3 mistake] → Always derive the 2D formula from first principles: four corners, alternating signs.</div>
+                    <div class="warn-box">🚩 <strong>Circular/wrap-around subarrays</strong> — prefix[j] − prefix[i] breaks when the subarray wraps around index 0. [Stage 2 mistake] → Handle as total_sum − (non-wrapping complement), or double the array and apply standard prefix on arr + arr.</div>
+                    <div class="warn-box">🚩 <strong>Very large axis (up to 10⁹) with sparse updates</strong> — A static array of size 10⁹ causes MLE. [Stage 5 mistake] → Coordinate-compress endpoints to O(q) distinct values, then apply difference array or BIT on compressed indices.</div>
+
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="info-box"><strong>Stage 1 — 1D Range Sum (Telescoping Invariant)</strong><br>
+                        <em>Claim:</em> prefix[j] − prefix[i] = a[i+1] + ... + a[j] for all 0 ≤ i ≤ j.<br>
+                        <em>Proof by definition and telescoping:</em> Define prefix[0] = 0; prefix[k] = prefix[k−1] + a[k] for k ≥ 1. Then prefix[j] − prefix[i] = (a[1]+...+a[j]) − (a[1]+...+a[i]) = a[i+1]+...+a[j]. □<br>
+                        <em>Note:</em> Correctness is unconditional — no edge cases beyond index bounds.
+                    </div>
+                    <div class="info-box"><strong>Stage 2 — Subarray Sum Equals K (Hash Map Correctness)</strong><br>
+                        <em>Claim:</em> The running hash-map algorithm counts exactly the number of pairs (i,j) with i &lt; j and sum(i+1..j) = k.<br>
+                        <em>Proof by invariant maintenance:</em><br>
+                        • Invariant: at step j, freq[v] = number of indices i ≤ j with prefix[i] = v.<br>
+                        • At each step, we query freq[prefix[j] − k] = number of i &lt; j with prefix[i] = prefix[j] − k = number of valid left endpoints for subarrays ending at j.<br>
+                        • We initialise freq[0] = 1 (empty prefix at i=0), ensuring subarrays starting from index 1 are counted.<br>
+                        • We update freq[prefix[j]] AFTER querying, preventing i = j from being counted. □
+                    </div>
+                    <div class="info-box"><strong>Stage 3 — Difference Array (Inverse Correctness)</strong><br>
+                        <em>Claim:</em> After applying all (l, r, v) operations to diff, computing prefix_sum(diff) recovers the final array value at every index.<br>
+                        <em>Proof by linearity:</em> Each operation contributes v to every index in [l, r]. Encoding as diff[l] += v, diff[r+1] −= v means prefix_sum(diff)[i] = Σ v over all operations where l ≤ i ≤ r. This holds because for operation (l, r, v), prefix sum accumulates v starting at l (where it was added) and stops at r+1 (where it was subtracted). The contribution to index i is v iff l ≤ i ≤ r. □
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box"><strong>Bug 1 (Stage 1) — Off-by-one: 0-indexed vs 1-indexed prefix array</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: prefix has same length as arr; prefix[0] = arr[0], not 0
+prefix = [0] * n
+for i in range(n): prefix[i] = prefix[i-1] + arr[i]  # prefix[-1] wraps!
+# FIX: use n+1 length with sentinel
+prefix = [0] * (n + 1)
+for i in range(n): prefix[i+1] = prefix[i] + arr[i]
+# query sum(i,j): prefix[j+1] - prefix[i]</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 2 (Stage 2) — Subarray sum = K: updating map BEFORE querying</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: counts i==j (empty subarray matching k=0 incorrectly)
+for j in range(n):
+    freq[prefix[j]] += 1           # update first
+    count += freq[prefix[j] - k]   # then query — counts prefix[j] itself
+# FIX: query first, then update
+for j in range(n):
+    count += freq[prefix[j] - k]
+    freq[prefix[j]] += 1</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 3 (Stage 2) — Modular prefix: negative modulo in Java/C++</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// BUG in Java: (-1) % 5 = -1, not 4
+int rem = prefix % k;
+// FIX: normalise remainder
+int rem = ((prefix % k) + k) % k;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 4 (Stage 2) — Circular subarray: using prefix directly without complement</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: prefix[j]-prefix[i] doesn't handle wrap-around
+# FIX: max subarray sum in circular array
+max_wrap = total - min_subarray_sum(arr)   # complement approach
+answer = max(max_linear, max_wrap)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 5 (Stage 3) — 2D prefix: wrong query formula (missing −1 on boundaries)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG
+query = prefix[r2][c2] - prefix[r1][c2] - prefix[r2][c1] + prefix[r1][c1]
+# FIX (1-indexed prefix with sentinel row/col of zeros)
+query = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1]</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 6 (Stage 3) — Difference array: applying −v at r instead of r+1</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG
+diff[l] += v
+diff[r] -= v      # wrong: subtracts one position too early
+# FIX
+diff[r + 1] -= v</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 7 (Stage 3) — 2D difference array: missing the (+v) at (r2+1, c2+1)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: only three of the four corners updated
+diff[r1][c1]     += v
+diff[r1][c2+1]   -= v
+diff[r2+1][c1]   -= v
+# MISSING: diff[r2+1][c2+1] += v  ← inclusion-exclusion demands this
+# FIX: all four corners
+diff[r2+1][c2+1] += v</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 8 (Stage 4) — Prefix XOR: using subtraction instead of XOR for range query</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG
+xor_range = prefix_xor[j] - prefix_xor[i-1]   # subtraction is wrong for XOR
+# FIX: XOR is its own inverse
+xor_range = prefix_xor[j] ^ prefix_xor[i-1]</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 9 (Stage 5) — Fenwick tree: querying prefix sum instead of range sum</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: range sum query returns prefix[r] - prefix[l] (should be prefix[l-1])
+def range_sum(l, r):
+    return query(r) - query(l)       # off by one: excludes a[l]
+# FIX
+    return query(r) - query(l - 1)</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 10 (Stage 5) — Fenwick tree: 0-indexed array with 1-indexed BIT (index shift)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: updating BIT at index 0 causes infinite loop in lowbit walk
+bit = [0] * (n + 1)
+def update(i, delta):
+    while i &lt;= n:            # if i starts at 0, loop never executes
+        bit[i] += delta
+        i += i &amp; (-i)
+# FIX: always 1-index the BIT; shift all input indices by +1
+update(i + 1, delta)
+query(i + 1)</code></pre>
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1] Initialising prefix array of size n instead of n+1</strong> — Without the sentinel prefix[0] = 0, you cannot represent the subarray starting at index 0. Every range query is off by one. <em>Correct model:</em> "prefix[i] = sum of first i elements; prefix[0] = 0 always."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Using hash map for inequality conditions (≥ k, ≤ k)</strong> — Hash maps only resolve exact equality. <em>Correct model:</em> "Inequality requires a sorted structure — deque, BIT, or merge sort."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 2] Not initialising freq[0] = 1 before the loop</strong> — This misses subarrays that start from index 0. A subarray [0..j] has sum = prefix[j] − 0 = prefix[j]. <em>Correct model:</em> "The empty prefix (before index 0) is a valid left boundary."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Confusing difference array direction</strong> — Applying diff[l]+=v, diff[r]-=v (forgetting the +1 on r) when the interval is inclusive [l,r] subtracts one position too early, corrupting index r. <em>Correct model:</em> "Subtract at the position AFTER the endpoint — prefix sum must carry the value through r."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Trying to apply prefix sums to MAX/MIN queries</strong> — A candidate drilled on prefix sums will attempt prefix_max[j] − prefix_max[i] for range max. Algebraically unsound. <em>Correct model:</em> "Only operations with an inverse (+, XOR, ×) support the prefix trick. Max/min have no inverse."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Rebuilding static prefix after each update (O(n) per update)</strong> — For n=10⁵ and q=10⁵ updates, this is 10¹⁰ ops. <em>Correct model:</em> "Any update invalidates all subsequent prefix values — you need a data structure designed for dynamic prefixes."</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Computing 2D prefix sum in wrong order (column before row)</strong> — Building prefix[i][j] requires prefix[i-1][j], prefix[i][j-1], prefix[i-1][j-1] all finalised. <em>Correct model:</em> "Always iterate rows outer, columns inner — or verify all dependencies are filled before use."</div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="info-box"><strong>Stage 2 Follow-Ups (Constraint Mutations)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>"Your solution handles sum = k. What if the condition is sum ≥ k?"</td><td>Hash map breaks; need monotone deque on prefix array (LC 862 pattern). O(n).</td></tr>
+                        <tr><td>2</td><td>"What if the array contains negative numbers — does your approach still work?"</td><td>Yes for sum=k with hash map (Stage 2); No for sliding window approaches that assume positivity. Clarify which variant is being asked.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 3 Follow-Ups (State Expansion)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>3</td><td>"Extend to 2D: count submatrices with sum = target."</td><td>Fix two row boundaries (O(n²)), reduce to 1D subarray-sum-equals-K on column prefix sums. O(n²m).</td></tr>
+                        <tr><td>4</td><td>"Now add range-update operations: add v to all elements in [l,r], then answer sum queries."</td><td>Difference array for updates (O(1)), prefix sum rebuilt after all updates — or BIT for mixed online update+query.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 4 Follow-Ups (Hidden Reductions)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>5</td><td>"The array has only 0s and 1s. Count subarrays with equal 0s and 1s."</td><td>Transform: 0→−1, 1→+1. Count subarrays with sum=0. Now it's a Stage 2 problem.</td></tr>
+                        <tr><td>6</td><td>"Count subarrays where XOR of all elements equals k."</td><td>Prefix XOR: xor(i..j) = prefix_xor[j] ^ prefix_xor[i−1]. Hash map on prefix XOR values. Same shape as Stage 2, different algebra.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Stage 5 Follow-Ups (Optimisation Pressure)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>7</td><td>"Now the array is updated with point changes between queries. What changes?"</td><td>Static prefix is O(n) rebuild per update. Use Fenwick Tree: O(log n) update + O(log n) prefix query.</td></tr>
+                        <tr><td>8</td><td>"What if you need both range-update AND range-sum queries dynamically?"</td><td>Fenwick tree alone is insufficient. Use two BITs (the classic BIT range-update trick) or a segment tree with lazy propagation.</td></tr>
+                        </tbody></table></div>
+                    <div class="info-box"><strong>Beyond Stage 5 (Distributed / Adversarial)</strong></div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td>9</td><td>"The array is distributed across 100 machines. How do you answer range sum queries?"</td><td>Each machine stores a prefix sum of its local shard. Query the boundary machine and combine. Global prefix = sum of all shard totals up to the relevant machine.</td></tr>
+                        <tr><td>10</td><td>"An adversary is adding elements in real time; maintain the count of subarrays with sum=k at all times."</td><td>Each new element a[n] extends the prefix by one value. Count new pairs: freq[prefix[n]−k] where freq is the running hash map. O(1) per new element — the online extension of LC 560.</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box">
+                        <strong>Phase 1 — Solve (strictly by Stage across all sub-variants):</strong><br>
+                        <em>Stage 1 first:</em> S.No 1 (303), S.No 9 (304), S.No 23 (307) in that order. Build the prefix identity in 1D, then 2D, then dynamic. Do not proceed until you can write all three from memory.<br>
+                        <em>Stage 2 next:</em> S.No 2 (560), S.No 3 (974), S.No 4 (523), S.No 5 (525). Each adds one mutation. Then S.No 19 (1177) for XOR algebra. Feel the hash-map pattern click into a single reusable template.<br>
+                        <em>Stage 3 next:</em> S.No 11 (370), S.No 12 (1094), S.No 13 (🔧 2D diff), S.No 14 (238), S.No 10 (1074). Difference array and 2D prefix in one pass.<br>
+                        <em>Stage 4 next:</em> S.No 16 (1590), S.No 17 (1124), S.No 20 (1915), S.No 21 (327), S.No 18 (2281). Hardest recognition problems — spend the most time here.<br>
+                        <em>Stage 5 last:</em> S.No 24 (308), S.No 25 (2407), S.No 26 (CF 295A).<br><br>
+                        <strong>Phase 2 — Drill (speed and recognition):</strong><br>
+                        Stage 1: target under 8 min from blank editor. Stage 2: under 15 min. Stage 3: under 20 min. Stage 4: under 35 min. Recognition drill — given only the title, name the Stage before reading; aim for 90% accuracy. Template drill — write hash-map prefix template (Stage 2) and Fenwick tree (Stage 5) from memory 3 times each until zero lookup needed.<br><br>
+                        <strong>Phase 3 — Validate (unseen sources per Stage):</strong><br>
+                        Stage 1: AtCoder ABC tagged "prefix-sums" — any 3 unseen. Stage 2: Codeforces Div 2 C/D tagged hashing + prefix — 3 problems. Stage 3: USACO Silver "Haybale Stacking" variants in recent contests. Stage 4: Google Kickstart archives — search "count subarrays" from 2019–2023. Stage 5: Codeforces Div 1 D tagged data structures + prefix — 2 problems.
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                        These three problems are NOT in the table above. Solving all three cold (no hints, no editorial, 45 min each) certifies full mastery.<br><br>
+                        <strong>Test 1 — LC 1508: Range Sum of Sorted Subarray Sums</strong> (Stage 3 + 4)<br>
+                        <em>Why valid:</em> The candidate must first compute all subarray sums using prefix arrays, then binary search on a "how many subarray sums ≤ x" predicate using prefix sums again inside the binary search. Prefix sums are used TWICE at different levels of abstraction. A candidate who only knows Stage 1 will produce an O(n² log n) sort-based solution; Stage 4 mastery yields O(n log(sum) · n) with binary search.<br><br>
+                        <strong>Test 2 — Codeforces 1398C: Good Subarrays</strong> (Stage 2 + 4)<br>
+                        <em>Why valid:</em> The problem states a condition on subarrays that does not obviously involve sums. The candidate must derive that the condition implies a constraint on prefix values, then apply the counting technique. Solving cold means the candidate recognises prefix-sum applicability when it is not stated.<br><br>
+                        <strong>Test 3 — LC 2281: Sum of Total Strength of Wizards</strong> (Stage 4 + 5)<br>
+                        <em>Why valid:</em> Requires prefix sum of prefix sums (second-order accumulation) combined with a monotone stack — two advanced techniques fused without any hint from the problem statement. Passing cold demonstrates that the prefix-sum mental model scales to non-obvious compositions — the highest bar for mastery.
+                    </div>
+                </div>
+            </div>
             <div class="topic-card" id="tp8"><div class="coming">Content for Backtracking is coming soon.</div></div>
             <div class="topic-card" id="tp9"><div class="coming">Content for Greedy is coming soon.</div></div>
             <!-- Advanced Techniques 10-14 -->
