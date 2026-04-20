@@ -2282,7 +2282,443 @@ while max_val % 2 == 0:
             <div class="topic-card" id="tp14"><div class="coming">Content for LIS O(N log N) is coming soon.</div></div>
 
             <!-- Data Structures 15-18 -->
-            <div class="topic-card" id="tp15"><div class="coming">Content for Top K Elements is coming soon.</div></div>
+            <div class="topic-card" id="tp15">
+                <div class="topic-header">
+                    <div class="topic-num">10</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Top K Elements — Heap / Priority Queue</div>
+                            <span class="tier-badge tier-T1">Data Structures</span>
+                            <span class="topic-type">Heap Gate · Scheduler · Multi-Source Merge · Two-Heap Split · Retroactive Greedy · QuickSelect</span>
+                        </div>
+                        <div class="topic-meta">42 problems · 5 stages · size-K gate, scheduler, multi-source merge, two-heap split, retroactive greedy, QuickSelect, bucket sort, binary search on value</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why This Topic Matters:</strong> The Heap / Priority Queue / Top K Elements cluster solves one precisely-defined class of problems: given n items and a criterion, efficiently identify, maintain, or repeatedly extract the best K items without fully sorting all n. The core invariant is: you never need to know the exact rank of all n elements — you only need to maintain a boundary element (the K-th best so far) and a structure that efficiently evicts anything worse than that boundary. This pattern dominates interviews because it sits at the intersection of three fundamental techniques: heap-based online maintenance O(n log K), QuickSelect-based offline selection O(n) expected, and bucket/counting-based linear-time selection O(n) when value range is bounded. It escalates into multi-source merging, sliding-window maintenance, retroactive greedy, two-heap boundary splitting, interval scheduling, and segment-tree rank queries — making it one of the richest single patterns in the entire DSA curriculum and a direct prerequisite for Dijkstra, Prim, Huffman coding, and external merge sort.</div>
+
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>A heap is a gatekeeping structure.</strong> You are a nightclub bouncer keeping exactly K VIPs inside at all times. The gate rule: maintain a min-heap of size K. The root is always the WEAKEST VIP currently inside (the K-th best). Every new arrival is compared only to the weakest VIP. Better → weakest evicted, new arrival enters. Worse → turned away. After all n candidates, the K people inside are exactly the K best.<br><br>
+                        <strong>The universal heap invariant:</strong> A size-K min-heap contains exactly the K largest elements seen so far, and heap[0] = the K-th largest element seen so far.<br><br>
+                        <strong>How this scales through the 5 stages:</strong><br>
+                        • <strong>Stage 1 — Simplest form:</strong> Key = element value. Min-heap of size K. Push every element; pop when size &gt; K. O(n log K). heap[0] = answer.<br>
+                        • <strong>Stage 2 — What changes:</strong> The comparison key changes — frequency, distance to target, custom tiebreak, or the heap TYPE flips (min → max) depending on which end you want to evict. The heap structure is identical; only the comparator mutates.<br>
+                        • <strong>Stage 3 — What expands:</strong> Input is not a flat array. It is a matrix, K sorted lists, or a stream with expiry. The heap must track a SOURCE (list index, row/col) to generate the next candidate. Two heaps work together as a split boundary.<br>
+                        • <strong>Stage 4 — What is hidden:</strong> The problem does not say "find top K." The heap is a TOOL inside a larger algorithm — retroactive greedy, interval scheduler, graph traversal frontier, or running order statistic. Identifying WHAT to store in the heap is the hard part.<br>
+                        • <strong>Stage 5 — What is optimised:</strong> O(n log K) is too slow or space is insufficient. Replace with QuickSelect O(n), bucket sort O(n) when values are bounded, or binary search on answer value + count function O(n log V). For dynamic rank queries with deletions, use an order-statistics tree O(log n) per operation.
+                    </div>
+
+                    <div class="sec-title">Core Invariants &amp; Proof Sketches</div>
+                    <div class="core-box">
+                        <strong>Invariant 1 — Size-K Min-Heap Gate:</strong> After processing i elements, the heap contains exactly min(i, K) elements, and every heap element ≥ every non-heap element (among the first i elements).<br>
+                        <em>Proof sketch (loop invariant):</em> Base (i=0): heap empty, vacuously true. Step i &lt; K: push unconditionally, all elements in heap, trivially holds. Step i ≥ K, new element x: if x ≤ heap[0] → discard, heap unchanged ✓; if x &gt; heap[0] → evict root (now (K+1)-th best), push x, new root = new K-th best ✓. Termination: K heap elements ≥ all n−K discarded elements. □<br><br>
+                        <strong>Invariant 2 — Two-Heap Median Split:</strong> lower = max-heap of smaller half; upper = min-heap of larger half. Invariants: |lower| − |upper| ∈ {0, 1} AND lower.top() ≤ upper.top().<br>
+                        <em>Proof sketch:</em> Every insert routes to the correct half (order invariant), then rebalancing restores the size invariant. After both steps: lower.top() = largest of smaller half; upper.top() = smallest of larger half. Median = lower.top() (odd) or (lower.top() + upper.top()) / 2 (even). □<br><br>
+                        <strong>Invariant 3 — QuickSelect Correctness:</strong> QuickSelect returns the K-th largest in O(n) expected.<br>
+                        <em>Proof sketch:</em> Each partition places the pivot at its FINAL sorted index. If pivot lands at K−1: return it. Otherwise recurse into only one side. With random pivot, expected search space halves each step → T(n) = T(n/2) + O(n) → O(n) by geometric series. Median-of-medians: T(n) ≤ T(7n/10) + O(n) → O(n) worst-case. □<br><br>
+                        <strong>Invariant 4 — Retroactive Greedy Optimality:</strong> Always using the best available skipped option when stuck gives the globally optimal solution.<br>
+                        <em>Proof sketch (exchange argument):</em> Suppose optimal uses option s instead of s* (s* &gt; s). Swap: use s* instead of s → at least as good a result with same number of decisions. No other decision's feasibility changes. By induction, always popping the max from the heap of skipped options is never suboptimal. □
+                    </div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Group 1 — Static Size-K Gate (Single Source):</strong><br>
+                        <strong>1. K-th largest / Top-K from flat array</strong> — Stage 1 · O(n log K) · min-heap size K · THE baseline; root = K-th largest always<br>
+                        <strong>2. K-th smallest</strong> — Stage 1 · O(n log K) · max-heap size K (negate) · ONE flip: evict largest; root = K-th smallest<br>
+                        <strong>3. Top-K by frequency</strong> — Stage 2 · O(n log K) · HashMap + min-heap (freq, elem) · derived key from preprocessing map<br>
+                        <strong>4. Top-K by distance to target</strong> — Stage 2 · O(n log K) · max-heap; key = −|x−target| · keep K smallest distances → max-heap evicts farthest<br>
+                        <strong>5. K closest points to origin (2D)</strong> — Stage 2 · O(n log K) · max-heap; key = −(x²+y²) · 2D computed key; no sqrt needed<br>
+                        <strong>6. Top-K frequent words with tiebreak</strong> — Stage 2 · O(n log K) · min-heap; key = (−freq, word) · compound sort key; string comparison in heap tuple<br><br>
+                        <strong>Group 2 — Online / Streaming:</strong><br>
+                        <strong>7. K-th largest in a stream</strong> — Stage 2 · O(log K) per insert · size-K min-heap persistent across calls · heap lives between queries<br>
+                        <strong>8. Running K-th order statistic with deletions</strong> — Stage 5 · O(log n) per op · SortedList / order-statistics tree · heap cannot delete<br><br>
+                        <strong>Group 3 — Max-Heap Iterative Merge / Scheduler:</strong><br>
+                        <strong>9. Min-heap iterative merge (Huffman)</strong> — Stage 2 · O(n log n) · min-heap as source AND sink · heap both consumes and produces values<br>
+                        <strong>10. Max-heap iterative extraction (Last Stone)</strong> — Stage 2 · O(n log n) · max-heap; extract two, reinsert |a−b|<br>
+                        <strong>11. Max-heap greedy transform (halving)</strong> — Stage 2 · O(n log n) · extract max, transform, reinsert; reinserted = f(popped)<br>
+                        <strong>12. Task scheduler (max-heap + cooldown queue)</strong> — Stage 4 · O(n log n) · heap stores frequencies + deque tracks cooldown<br>
+                        <strong>13. Reorganise string</strong> — Stage 4 · O(n log n) · max-heap of char frequencies; output char by char<br>
+                        <strong>14. Longest happy string (≤2 consecutive)</strong> — Stage 4 · O(n log n) · skip top if last 2 chars match<br><br>
+                        <strong>Group 4 — Multi-Source Merge:</strong><br>
+                        <strong>15. K-th smallest in sorted matrix</strong> — Stage 3 · O(K log K) · min-heap of (val, row, col) · SOURCE TRACKING in heap entries<br>
+                        <strong>16. Merge K sorted lists</strong> — Stage 3 · O(N log K) · min-heap of (val, list_idx, node)<br>
+                        <strong>17. K pairs with smallest sums</strong> — Stage 3 · O(K log K) · Cartesian product lazy expansion<br>
+                        <strong>18. K-th smallest prime fraction</strong> — Stage 3 · O(K log n) · implicit sorted structure; same seeding as K pairs<br>
+                        <strong>19. Smallest range covering K lists</strong> — Stage 4 · O(N log K) · min-heap + running max variable<br><br>
+                        <strong>Group 5 — Two-Heap Boundary Split:</strong><br>
+                        <strong>20. Find median from data stream</strong> — Stage 4 · O(log n) insert / O(1) query · max-heap (lower) + min-heap (upper)<br>
+                        <strong>21. Sliding window median (with expiry)</strong> — Stage 4 · O(n log n) · two-heap + lazy deletion dict<br>
+                        <strong>22. Dynamic K-th order statistic</strong> — Stage 5 · O(log n) per op · split point is K not n/2<br>
+                        <strong>23. Dual order-book</strong> — Stage 4 · O(n log n) · max-heap (bids) + min-heap (asks); match when buy ≥ sell<br><br>
+                        <strong>Group 6 — Interval / Scheduling Heap:</strong><br>
+                        <strong>24. Meeting rooms II (min rooms)</strong> — Stage 4 · O(n log n) · sort by start + min-heap of end times<br>
+                        <strong>25. Meeting rooms III (assign by room ID)</strong> — Stage 4 · O(n log n) · dual min-heaps with DIFFERENT keys<br>
+                        <strong>26. Employee free time</strong> — Stage 4 · O(N log K) · multi-source interval merge + gap detection<br><br>
+                        <strong>Group 7 — Retroactive Greedy:</strong><br>
+                        <strong>27. Minimum refuelling stops</strong> — Stage 4 · O(n log n) · max-heap of skipped fuel stations<br>
+                        <strong>28. Furthest building (ladder→bricks swap)</strong> — Stage 4 · O(n log n) · min-heap of ladder assignments<br>
+                        <strong>29. Maximum subsequence score</strong> — Stage 4 · O(n log n) · sort by second array desc + min-heap size K<br>
+                        <strong>30. Potions greedy (CF 1526C)</strong> — Stage 4 · O(n log n) · max-heap of accepted; evict worst when negative<br><br>
+                        <strong>Group 8 — Stage 5 Optimisations (Heap Replacement):</strong><br>
+                        <strong>31. K-th largest via QuickSelect</strong> — Stage 5 · O(n) expected · in-place randomised partition<br>
+                        <strong>32. Top-K frequent via bucket sort</strong> — Stage 5 · O(n) · frequency buckets [1..n]<br>
+                        <strong>33. K-th smallest pair distance (BS + two-pointer)</strong> — Stage 5 · O(n log(max−min)) · binary search on answer + O(n) count<br>
+                        <strong>34. K-th in multiplication table (BS + row count)</strong> — Stage 5 · O(m log(mn)) · BS + Σ floor(v/i) per row<br>
+                        <strong>35. Segment tree rank queries</strong> — Stage 5 · O(log V) per query · value-domain tree; handles updates + arbitrary rank<br>
+                        <strong>36. Order-statistics tree (insert + delete + rank)</strong> — Stage 5 · O(log n) per op · SortedList; only structure supporting insert + delete + K-th rank simultaneously
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed from Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>Sort everything, take K</td><td>O(n log n)</td><td>O(n)</td><td>Naive baseline</td></tr>
+                        <tr><td>Size-K min-heap gate</td><td>O(n log K)</td><td>O(K)</td><td>Heap gate: only K elements in memory</td></tr>
+                        <tr><td>K-th largest in stream</td><td>O(log K) per add</td><td>O(K)</td><td>Each new element = one heap op</td></tr>
+                        <tr><td>Top-K by frequency</td><td>O(n log K)</td><td>O(n)</td><td>HashMap preprocessing + derived key</td></tr>
+                        <tr><td>Multi-source merge (K lists)</td><td>O(N log K)</td><td>O(K)</td><td>Source tracking (val, src, idx) in heap</td></tr>
+                        <tr><td>Two-heap median stream</td><td>O(log n) per add</td><td>O(n)</td><td>Two heaps as split boundary; O(1) median</td></tr>
+                        <tr><td>Sliding window median</td><td>O(n log n)</td><td>O(n)</td><td>Expiry: lazy deletion on both heaps</td></tr>
+                        <tr><td>Retroactive greedy heap</td><td>O(n log n)</td><td>O(n)</td><td>Heap stores past decisions for revision</td></tr>
+                        <tr><td>QuickSelect (offline K-th)</td><td>O(n) expected</td><td>O(1)</td><td>Partition replaces heap; in-place</td></tr>
+                        <tr><td>Bucket sort Top-K frequent</td><td>O(n)</td><td>O(n)</td><td>Bounded frequency → counting replaces heap</td></tr>
+                        <tr><td>Binary search on value + count</td><td>O(n log V)</td><td>O(1)</td><td>Search value space; count function O(n)</td></tr>
+                        <tr><td>Order-statistics tree</td><td>O(log n) per op</td><td>O(n)</td><td>Delete + arbitrary rank; heap cannot do this</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Max vs. Min Heap — Master Decision Table</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Goal</th><th>Heap Type</th><th>Python</th><th>Eviction Rule</th><th>Root Equals</th></tr></thead>
+                        <tbody>
+                        <tr><td>Keep K largest</td><td>Min-heap size K</td><td>heapq default</td><td>Pop when new &gt; heap[0]; push new</td><td>K-th largest</td></tr>
+                        <tr><td>Keep K smallest</td><td>Max-heap size K</td><td>Negate all values</td><td>Pop when new &lt; −heap[0]; push new</td><td>K-th smallest</td></tr>
+                        <tr><td>Repeatedly get maximum</td><td>Max-heap unbounded</td><td>Negate all values</td><td>Always pop root</td><td>Global max</td></tr>
+                        <tr><td>Repeatedly get minimum</td><td>Min-heap unbounded</td><td>heapq default</td><td>Always pop root</td><td>Global min</td></tr>
+                        <tr><td>Median — lower half</td><td>Max-heap</td><td>Negate</td><td>Root = largest of lower half</td><td>Lower median</td></tr>
+                        <tr><td>Median — upper half</td><td>Min-heap</td><td>heapq default</td><td>Root = smallest of upper half</td><td>Upper median</td></tr>
+                        <tr><td>Retroactive keep-best decisions</td><td>Max-heap of costs</td><td>Negate if needed</td><td>Pop worst when over-budget</td><td>Worst kept so far</td></tr>
+                        <tr><td>Interval: free earliest room</td><td>Min-heap of end times</td><td>heapq default</td><td>Pop when new_start ≥ heap[0]</td><td>Earliest ending interval</td></tr>
+                        <tr><td>Order-book buy side</td><td>Max-heap of bid prices</td><td>Negate</td><td>Match when buy ≥ sell top</td><td>Highest buy</td></tr>
+                        <tr><td>Order-book sell side</td><td>Min-heap of ask prices</td><td>heapq default</td><td>Match when sell ≤ buy top</td><td>Lowest sell</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Mastery Problem Set (42 problems · 5 stages)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant / New Idea</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank">LC 215</a> Kth Largest Element in an Array</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Static top-K; min-heap size K</td><td class="insight">THE baseline: min-heap size K; push every element; pop when size &gt; K; root = answer. heap[0] = K-th largest always; O(n log K); establishes the size-K gate invariant everything else builds on</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/last-stone-weight/" target="_blank">LC 1046</a> Last Stone Weight</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap iterative extraction; conditional reinsertion</td><td class="insight">Max-heap baseline: extract two largest, push |a−b| if non-zero; loop until ≤ 1. Establishes MAX-HEAP pattern; heap is BOTH source and sink; contrast with min-heap gate in #1</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/kth-largest-element-in-a-stream/" target="_blank">LC 703</a> Kth Largest in a Stream</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Online top-K; persistent min-heap across queries</td><td class="insight">Heap LIVES between queries; add(val) = push + conditional pop + return root; O(log K) per call. ONE change from #1: data arrives online; heap is a persistent object not a one-shot computation</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/top-k-frequent-elements/" target="_blank">LC 347</a> Top K Frequent Elements</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Top-K by derived frequency key</td><td class="insight">Key = frequency from HashMap not element value; min-heap of (freq, elem). Adds HashMap preprocessing; comparator changes from value to frequency; same size-K gate</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/k-closest-points-to-origin/" target="_blank">LC 973</a> K Closest Points to Origin</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Top-K by 2D computed distance</td><td class="insight">Key = x²+y²; max-heap size K; evict farthest; no sqrt needed (monotone). Direction flip: K SMALLEST distances → max-heap (evict largest); key computed from two coordinates</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/top-k-frequent-words/" target="_blank">LC 692</a> Top K Frequent Words</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Top-K with lexicographic tiebreak</td><td class="insight">Tuple key (−freq, word); string comparison is lexicographic; min-heap evicts correctly under ties. Adds COMPOUND SORT KEY; equal-freq → larger word evicted first</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l1">Foundation</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-operations-to-halve-array-sum/" target="_blank">LC 2208</a> Min Ops to Halve Array Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap; extracted value transformed then reinserted</td><td class="insight">Extract max; push val/2; stop when sum ≤ original/2. ONE change from #2: reinserted value = transformation of popped value (halved), not a difference</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sort-characters-by-frequency/" target="_blank">LC 451</a> Sort Characters By Frequency</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">K = n; full frequency sort; bucket sort is O(n)</td><td class="insight">K = all elements; bucket array indexed by freq; scan high to low; O(n). When K = n AND freq bounded, bucket array O(n) beats heap O(n log n)</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-connect-sticks/" target="_blank">LC 1167</a> Min Cost to Connect Sticks</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Min-heap iterative merge (Huffman)</td><td class="insight">Always merge TWO SMALLEST; cost += sum; push sum back. Greedy: merge cheapest pair first minimises total (exchange argument). Min-heap counterpart to #2</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-orders-in-the-backlog/" target="_blank">LC 1801</a> Number of Orders in Backlog</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dual opposing heap: buy max-heap + sell min-heap</td><td class="insight">Buy backlog = max-heap; sell backlog = min-heap; match when buy ≥ sell. Introduces OPPOSING DUAL HEAP: two heaps face each other; match on boundary condition; order-book simulation</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">Variants</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-ii/" target="_blank">LC 253</a> Meeting Rooms II</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Min-heap of end times; interval scheduling</td><td class="insight">Sort by start time; min-heap of end times; if new_start ≥ root → heapreplace; else push. Heap tracks ACTIVE INTERVALS not values; heap size = minimum rooms needed</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/reorganize-string/" target="_blank">LC 767</a> Reorganize String</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap greedy string builder</td><td class="insight">Max-heap of (freq, char); always pick most-frequent char ≠ previous; decrement; reinsert if &gt; 0. Scheduler without cooldown window; impossible if max_freq &gt; (n+1)//2</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/task-scheduler/" target="_blank">LC 621</a> Task Scheduler</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap of frequencies + cooldown queue</td><td class="insight">Max-heap of task counts; cooldown deque = (remaining_count, available_at); advance time when heap empty. Adds COOLDOWN QUEUE alongside max-heap; release after n cycles</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/longest-happy-string/" target="_blank">LC 1405</a> Longest Happy String</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap scheduler with per-char consecutive limit ≤ 2</td><td class="insight">If top char = last 2 chars, pop second-top instead; reinsert skipped top after. ONE change from #12: consecutive limit = 2; must temporarily skip top when limit hit</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/" target="_blank">LC 378</a> Kth Smallest in Sorted Matrix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source min-heap; track (val, row, col)</td><td class="insight">Heap entry = (val, r, c); seed first column; advance: push (matrix[r+1][c], r+1, c). SOURCE TRACKING in heap entries; bridges single-array heap to multi-source pattern</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/find-k-pairs-with-smallest-sums/" target="_blank">LC 373</a> Find K Pairs with Smallest Sums</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cartesian product lazy expansion</td><td class="insight">Seed (a[i]+b[0], i, 0) for i in 0..min(K, len(a)); advance j: push (a[i]+b[j+1], i, j+1). CARTESIAN PRODUCT generated on demand; seeding only first column avoids O(n²) enumeration</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/k-th-smallest-prime-fraction/" target="_blank">LC 786</a> K-th Smallest Prime Fraction</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Implicit sorted structure; heap or binary search</td><td class="insight">Heap of (arr[i]/arr[j], i, j); OR binary search on fraction value with count. Implicit (unstored) sorted structure; same seeding as #16; introduces BS-on-answer as alternative</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/merge-k-sorted-lists/" target="_blank">LC 23</a> Merge K Sorted Lists</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">K-source merge with linked list pointer advancement</td><td class="insight">Hard: heap entry = (node.val, list_idx, node); push node.next after extraction. Pointer advancement replaces index arithmetic; None-checking; K up to 10⁴; N up to 5×10⁴</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">Combo</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/" target="_blank">LC 632</a> Smallest Range Covering K Lists</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Multi-source heap + running max; dual-boundary range</td><td class="insight">Hard: heap minimises left boundary (min of current reps); cur_max variable tracks right boundary. Heap controls ONLY one side of the range; right boundary tracked separately; two boundaries move asymmetrically</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/find-median-from-data-stream/" target="_blank">LC 295</a> Find Median from Data Stream</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-heap boundary split: max-heap (lower) + min-heap (upper)</td><td class="insight">Hard: lower = max-heap of smaller half; upper = min-heap of larger half; invariants: size and order. Two heaps as SPLIT BOUNDARY; median from tops in O(1); rebalancing on every insert</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/employee-free-time/" target="_blank">LC 759</a> Employee Free Time</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Multi-source interval merge; find GAPS</td><td class="insight">Hard: K employee schedules; min-heap of (start, emp, idx); track max_end; gap when next_start &gt; max_end. Multi-source INTERVAL merge not value merge; gap detection requires tracking max_end outside the heap</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l3">Combo</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/meeting-rooms-iii/" target="_blank">LC 2402</a> Meeting Rooms III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Dual min-heaps with DIFFERENT comparison keys</td><td class="insight">Hard: free = min-heap of room IDs; used = min-heap of (end_time, room_id); interact on every meeting. Two min-heaps with different keys interact on every event; tie-breaking by room ID</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Layer 3 → Layer 4. The next problems require using the heap as a RETROACTIVE GREEDY instrument. The heap stores past decisions that can be revised. The insight shifts from "what is the current best?" to "which past decision should I undo to improve the outcome?"</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-refueling-stops/" target="_blank">LC 871</a> Minimum Number of Refueling Stops</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Max-heap retroactive greedy; defer refuel until stuck</td><td class="insight">Hard: push all SKIPPABLE stations to max-heap while driving; when tank empty, retroactively use best skipped station. Max-heap enables RETROACTIVE GREEDY — store options as you pass them; exercise only when forced</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/furthest-building-you-can-reach/" target="_blank">LC 1642</a> Furthest Building You Can Reach</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Min-heap retroactive swap; ladder→bricks conversion</td><td class="insight">Push every positive climb to min-heap as "ladder use"; when size &gt; k, pop smallest (convert to bricks). Same retroactive pattern as #23 but direction reversed: assign ladders to BIGGEST climbs by evicting smallest</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-subsequence-score/" target="_blank">LC 2542</a> Maximum Subsequence Score</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Sort by second array desc; min-heap size K on first array</td><td class="insight">Sort pairs by nums2[i] desc; for each i maintain min-heap of K largest nums1 values; score = sum × nums2[i]. Stage 4 disguise: no "top-K" stated; must recognise fixing minimum multiplier</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-difference-in-sums-after-removal-of-elements/" target="_blank">LC 2163</a> Min Difference in Sums After Removal</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two independent heap scans: left max-heap + right min-heap</td><td class="insight">Hard: left scan: max-heap size n → tracks sum of n SMALLEST; right scan: min-heap size n → sum of n LARGEST; outputs combined at each split point. WHY hard: correct heap TYPE per direction</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sliding-window-median/" target="_blank">LC 480</a> Sliding Window Median</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-heap split with ELEMENT EXPIRY; lazy deletion</td><td class="insight">Hard: two heaps + lazy-deletion dict; prune stale tops of BOTH heaps before reading median; effective size counters. WHY hard: stale pruning must happen on both heaps before every median read</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l4">Hard</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/trapping-rain-water-ii/" target="_blank">LC 407</a> Trapping Rain Water II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Min-heap as BFS frontier on 2D grid</td><td class="insight">Hard: init heap with all boundary cells; pop min-height cell; water at neighbour = max(popped, neighbour_height) − neighbour_height. Heap as PRIORITY BFS FRONTIER not a top-K extractor</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l4">Hard</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1526/C" target="_blank">CF 1526C</a> Potions (Hard)</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Max-heap retroactive DP greedy</td><td class="insight">Hard: accept each potion greedily; if health &lt; 0, evict worst accepted (max-heap of negative values); count survivors. Retroactive greedy on DP-structured problem; evicting worst past decision = not taking it</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-average-pass-ratio/" target="_blank">LC 1792</a> Maximum Average Pass Ratio</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap of MARGINAL GAIN; key changes after each pop</td><td class="insight">Heap key = gain from adding one student: (p+1)/(t+1) − p/t; always improve class with max gain; recompute after pop. Max-heap of DELTA VALUES; key changes after every extraction; pure greedy via marginal improvement</td></tr>
+                        <tr><td class="num-cell">31</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/total-cost-to-hire-k-workers/" target="_blank">LC 2462</a> Total Cost to Hire K Workers</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dual min-heaps from both ends; sliding frontier</td><td class="insight">Left min-heap: first candidates workers; right min-heap: last candidates; each hire = pop global min; advance that heap's frontier inward. Stage 4 disguise: "hire K workers" hides dual sliding-window + min-heaps</td></tr>
+                        <tr><td class="num-cell">32</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/swim-in-rising-water/" target="_blank">LC 778</a> Swim in Rising Water</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Min-heap Dijkstra on grid; minimise path BOTTLENECK</td><td class="insight">Min-heap of (max_height_on_path, r, c); pop minimum; expand; answer = heap root when destination reached. Looks like BFS but needs heap (minimise maximum height = minimax path); Dijkstra pattern on grid</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#fff3cd,#ffe69c);padding:.55rem .8rem;font-weight:600;text-align:center">⚡ CLIFF WARNING — Layer 4 → Layer 5. The next problems require recognising that a heap is SUBOPTIMAL and must be replaced entirely. The Stage 5 instinct: "Can I search the VALUE SPACE instead of the element space? Can I count elements ≤ x faster than sorting them?"</td></tr>
+                        <tr><td class="num-cell">33</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank">LC 215</a> Kth Largest (QuickSelect variant)</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">O(n) expected QuickSelect; randomised pivot</td><td class="insight">In-place Lomuto partition; recurse into only one side; O(n) expected with random pivot. Stage 5 upgrade of #1: O(n) replaces O(n log K); no extra space; random pivot prevents adversarial O(n²)</td></tr>
+                        <tr><td class="num-cell">34</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/top-k-frequent-elements/" target="_blank">LC 347</a> Top K Frequent (bucket sort variant)</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">O(n) bucket sort; frequency bounded by n</td><td class="insight">bucket[freq] = list of elements; scan from bucket[n] downward; stop at K collected. Stage 5 upgrade of #4: frequency ∈ [1,n] → bucket array replaces heap; O(n) time and space</td></tr>
+                        <tr><td class="num-cell">35</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/find-k-th-smallest-pair-distance/" target="_blank">LC 719</a> Find K-th Smallest Pair Distance</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Binary search on distance value + two-pointer count</td><td class="insight">Hard: sort; binary search on answer d; count(d) = pairs with distance ≤ d via sliding two-pointer O(n); total O(n log(max−min)). Stage 4 recognition (K-th problem but NOT heap) + Stage 5 BS-on-answer</td></tr>
+                        <tr><td class="num-cell">36</td><td><span class="l4">Hard</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/kth-smallest-number-in-multiplication-table/" target="_blank">LC 668</a> Kth Smallest in Multiplication Table</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Binary search on value; count = Σ min(n, floor(v/i)) per row</td><td class="insight">Hard: binary search on v; count(v) = Σᵢ₌₁ᵐ min(n, floor(v/i)); O(m) per BS step. Implicit matrix; heap infeasible for large m,n; deriving the O(m) count function is the key</td></tr>
+                        <tr><td class="num-cell">37</td><td><span class="l4">Hard</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1354/C" target="_blank">CF 1354C</a> Not Sitting</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sort seat distances; binary search on rank</td><td class="insight">Hard: precompute all seat distances; binary search on rank; count seats with dist ≤ mid. No "top-K" stated; reduce "K-th best seat" to sorted rank problem; Stage 4 reduction + Stage 5 binary search</td></tr>
+                        <tr><td colspan="9" style="background:linear-gradient(90deg,#ffe6e6,#ffd0d0);padding:.55rem .8rem;font-weight:600;text-align:center">⚠️ TRAP ZONE — Problems that LOOK like Heap / Top-K but require a completely different technique. Recognise them in &lt; 30 seconds.</td></tr>
+                        <tr><td class="num-cell">38</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/find-k-closest-elements/" target="_blank">LC 658</a> ⚠️ Find K Closest Elements</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — sorted input; binary search + two-pointer beats heap</td><td class="insight">Array SORTED; binary search for insertion point; two-pointer expansion O(K); total O(log n + K). NOT a heap problem: sorted input eliminates heap maintenance; always check if input is sorted before defaulting to heap</td></tr>
+                        <tr><td class="num-cell">39</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/median-of-two-sorted-arrays/" target="_blank">LC 4</a> ⚠️ Median of Two Sorted Arrays</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ TRAP — two sorted arrays; binary partition O(log min(m,n))</td><td class="insight">Binary partition both arrays; left_half = (m+n)/2 with left_max ≤ right_min; O(log min(m,n)). NOT a heap problem despite being K-th across two sorted sequences; heap merge = correct but 100× slower</td></tr>
+                        <tr><td class="num-cell">40</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank">LC 239</a> ⚠️ Sliding Window Maximum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ TRAP — K=1 sliding window; monotonic deque beats heap</td><td class="insight">Monotonic deque maintains decreasing order; front = window max; O(n) total. NOT optimal as heap: K=1 sliding window → deque O(n) vs lazy-deletion heap O(n log n)</td></tr>
+                        <tr><td class="num-cell">41</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/stone-game-vi/" target="_blank">LC 1686</a> ⚠️ Stone Game VI</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — two players; sort by combined value a[i]+b[i]</td><td class="insight">Sort by a[i]+b[i] desc; alternate picks; O(n log n) greedy. NOT a heap problem: combined-value sort makes globally optimal greedy; heap = 10× more code for same result</td></tr>
+                        <tr><td class="num-cell">42</td><td><span class="l5">⚠️Trap</span></td><td>—</td><td>LeetCode</td><td class="prob-name trap-name"><a class="lc-link" href="https://leetcode.com/problems/solving-questions-with-brainpower/" target="_blank">LC 2140</a> ⚠️ Solving Questions with Brainpower</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ TRAP — looks like scheduler but is single-player DP</td><td class="insight">Single decision-maker; standard 1D DP dp[i] = max(pts[i]+dp[i+bp[i]+1], dp[i+1]). NOT a heap/scheduler problem: no opponent, no cooldown priority; applying task-scheduler logic gives wrong answer</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Two-Heap Complete Implementation Reference</div>
+                    <div class="info-box">
+                        <strong>Static two-heap (Find Median from Data Stream):</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>import heapq
+lower = []   # max-heap (negate): stores the SMALLER half, size = ceil(n/2)
+upper = []   # min-heap (default): stores the LARGER half, size = floor(n/2)
+
+def add(val):
+    if not lower or val &lt;= -lower[0]:
+        heapq.heappush(lower, -val)
+    else:
+        heapq.heappush(upper, val)
+    # rebalance: |lower| - |upper| must be 0 or 1
+    if len(lower) &gt; len(upper) + 1:
+        heapq.heappush(upper, -heapq.heappop(lower))
+    elif len(upper) &gt; len(lower):
+        heapq.heappush(lower, -heapq.heappop(upper))
+
+def get_median():
+    if len(lower) &gt; len(upper): return float(-lower[0])
+    return (-lower[0] + upper[0]) / 2.0</code></pre>
+                        <strong>Sliding-window two-heap (Sliding Window Median) with lazy deletion:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>from collections import defaultdict
+lazy = defaultdict(int)   # lazy[v] = times v is marked deleted but not pruned
+lower_sz = upper_sz = 0
+
+def _prune(heap, is_lower):
+    while heap:
+        top = -heap[0] if is_lower else heap[0]
+        if lazy[top] &gt; 0:
+            lazy[top] -= 1; heapq.heappop(heap)
+        else: break
+
+def add_w(val):
+    global lower_sz, upper_sz
+    if not lower or val &lt;= -lower[0]: heapq.heappush(lower, -val); lower_sz += 1
+    else: heapq.heappush(upper, val); upper_sz += 1
+    _rebalance_w()
+
+def remove_w(val):
+    global lower_sz, upper_sz
+    lazy[val] += 1
+    if val &lt;= -lower[0]: lower_sz -= 1
+    else: upper_sz -= 1
+    _rebalance_w()
+
+def _rebalance_w():
+    global lower_sz, upper_sz
+    while lower_sz &gt; upper_sz + 1:
+        _prune(lower, True)
+        heapq.heappush(upper, -heapq.heappop(lower))
+        lower_sz -= 1; upper_sz += 1
+    while upper_sz &gt; lower_sz:
+        _prune(upper, False)
+        heapq.heappush(lower, -heapq.heappop(upper))
+        upper_sz -= 1; lower_sz += 1
+
+def get_median_w():
+    _prune(lower, True); _prune(upper, False)
+    if lower_sz &gt; upper_sz: return float(-lower[0])
+    return (-lower[0] + upper[0]) / 2.0</code></pre>
+                    </div>
+
+                    <div class="sec-title">Retroactive Greedy Universal Template</div>
+                    <div class="info-box">
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>import heapq
+heap   = []   # stores past decisions as (cost_key, metadata)
+result = 0    # current state (fuel, health, total cost, etc.)
+
+for item in items:
+    heapq.heappush(heap, cost_key(item))   # greedily accept current item
+    result = accept(result, item)
+
+    while constraint_violated(result):     # if constraint broken...
+        worst = heapq.heappop(heap)        # undo worst past decision
+        result = undo(result, worst)
+
+# result = optimal value; len(heap) = optimal count of decisions</code></pre>
+                        <strong>Retroactive problems and their heap type:</strong><br>
+                        • <strong>LC 871 Refueling Stops</strong> — max-heap of fuel at skipped stations; pop when tank empty = "I retroactively stopped there"<br>
+                        • <strong>LC 1642 Furthest Building</strong> — min-heap of climb sizes; pop smallest when size &gt; k = convert that climb to bricks<br>
+                        • <strong>CF 1526C Potions</strong> — max-heap of negative potion values; pop worst when health &lt; 0 = never took that potion<br>
+                        • <strong>LC 2542 Max Subsequence Score</strong> — min-heap of nums1 values in window; pop when size &gt; k = exclude that element from sum
+                    </div>
+
+                    <div class="sec-title">State Evolution Across Stages</div>
+                    <div class="info-box">
+                        <strong>Stage 1 — Flat array, simple value key:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>heap = []
+for x in arr:
+    heapq.heappush(heap, x)        # min-heap; push raw value
+    if len(heap) &gt; k:
+        heapq.heappop(heap)        # evict the SMALLEST (weakest VIP)
+# heap[0] = K-th largest; list(heap) = the K largest (unsorted)</code></pre>
+                        <strong>Stage 2 — Derived key (frequency / distance / tuple):</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>from collections import Counter
+freq = Counter(arr)
+heap = []
+for elem, cnt in freq.items():
+    heapq.heappush(heap, (cnt, elem))   # tuple: (primary_key, secondary_key)
+    if len(heap) &gt; k:
+        heapq.heappop(heap)             # evicts the tuple with smallest (cnt, elem)
+# Tiebreak: for lexicographic-ascending result, use (-cnt, word)</code></pre>
+                        <strong>Stage 3 — Multi-source with source pointer:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>heap = [(matrix[0][c], 0, c) for c in range(min(k, cols))]
+heapq.heapify(heap)
+for _ in range(k - 1):
+    val, r, c = heapq.heappop(heap)
+    if r + 1 &lt; rows:
+        heapq.heappush(heap, (matrix[r+1][c], r+1, c))  # advance source
+return heapq.heappop(heap)[0]</code></pre>
+                        <strong>Stage 5 — QuickSelect O(n) replaces O(n log K):</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>import random
+def quickselect(nums, lo, hi, k_idx):
+    if lo &gt;= hi: return nums[lo]
+    pivot_pos = random.randint(lo, hi)
+    nums[pivot_pos], nums[hi] = nums[hi], nums[pivot_pos]
+    i = lo
+    for j in range(lo, hi):
+        if nums[j] &gt;= nums[hi]:
+            nums[i], nums[j] = nums[j], nums[i]
+            i += 1
+    nums[i], nums[hi] = nums[hi], nums[i]
+    if i == k_idx:  return nums[i]
+    elif i &gt; k_idx: return quickselect(nums, lo, i - 1, k_idx)
+    else:            return quickselect(nums, i + 1, hi, k_idx)
+# K-th largest = quickselect(nums, 0, n-1, k-1)</code></pre>
+                        <strong>Stage 5 — Bucket sort O(n) for bounded frequency:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>from collections import Counter
+freq   = Counter(nums)
+bucket = [[] for _ in range(len(nums) + 1)]
+for elem, cnt in freq.items():
+    bucket[cnt].append(elem)
+result = []
+for f in range(len(bucket) - 1, 0, -1):
+    result.extend(bucket[f])
+    if len(result) &gt;= k:
+        return result[:k]</code></pre>
+                    </div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Linguistic Triggers:</strong><br>
+                        • "find the K largest / K smallest / K most frequent / K closest" → Stage 1/2; establish which END to evict; key may be derived; default to size-K heap<br>
+                        • "return the K-th element" → Static → QuickSelect O(n); online/stream → persistent size-K heap O(log K) per add; check if sorted first (→ binary search)<br>
+                        • "merge K sorted [lists / arrays / streams]" → Stage 3 multi-source heap; (value, source_id, position) in heap; advance pointer on extraction<br>
+                        • "find the median of a stream / running median" → Stage 4 two-heap split; max-heap lower half + min-heap upper half; O(1) median, O(log n) insert<br>
+                        • "schedule tasks with cooldown / no two adjacent same" → Stage 4 max-heap scheduler; heap stores frequencies; greedy = most-frequent valid task each round<br>
+                        • "minimum number of [stops / ladders / operations]" → Stage 4 retroactive greedy; max-heap of past decisions; pop worst when constraint violated<br><br>
+                        <strong>Structural Triggers:</strong><br>
+                        • Unsorted array/stream AND K ≪ n → size-K gate; O(n log K) time, O(K) space; do NOT sort<br>
+                        • K sorted sequences and you want merged top-M elements → multi-source heap; (value, src, pos); O(M log K)<br>
+                        • Ongoing rank maintenance with both insertions AND deletions → SortedList or order-statistics tree; heap cannot arbitrarily delete<br><br>
+                        <strong>Anti-Triggers (Do NOT use heap):</strong><br>
+                        • "find K closest in a SORTED array" → NOT a heap → two-pointer binary search O(log n + K)<br>
+                        • "find median of TWO sorted arrays" → NOT a heap → binary search on partition O(log min(m,n))<br>
+                        • "sliding window MAXIMUM" → NOT optimal as heap → monotonic deque O(n) total
+                    </div>
+
+                    <div class="sec-title">When This Technique Breaks</div>
+                    <div class="warn-box">
+                        <strong>Bug 1 — Max-heap of all n elements instead of size-K min-heap (wrong space complexity):</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: stores all n elements; O(n) space; crashes for n=10^8, K=10
+heap = []
+for num in nums: heapq.heappush(heap, -num)   # unbounded max-heap
+# FIX: size-K min-heap; O(K) space
+heap = []
+for num in nums:
+    heapq.heappush(heap, num)
+    if len(heap) &gt; k: heapq.heappop(heap)
+return heap[0]</code></pre>
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 2 — Stream heap: returning root before evicting oversized element:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: heap may have k+1 elements when root is returned
+def add(self, val):
+    heapq.heappush(self.heap, val)
+    return self.heap[0]   # BUG: k+1 elements possible
+# FIX: evict first, then return
+def add(self, val):
+    heapq.heappush(self.heap, val)
+    if len(self.heap) &gt; self.k: heapq.heappop(self.heap)
+    return self.heap[0]</code></pre>
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 3 — Top-K frequent words: wrong tiebreak direction in tuple:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: (freq, word) evicts lex-smaller word among equal freq; problem wants to KEEP lex-smaller
+heapq.heappush(heap, (freq, word))   # BUG
+# FIX: (-freq, word); among same -freq, min-heap evicts lex-larger → keeps lex-smaller
+heapq.heappush(heap, (-freq, word))</code></pre>
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 4 — K Closest Points: using sqrt introduces float errors:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: sqrt is monotone; introduces unnecessary float errors
+dist = math.sqrt(x**2 + y**2)
+heapq.heappush(heap, (-dist, x, y))   # BUG
+# FIX: compare squared distance directly (integer arithmetic)
+dist_sq = x**2 + y**2
+heapq.heappush(heap, (-dist_sq, x, y))</code></pre>
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 5 — QuickSelect: deterministic pivot causes O(n²) on sorted input:</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: always last element as pivot; O(n^2) on sorted input (most common interview input)
+pivot = nums[hi]
+# FIX: always randomise
+pivot_pos = random.randint(lo, hi)
+nums[pivot_pos], nums[hi] = nums[hi], nums[pivot_pos]</code></pre>
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 6 — Multi-source merge: forgetting to advance the source pointer:</strong><br>
+                        Every extraction from source s MUST trigger a push from source s (if next element exists). Missing node.next or (a[i], b[j+1]) produces incomplete results. Invariant: extraction from source s = push next element from source s.
+                    </div>
+                    <div class="warn-box">
+                        <strong>Bug 7 — Not recognising retroactive greedy pattern:</strong><br>
+                        If greedy gives wrong answers, ask "can I undo my worst past decision?" If yes: store past decisions in a heap; when constraint is violated, pop the worst one. Max-heap evicts most costly; min-heap evicts least gainful.
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box"><pre style="white-space:pre-wrap;margin:.4rem 0">Q1: Does the problem ask for a SUBSET of size K ranked by some criterion?
+  → NO:  Not Top-K. Check if it is sorting, DP, or binary search.
+  → YES: Continue.
+
+Q2: Is the input ALREADY SORTED?
+  → YES: Do NOT use a heap.
+         K closest in sorted array     → binary search + two-pointer  O(log n + K)
+         K-th across two sorted arrays → binary search on partition   O(log min(m,n))
+         K-th in sorted matrix         → binary search on value+count O(n log V)
+  → NO:  Continue.
+
+Q3: Is data ONLINE (stream) or does it require INSERT + DELETE?
+  → Online stream, no deletions → persistent size-K heap  O(log K) per element
+  → With deletions / arbitrary rank → SortedList / order-statistics tree  O(log n) per op
+  → Static offline batch → Continue.
+
+Q4: Do you need ALL K elements, or only THE K-TH element?
+  → Only K-th element → QuickSelect  O(n) expected
+  → All K elements → size-K heap  O(n log K)  Continue.
+
+Q5: Is the comparison key SIMPLE VALUE or DERIVED?
+  → Simple value → standard min/max heap; push raw value
+  → Derived key → precompute (HashMap) or compute inline; heap stores tuple
+  → Compound key with tiebreak → heap stores (primary, secondary, element) tuple
+
+Q6: Does the problem involve K SORTED SOURCES (merge pattern)?
+  → YES → multi-source min-heap. Store (value, source_id, pos).
+           Advance pointer in source_id on every extraction.  O(output_size × log K)
+
+Q7: Does the problem need a RUNNING MEDIAN or DYNAMIC K-TH ORDER STAT?
+  → YES (median only) → two-heap split  O(log n) insert, O(1) median
+  → YES (with sliding window) → two-heap + lazy deletion dict
+
+Q8: Is there a RETROACTIVE GREEDY structure?
+  → YES → heap of past decisions; pop worst when constraint violated
+           Max-heap if evicting most costly; min-heap if evicting least gainful
+
+Q9: Is the VALUE RANGE BOUNDED (values in [0, V], V ≤ 10^6)?
+  → YES (Top-K frequent) → bucket sort  O(n)
+  → YES (K-th rank with updates) → segment tree on value domain  O(log V)
+
+Q10: Is O(n log K) too slow?
+  → QuickSelect → O(n) expected
+  → Bounded key → bucket sort O(n)
+  → "K-th over implicit structure" → binary search on answer value + count function</pre>
+                    </div>
+                </div>
+            </div>
             <div class="topic-card" id="tp16"><div class="coming">Content for Monotonic Stack/Queue is coming soon.</div></div>
             <div class="topic-card" id="tp17"><div class="coming">Content for Trees is coming soon.</div></div>
             <div class="topic-card" id="tp18"><div class="coming">Content for Trie is coming soon.</div></div>
