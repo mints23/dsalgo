@@ -7382,8 +7382,737 @@ for pos in range(max_pos + 1):
                     </table></div>
                 </div>
             </div>
-            <div class="topic-card" id="tp38"><div class="coming">Content for Tree DP is coming soon.<br><br>Covers: House Robber III (tree), Diameter of Binary Tree, Binary Tree Cameras, Maximum Path Sum, Count Nodes Equal to Average of Subtree, Longest Path with Same Values, Rerooting technique, Tree Knapsack &amp; more.</div></div>
-            <div class="topic-card" id="tp39"><div class="coming">Content for Digit DP is coming soon.<br><br>Covers: Count numbers with digit sum = k, Count numbers without repeated digits, Numbers with even number of digits, Digit DP template (tight/free bounds), Non-decreasing digits, At most N given digit set &amp; more.</div></div>
+            <div class="topic-card" id="tp38">
+                <div class="topic-header">
+                    <div class="topic-num">38</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Dynamic Programming &middot; Tree DP</div>
+                            <span class="tier-badge tier-T3">Advanced Pattern</span>
+                            <span class="topic-type">Post-Order DP &middot; Rerooting &middot; Tree Knapsack &middot; Two-State &middot; Path DP &middot; Small-to-Large &middot; Virtual Tree</span>
+                        </div>
+                        <div class="topic-meta">35 problems &middot; 5 stages &middot; dp[v][0/1], rerooting two-pass, dp[v][k] knapsack, centroid decomp, DSU on tree, virtual tree</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why This Topic Matters:</strong> Tree DP is the intersection of dynamic programming and tree traversal. It solves problems where the answer at every node is a function of answers from its children &mdash; optimal substructure arises from the tree's hierarchical decomposition. The core invariant: once every subtree is solved, the parent can be solved in O(merge_cost) time and the global answer is assembled bottom-up in a single post-order traversal. This appears in every top-tier interview because it tests three skills simultaneously: (1) identifying optimal substructure in a recursive tree structure, (2) designing a correct DP state over a non-linear topology, and (3) analysing and optimising the merge cost across child DPs. In competitive programming it escalates to tree knapsack (O(n&sup2;) &rarr; O(n log n) with careful merge ordering), rerooting DP (computing answers for every possible root in O(n)), and DP on forests extracted from interval containment or centroid decomposition.</div>
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box">Every node is the CEO of its own company (its subtree). The CEO's performance review (dp[v]) is computed entirely from the performance reviews of direct reports. The post-order DFS is the HR department walking the org chart bottom-up. The two-pass rerooting DP is a second HR walk top-down, where the CEO also considers feedback from above. The tree knapsack is the CEO allocating a budget of K headcount across all teams.<br><br>
+                        <strong>How this mental model scales through the 5 stages:</strong><br>
+                        &bull; <strong>Stage 1 &mdash; Simplest form:</strong> dp[v] = single scalar; bottom-up accumulation. No choice; just aggregate from children.<br>
+                        &bull; <strong>Stage 2 &mdash; What changes:</strong> ONE choice per node: include or exclude. dp[v][0/1] &mdash; two states; the merge chooses which child state to consume.<br>
+                        &bull; <strong>Stage 3 &mdash; What expands:</strong> State gains a budget dimension k. dp[v][k] = best answer using exactly k nodes/edges in subtree. Merging two children's dp[][j] and dp[][k&minus;j] becomes a convolution.<br>
+                        &bull; <strong>Stage 4 &mdash; What is hidden:</strong> The problem doesn't mention trees. The structure is implied by intervals, dependencies, or recursion. Recognising the hidden tree structure IS the solve.<br>
+                        &bull; <strong>Stage 5 &mdash; What is optimised:</strong> The O(n&sup2;) knapsack merge or O(n) per-query rerooting is too slow. Small-to-large merging, virtual trees, or precomputed prefix/suffix DP arrays bring this to O(n log n).
+                    </div>
+                    <div class="sec-title">Core Invariants / Proof Sketches</div>
+                    <div class="core-box">
+                        <strong>Invariant 1: Post-Order Optimality</strong><br>
+                        <em>Invariant:</em> In a post-order traversal, when node v is processed, dp[c] is fully correct for every child c of v.<br>
+                        <em>Proof sketch:</em> By strong induction on subtree size. Base: leaves are trivial. Inductive step: when v is processed, every child c has smaller subtree size; by inductive hypothesis dp[c] is correct. Therefore dp[v] = f(dp[c1], dp[c2], ..., val[v]) is computed from correct inputs. &#9633;<br><br>
+                        <strong>Invariant 2: Rerooting Transition Correctness</strong><br>
+                        <em>Invariant:</em> ans[v] = ans[parent(v)] + (n &minus; sz[v]) &minus; sz[v], where sz[v] = subtree size rooted at node 0.<br>
+                        <em>Proof sketch:</em> When re-rooting from parent to v: every node inside sz[v] gets 1 closer (&minus;sz[v]), every node outside (n &minus; sz[v]) gets 1 farther. Net = (n &minus; sz[v]) &minus; sz[v]. Since ans[parent] was correct by induction, ans[v] is correct. &#9633;<br><br>
+                        <strong>Invariant 3: Tree Knapsack O(n&sup2;) Bound via Pair Argument</strong><br>
+                        <em>Proof sketch:</em> For any pair (u, w) of nodes in different subtrees of their LCA, they contribute O(1) to exactly ONE merge at their LCA. There are at most C(n,2) such pairs, so total merge cost = O(n&sup2;). &#9633;<br><br>
+                        <strong>Invariant 4: Small-to-Large O(n log n)</strong><br>
+                        <em>Proof sketch:</em> Each time element e moves from S_small to S_large, the set containing e at least doubles. From size 1, an element can double at most log&sub2;n times. Total operations = O(n log n). &#9633;
+                    </div>
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Group 1 &mdash; Single-Value Accumulation:</strong><br>
+                        &bull; <strong>Subtree size / sum / max</strong> &mdash; Stage 1 | O(n) | post-order DFS | dp[v] = val[v] + &sum; dp[child]<br>
+                        &bull; <strong>Tree diameter</strong> &mdash; Stage 1 | O(n) | DFS returning (max_arm, diameter) | global updated at each node<br>
+                        &bull; <strong>Depth / height</strong> &mdash; Stage 1 | O(n) | DFS | simplest single-value<br><br>
+                        <strong>Group 2 &mdash; Two-State DP (Binary Choice):</strong><br>
+                        &bull; <strong>Maximum Independent Set on Tree</strong> &mdash; Stage 2 | O(n) | dp[v][0/1] | canonical; child states consumed conditionally<br>
+                        &bull; <strong>Minimum Vertex Cover</strong> &mdash; Stage 2 | O(n) | dp[v][0/1] | complementary objective to MIS<br>
+                        &bull; <strong>Maximum Matching on Tree</strong> &mdash; Stage 2 | O(n) | dp[v][0/1] (edge to parent used/not) | edge-consumption state<br>
+                        &bull; <strong>Tree Node Colouring</strong> &mdash; Stage 2 | O(n &times; C) | dp[v][colour] | C states per node<br><br>
+                        <strong>Group 3 &mdash; Three-or-More State DP (State Machine):</strong><br>
+                        &bull; <strong>Binary Tree Cameras</strong> &mdash; Stage 3 | O(n) | dp[v][0/1/2] (uncovered/camera/covered) | three-state transitions<br>
+                        &bull; <strong>Painting nodes (no K consecutive same colour)</strong> &mdash; Stage 3 | O(n &times; K) | dp[v][colour][run_length]<br>
+                        &bull; <strong>Domination on Tree</strong> &mdash; Stage 3 | O(n) | dp[v][0/1/2] | three-state covering<br><br>
+                        <strong>Group 4 &mdash; Rerooting DP (Two-Pass):</strong><br>
+                        &bull; <strong>Sum of Distances in Tree</strong> &mdash; Stage 2 | O(n) | two-pass DFS; ans[v] = ans[parent] &plusmn; delta | canonical rerooting<br>
+                        &bull; <strong>Maximum path sum with every node as root</strong> &mdash; Stage 2 | O(n) | two-pass; top-2 arms per node<br>
+                        &bull; <strong>Count of good nodes (&ge; max on root-to-node path)</strong> &mdash; Stage 2 | O(n) | single top-down pass with running max<br><br>
+                        <strong>Group 5 &mdash; Tree Knapsack (Budget Dimension):</strong><br>
+                        &bull; <strong>k-node subtree with maximum sum</strong> &mdash; Stage 3 | O(n&sup2;) | dp[v][k] = max sum using k nodes | canonical knapsack<br>
+                        &bull; <strong>Tree partitioning into components of size K</strong> &mdash; Stage 3 | O(n&sup2;) | feasibility knapsack<br>
+                        &bull; <strong>Selecting exactly K edges with maximum weight</strong> &mdash; Stage 3 | O(n&sup2;) | edge-indexed knapsack<br><br>
+                        <strong>Group 6 &mdash; Path DP:</strong><br>
+                        &bull; <strong>Longest path with different adjacent values</strong> &mdash; Stage 2 | O(n) | top-2 arms; path "bends" at each node<br>
+                        &bull; <strong>Count paths with sum = K</strong> &mdash; Stage 3 | O(n) | DFS with prefix-sum hashmap + backtracking<br>
+                        &bull; <strong>Maximum XOR path in tree</strong> &mdash; Stage 4 | O(n log V) | XOR prefix from root + trie<br><br>
+                        <strong>Group 7 &mdash; Top-2 Arms Rerooting:</strong><br>
+                        &bull; <strong>Tree diameter (general n-ary)</strong> &mdash; Stage 2 | O(n) | top-2 arm depths; prevent same child for both arms<br>
+                        &bull; <strong>Maximum path sum (any path)</strong> &mdash; Stage 2 | O(n) | arm = max(0, best child arm) + val<br>
+                        &bull; <strong>Maximum average path</strong> &mdash; Stage 4 | O(n log V) | binary search on answer + re-weight edges<br><br>
+                        <strong>Group 8 &mdash; Centroid Decomp / Virtual Tree:</strong><br>
+                        &bull; <strong>Count paths of length exactly K</strong> &mdash; Stage 4 | O(n log n) | centroid decomp + frequency DP per centroid<br>
+                        &bull; <strong>DP on virtual tree</strong> &mdash; Stage 5 | O(k log n) per query | extract virtual tree on k key nodes<br><br>
+                        <strong>Group 9 &mdash; Interval DP Disguised as Tree DP:</strong><br>
+                        &bull; <strong>Optimal binary search tree</strong> &mdash; Stage 4 | O(n&sup3;) na&iuml;ve, O(n&sup2;) Knuth | dp[i][j] = cost of BST on keys i..j<br>
+                        &bull; <strong>Burst Balloons</strong> &mdash; Stage 4 | O(n&sup3;) | final burst in range = root of implicit tree
+                    </div>
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed</th></tr></thead>
+                        <tbody>
+                        <tr><td>Subtree sum / height</td><td>O(n)</td><td>O(n)</td><td>Baseline: single-value post-order</td></tr>
+                        <tr><td>Tree diameter</td><td>O(n)</td><td>O(n)</td><td>Multi-value return; global updated at node</td></tr>
+                        <tr><td>Two-state dp[v][0/1]</td><td>O(n)</td><td>O(n)</td><td>State dimension added; conditional child merge</td></tr>
+                        <tr><td>Three-state dp[v][0/1/2]</td><td>O(n)</td><td>O(n)</td><td>More states; transitions encode state machine</td></tr>
+                        <tr><td>Rerooting two-pass</td><td>O(n)</td><td>O(n)</td><td>Second DFS pass; top-down contribution propagated</td></tr>
+                        <tr><td>Path sum with prefix hashmap</td><td>O(n)</td><td>O(n)</td><td>Hashmap carried through DFS; backtracking required</td></tr>
+                        <tr><td>Tree knapsack dp[v][k] (na&iuml;ve)</td><td>O(n&sup2;)</td><td>O(n&sup2;)</td><td>Budget dimension; merge = convolution over sizes</td></tr>
+                        <tr><td>Tree knapsack (DFS order merge)</td><td>O(n&sup2;)</td><td>O(n)</td><td>Space reduction; same time via pair argument</td></tr>
+                        <tr><td>DSU on tree (small-to-large)</td><td>O(n log n)</td><td>O(n log n)</td><td>Each element merged O(log n) times</td></tr>
+                        <tr><td>Centroid decomp + DP</td><td>O(n log n)</td><td>O(n log n)</td><td>O(log n) layers; DP at each centroid</td></tr>
+                        <tr><td>Virtual tree + DP</td><td>O(k log n) per query</td><td>O(k)</td><td>Compressed tree on k key nodes</td></tr>
+                        <tr><td>HLD + DP (path updates)</td><td>O(n log&sup2; n)</td><td>O(n log n)</td><td>DP values maintained on HLD chains</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">State Evolution for Each Sub-Variant Group</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Group 2: Two-State Tree DP &mdash; dp[v][0/1]</strong><br>
+                        <strong>Stage 1:</strong> dp[v] = val[v] + &sum; dp[c] | Base: dp[leaf] = val[leaf]<br>
+                        <strong>Stage 2 (MIS):</strong> dp[v][1] = val[v] + &sum; dp[c][0] &nbsp;&nbsp; dp[v][0] = &sum; max(dp[c][0], dp[c][1])<br>
+                        Base: dp[leaf][1] = val[leaf], dp[leaf][0] = 0 | Preferred: bottom-up post-order<br><br>
+                        <strong>Stage 3 (Camera):</strong> dp[v][s] where s &isin; &#123;0=uncovered, 1=has_camera, 2=covered_by_child&#125;<br>
+                        dp[v][1] = 1 + min over child combos where v has camera; dp[v][2] = min where &ge;1 child has state 1; dp[v][0] = min where all children have state 2<br>
+                        Base: dp[leaf][0]=0, dp[leaf][1]=1, dp[leaf][2]=INF<br><br>
+                        <strong>Group 5: Tree Knapsack &mdash; dp[v][k]</strong><br>
+                        <strong>Stage 3:</strong> dp[v][k] = max value using exactly k nodes in subtree of v<br>
+                        Merge children one by one: accumulated[v][k] = max over j in [0,k&minus;1] of accumulated[v][k&minus;j] + dp[ci][j]<br>
+                        Base: dp[leaf][1] = val[leaf], dp[leaf][k] = &minus;INF for k &ne; 1<br>
+                        Complexity: O(n&sup2;) via pairs-at-LCA; O(n) space if child DPs discarded after merge<br><br>
+                        <strong>Stage 5:</strong> Replace dp[v][k] array with sorted set/map; merge smaller child into larger; each element moves O(log n) times &rarr; O(n log n)<br><br>
+                        <strong>Group 4: Rerooting DP &mdash; Two-Pass</strong><br>
+                        <strong>Stage 1:</strong> sub[v] = &sum; (sub[c] + sz[c]) | Base: sub[leaf] = 0<br>
+                        <strong>Stage 2:</strong> First pass: compute sub[v] and sz[v]. Second pass: ans[root] = sub[root]; ans[v] = ans[parent] + (n &minus; sz[v]) &minus; sz[v]<br><br>
+                        <strong>Group 6: Path DP &mdash; Prefix Sums on Tree</strong><br>
+                        Maintain hashmap count[prefix_sum] during DFS. At v: answer += count[current_prefix &minus; K]; On entering: count[prefix] += 1; On leaving: count[prefix] &minus;= 1 (BACKTRACK!)<br>
+                        Base: count[0] = 1 before DFS starts (represents "empty prefix = path starting at root")
+                    </div>
+                    <div class="sec-title">Mastery Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th class="prob-name">Problem</th><th>Diff</th><th>Sub-Variant</th><th class="insight">Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">1</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/diameter-of-binary-tree/" target="_blank">LC 543</a> Diameter of Binary Tree</td><td><span class="diff-m">Medium</span></td><td>Single-value DFS; global updated at each node</td><td class="insight">THE baseline: post-order DFS returns max arm; diameter = left_arm + right_arm updated globally. Each node is a potential bend; return single arm upward</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">1</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/path-sum-iii/" target="_blank">LC 437</a> Path Sum III</td><td><span class="diff-m">Medium</span></td><td>Top-down DFS with prefix-sum hashmap + backtrack</td><td class="insight">ONE new idea: backtracking the hashmap on return; path need not start at root. count += hashmap[prefix &minus; target]; hashmap[prefix] &minus;= 1 after children</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/house-robber-iii/" target="_blank">LC 337</a> House Robber III</td><td><span class="diff-m">Medium</span></td><td>Two-state dp[v][0/1]; conditional child merge</td><td class="insight">Canonical MIS on tree; dp[v][1] = val + &sum; dp[c][0]; dp[v][0] = &sum; max(dp[c][0], dp[c][1]). Child state consumed CONDITIONALLY</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/distribute-coins-in-binary-tree/" target="_blank">LC 979</a> Distribute Coins in Binary Tree</td><td><span class="diff-m">Medium</span></td><td>DFS returning SIGNED excess; moves = &sum; |excess|</td><td class="insight">Return value = excess coins in subtree (can be negative); moves += |excess|. First SIGNED return value in tree DP</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/longest-zigzag-path-in-a-binary-tree/" target="_blank">LC 1372</a> Longest ZigZag Path</td><td><span class="diff-m">Medium</span></td><td>Two-directional state per node (left_arm, right_arm)</td><td class="insight">Return TWO values per node; zigzag extends by flipping direction. ONE new idea: directional state</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">2</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/longest-path-with-different-adjacent-values/" target="_blank">LC 2246</a> Longest Path with Different Adjacent Values</td><td><span class="diff-m">Medium</span></td><td>N-ary tree; top-2 arms among all children</td><td class="insight">Generalises S.No 1 to n-ary; track top-2 depths among children. ONE change: n-ary; top-2 over arbitrary number of children</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">2</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-difference-between-node-and-ancestor/" target="_blank">LC 1026</a> Max Difference Between Node and Ancestor</td><td><span class="diff-m">Medium</span></td><td>Top-down DFS carrying (running_min, running_max)</td><td class="insight">TWO values propagated top-down simultaneously. First problem where two DIFFERENT top-down values are tracked</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">2</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/binary-tree-cameras/" target="_blank">LC 968</a> Binary Tree Cameras</td><td><span class="diff-h">Hard</span></td><td>Three-state DP dp[v][0/1/2]; state-machine transitions</td><td class="insight">THREE states: uncovered/has-camera/covered-by-child. Hard: parent must handle "uncovered leaf" by assigning camera at parent; 3&times;3 child-state transition table</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">2</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/sum-of-distances-in-tree/" target="_blank">LC 834</a> Sum of Distances in Tree</td><td><span class="diff-h">Hard</span></td><td>Rerooting two-pass: ans[v] = ans[par] + (n &minus; sz[v]) &minus; sz[v]</td><td class="insight">First rerooting DP. Hard: deriving the O(1) rerooting formula &plusmn;(n &minus; 2&times;sz[v]) requires careful counting; cannot be guessed</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">2</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-number-of-possible-root-nodes/" target="_blank">LC 2581</a> Count Number of Possible Root Nodes</td><td><span class="diff-h">Hard</span></td><td>Rerooting with CONDITIONAL edge contribution</td><td class="insight">Hard: each edge contributes +1 or &minus;1 only if the guess-set contains that edge's correct direction. WHY hard: correctly counting direction flips</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l2">2</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/difference-between-maximum-and-minimum-price-sum/" target="_blank">LC 2538</a> Difference Between Max and Min Price Sum</td><td><span class="diff-h">Hard</span></td><td>Rerooting with top-2 arms; prevent double-counting same child</td><td class="insight">Hard: when v IS parent's best arm, must use second-best for up[v]. WHY hard: precomputing best1 and best2 indices per parent</td></tr>
+                        <tr><td class="num-cell" colspan="8" style="background:var(--error);color:#fff;font-weight:700;text-align:center">&#x26A1; CLIFF WARNING: Layer 2 &rarr; 3 &mdash; Next problems combine tree DP with prefix sums, binary search, hashing, or budget dimension. Master: (1) hashmap backtracking during DFS, (2) top-2 arms pattern.</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/maximum-product-of-splitted-binary-tree/" target="_blank">LC 1339</a> Maximum Product of Splitted Binary Tree</td><td><span class="diff-m">Medium</span></td><td>Subtree sum + find split maximising product</td><td class="insight">Bottom-up computes all subtree sums; product = sz &times; (total &minus; sz). ONE new idea: second pass is a scan, not rerooting</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-nodes-in-the-sub-tree-with-the-same-label/" target="_blank">LC 1519</a> Number of Nodes in Subtree with Same Label</td><td><span class="diff-m">Medium</span></td><td>DFS with frequency array; backtrack after each subtree</td><td class="insight">Frequency array carried through DFS; count = after-minus-before. First "count in subtree" tree DP</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-nodes-with-the-highest-score/" target="_blank">LC 2049</a> Count Nodes with Highest Score</td><td><span class="diff-m">Medium</span></td><td>Subtree sizes &rarr; product of three component sizes</td><td class="insight">score = sz[left] &times; sz[right] &times; (n &minus; sz[v]). Stage 4 disguise: recognising the three-component product structure</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/tree-of-coprimes/" target="_blank">LC 1766</a> Tree of Coprimes</td><td><span class="diff-h">Hard</span></td><td>Top-down DFS with ancestor-value stacks (one per value 1..50)</td><td class="insight">Stack per value 1..50; for each node look up coprimes and find nearest ancestor. Hard: combining tree DFS ancestor tracking with number-theory lookup</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l3">3</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/binary-tree-maximum-path-sum/" target="_blank">LC 124</a> Binary Tree Maximum Path Sum</td><td><span class="diff-h">Hard</span></td><td>DFS: arm = max(0, left_arm, right_arm); global = left + right + val</td><td class="insight">Hard: arm must be non-negative (can stop extending); return single arm; global uses both arms at bend. WHY hard: zero-floor constraint on returned arm</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l3">3</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-subtrees-with-max-distance-between-cities/" target="_blank">LC 1617</a> Count Subtrees with Max Distance Between Cities</td><td><span class="diff-h">Hard</span></td><td>Bitmask over node subsets; BFS diameter per subset</td><td class="insight">For each 2^n subsets: check connectivity + compute diameter; n &le; 15. WHY hard: both connectivity check and diameter check required per subset</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l3">3</span></td><td>4</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/161/D" target="_blank">CF 161D</a> Distance in Tree</td><td><span class="diff-m">Medium</span></td><td>dp[v][d] = count of nodes at distance d from v in subtree</td><td class="insight">NEW DIMENSION: dp[v][d]; dp[v][d] += dp[child][d&minus;1]; answer = &sum;v dp[v][K]. First depth-parameterised tree DP; foundational for knapsack</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l3">3</span></td><td>4</td><td>USACO</td><td class="prob-name">USACO Gold &mdash; Cow at Large</td><td><span class="diff-m">Medium</span></td><td>Euler tour + BIT: subtree of v = contiguous range [in[v], out[v]]</td><td class="insight">Euler tour reduces subtree DP to range query; O(n log n) replaces O(n) per subtree scan</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l3">3</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-valid-paths-in-a-tree/" target="_blank">LC 2867</a> Count Valid Paths in a Tree</td><td><span class="diff-h">Hard</span></td><td>Centroid decomp + parity-of-primes counting</td><td class="insight">Hard: centroid decomposition is primary; tree DP (parity) runs per centroid. WHY hard: inclusion-exclusion at each centroid + prime check + path assembly</td></tr>
+                        <tr><td class="num-cell" colspan="8" style="background:var(--error);color:#fff;font-weight:700;text-align:center">&#x26A1; CLIFF WARNING: Layer 3 &rarr; 4 &mdash; Next problems require recognising IMPLICIT tree structure. Candidate must DERIVE the tree first, then apply tree DP. This separates those who apply tree DP from those who discover when it applies.</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-ways-to-reorder-array-to-get-same-bst/" target="_blank">LC 1569</a> Number of Ways to Reorder Array to Get Same BST</td><td><span class="diff-h">Hard</span></td><td>Implicit BST tree; C(left+right, left) at each node</td><td class="insight">Hard: tree IMPLICIT (derived from array via BST rules); ways[v] = C(sz_l+sz_r, sz_l) &times; ways[l] &times; ways[r]. WHY hard: modular inverse for binomial coefficients + implicit tree</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-good-paths/" target="_blank">LC 2421</a> Number of Good Paths</td><td><span class="diff-h">Hard</span></td><td>Implicit forest via sorted value processing; DSU counts pairs</td><td class="insight">Hard: "tree" emerges from edge-addition order. WHY hard: recognising this equals tree DP on the Kruskal-order tree</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/all-possible-full-binary-trees/" target="_blank">LC 894</a> All Possible Full Binary Trees</td><td><span class="diff-m">Medium</span></td><td>Tree DP on structure: dp[n] = list of all full binary trees</td><td class="insight">First structural tree DP: state = tree STRUCTURE not scalar; dp[n] = [(l,r) for left_size in 1,3,...,n&minus;2]</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-collect-all-apples-in-a-tree/" target="_blank">LC 1443</a> Minimum Time to Collect All Apples in a Tree</td><td><span class="diff-m">Medium</span></td><td>DFS returning cost to collect subtree; skip empty subtrees</td><td class="insight">dp[v] = &sum;_&#123;c: has apples&#125; (dp[c] + 2). Selective accumulation: first "pruning" variant of subtree DP</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l4">4</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-ways-to-build-rooms-in-an-ant-colony/" target="_blank">LC 1916</a> Count Ways to Build Rooms in an Ant Colony</td><td><span class="diff-h">Hard</span></td><td>Topological DP: dp[v] = sz[v]! / &prod;sz[child]!</td><td class="insight">Hard: ways[v] = sz[v]! / (&prod; sz[c]!) &times; &prod; ways[c]; modular inverse required. WHY hard: multinomial coefficient structure hidden in the tree</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l4">4</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/600/E" target="_blank">CF 600E</a> Lomsat Gelral</td><td><span class="diff-h">Hard</span></td><td>DSU on tree (small-to-large): dominant colour per subtree</td><td class="insight">Hard: frequency map + max-frequency colour; ALWAYS merge smaller into larger; O(log n) moves per node. WHY hard: "inherit heavy child, reset for light children" trick</td></tr>
+                        <tr><td class="num-cell">27</td><td><span class="l4">4</span></td><td>5</td><td>USACO</td><td class="prob-name">USACO Platinum &mdash; Sprinklers 2</td><td><span class="diff-h">Hard</span></td><td>Rerooting + prefix-max arrays for O(n) sibling optimisation</td><td class="insight">Hard: top-2-arms rerooting extended to n-ary; prefix/suffix arrays over children replace O(n) per-child scan. WHY hard: correctly indexing prefix/suffix during top-down pass</td></tr>
+                        <tr><td class="num-cell">28</td><td><span class="l4">4</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/height-of-binary-tree-after-subtree-removal-queries/" target="_blank">LC 2458</a> Height of Binary Tree After Subtree Removal Queries</td><td><span class="diff-h">Hard</span></td><td>DFS order + depth-wise prefix/suffix max arrays; O(1) per query</td><td class="insight">Hard: two-dimensional indexing (depth &times; DFS order). Queries answered in O(1) via depth-wise prefix/suffix</td></tr>
+                        <tr><td class="num-cell">29</td><td><span class="l5">5</span></td><td>5</td><td>USACO</td><td class="prob-name">USACO Platinum &mdash; Delegation</td><td><span class="diff-h">Hard</span></td><td>Tree knapsack dp[v][k]; O(n&sup2;) &rarr; O(n&radic;n) optimisation</td><td class="insight">Hard: feasibility knapsack (partition into equal-length paths); O(n&sup2;) optimised by &radic;n decomposition. WHY hard: proving the &radic;n cutoff</td></tr>
+                        <tr><td class="num-cell">30</td><td><span class="l5">5</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/741/D" target="_blank">CF 741D</a> Arpa's Letter-Marked Tree</td><td><span class="diff-h">Hard</span></td><td>Tree knapsack (char frequencies); small-to-large reduces O(n&sup2;) to O(n log&sup2; n)</td><td class="insight">Hard: multi-dimensional knapsack (26 char frequencies) on tree; small-to-large merge of frequency arrays. WHY hard: proving O(n log&sup2; n) bound</td></tr>
+                        <tr><td class="num-cell">31</td><td><span class="l5">5</span></td><td>5</td><td>AtCoder</td><td class="prob-name">ABC 293 G &mdash; Triple Index</td><td><span class="diff-h">Hard</span></td><td>Virtual tree: extract O(k) key nodes; tree DP on compressed tree</td><td class="insight">Hard: virtual tree construction requires Euler tour + LCA + sorted DFS order. WHY hard: sort + LCA + add all pairwise LCA ancestors</td></tr>
+                        <tr><td class="num-cell">32</td><td><span class="l5">5</span></td><td>5</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/smallest-missing-genetic-value-in-each-subtree/" target="_blank">LC 2003</a> Smallest Missing Genetic Value in Each Subtree</td><td><span class="diff-h">Hard</span></td><td>DSU on tree: MEX of subtree values via small-to-large set merge</td><td class="insight">Hard: MEX is not a simple aggregate; track "next candidate MEX" and extend greedily. WHY hard: MEX cannot be directly merged</td></tr>
+                        <tr><td class="num-cell">33</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/unique-binary-search-trees/" target="_blank">LC 96</a> Unique BSTs &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>Catalan number DP on SIZES, NOT actual tree DP</td><td class="insight">NOT tree DP: no tree traversed; 1D DP on counts. dp[n] = &sum; dp[i&minus;1] &times; dp[n&minus;i]. Applying DFS gives wrong intuition</td></tr>
+                        <tr><td class="num-cell">34</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/" target="_blank">LC 236</a> LCA of Binary Tree &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>DFS search, NOT a DP problem</td><td class="insight">NOT tree DP: it's a tree SEARCH. "Combine child results" resembles tree DP but there is no dp-table and no optimisation objective</td></tr>
+                        <tr><td class="num-cell">35</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/" target="_blank">LC 105</a> Construct BT from Preorder/Inorder &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>Divide &amp; conquer reconstruction, NOT DP</td><td class="insight">NOT tree DP: construction with no objective. Applying "dp[v][state]" framing is a category error</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Linguistic Triggers:</strong><br>
+                        &bull; "for each node, find the [max/min/count] in its subtree" &rarr; Stage 1 bottom-up; dp[v] = f(dp[children]); O(n)<br>
+                        &bull; "select subset of nodes, no two adjacent, maximise total value" &rarr; Stage 2 MIS tree DP; dp[v][0/1]; O(n)<br>
+                        &bull; "find the answer for every possible root" &rarr; Stage 2 rerooting DP; two-pass DFS; O(n)<br>
+                        &bull; "select exactly K nodes/edges from the tree maximising [objective]" &rarr; Stage 3 tree knapsack; dp[v][k]; O(n&sup2;)<br>
+                        &bull; "count paths with sum / XOR / property P in a tree" &rarr; Stage 3 prefix-sum hashmap on DFS OR centroid decomp; O(n) or O(n log n)<br><br>
+                        <strong>Structural Triggers:</strong><br>
+                        &bull; Input is a parent array parent[i]; answer for each node depends on its subtree &rarr; rooted tree DP; post-order; O(n)<br>
+                        &bull; Answer requires combining TWO arms at a node (diameter, max path sum) &rarr; top-2 arm tracking; global updated at bend; return single arm<br>
+                        &bull; Multiple queries on subtrees of a static tree &rarr; Euler tour linearisation + BIT/segment tree; O(log n) per query<br><br>
+                        <strong>Constraint Triggers:</strong><br>
+                        &bull; n &le; 10&sup5; and "select k nodes from tree" &rarr; O(n&sup2;) tree knapsack may TLE; consider small-to-large for O(n log n)<br>
+                        &bull; Multiple queries each specifying k "key" nodes on large tree &rarr; virtual tree per query; O(k log n) compressed tree<br><br>
+                        <strong>Anti-Triggers:</strong><br>
+                        &bull; "find shortest paths between every pair" &rarr; NOT tree DP &rarr; LCA + binary lifting for single-pair O(log n); BFS from each node O(n&sup2;)<br>
+                        &bull; "minimum cost to connect all nodes" &rarr; NOT tree DP &rarr; MST (Kruskal/Prim); tree DP assumes tree is GIVEN<br>
+                        &bull; "number of BSTs with n nodes" &rarr; NOT actual tree DP &rarr; 1D Catalan number DP; no tree traversed
+                    </div>
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                        <pre style="white-space:pre-wrap;margin:.4rem 0;font-size:.78rem"><code>Q1: Is the input an explicit tree (n nodes, n-1 edges)?
+  YES: Continue to Q2.
+  NO:  Implicit tree? (BST insertion? Interval containment? Dependency DAG? Parent array?)
+       If YES: extract the tree (Stage 4), then proceed.
+       If NO: not a tree DP problem.
+
+Q2: Does the answer at each node depend ONLY on its subtree?
+  YES: Pure bottom-up tree DP. Stage 1. O(n).
+       dp[v] = scalar. Recurrence: dp[v] = f(dp[c], val[v]).
+  NO:  Continue.
+
+Q3: Does the answer change if the root changes?
+  YES: Rerooting DP. Stage 2. O(n).
+       First pass: bottom-up (subtree aggregates + sizes).
+       Second pass: top-down (contribution from above).
+  NO:  Continue.
+
+Q4: Is there a BINARY CHOICE at each node?
+    (Include/exclude, covered/not covered, camera/no camera)
+  YES: Two-state or three-state tree DP. dp[v][s]. Stage 2-3.
+       2 states: dp[v][0/1].  3+ states: draw state machine FIRST.
+  NO:  Continue.
+
+Q5: Is there a BUDGET (select exactly K nodes/edges)?
+  YES: Tree knapsack. dp[v][k]. Stage 3. O(n^2) naive.
+       Merge children iteratively; O(n^2) by pairs-at-LCA proof.
+       If n > 10^4: look for Stage 5 optimisation.
+  NO:  Continue.
+
+Q6: Does the answer involve PATHS (not just subtrees)?
+  Q6a: Sum/XOR from root to node?
+       -> Top-down DFS + prefix hashmap. Stage 3. O(n).
+  Q6b: Max/min over ALL paths?
+       -> Top-2 arms at each node; global at bend node. Stage 2.
+  Q6c: COUNT of paths with property?
+       -> Centroid decomposition. Stage 4. O(n log n).
+  NO:  Continue.
+
+Q7: Is naive O(n^2) too slow?
+  -> Knapsack merge -> small-to-large (DSU on tree). O(n log n). Stage 5.
+  -> Query per node -> Euler tour + BIT. O(n log n). Stage 5.
+  -> Sparse key-node queries -> Virtual tree. O(k log n)/query. Stage 5.</code></pre>
+                    </div>
+                    <div class="sec-title">When This Technique Breaks</div>
+                    <div class="warn-box" style="line-height:1.75">
+                        &bull; <strong>[Stage 1] Applying bottom-up tree DP when the answer depends on traversal direction:</strong> For "maximum path from any node to any node," a single bottom-up pass misses paths through the root's parent. Fix: two-pass rerooting (Stage 2).<br>
+                        &bull; <strong>[Stage 2] Rerooting with incorrect O(1) transition:</strong> Many candidates write ans[v] = ans[parent] + n &minus; 2&times;sz[parent] (wrong). Fix: always derive by considering which nodes gain/lose distance when re-rooting from parent to v.<br>
+                        &bull; <strong>[Stage 2] Top-2 arms: using the same child for both "up" and "down" arm:</strong> When v IS the best-arm child of parent, the up-contribution must use the second-best arm. Fix: precompute best1[parent] and best2[parent] by index.<br>
+                        &bull; <strong>[Stage 3] Claiming O(n&sup2;) per node for tree knapsack instead of O(n&sup2;) globally:</strong> Correct analysis via pairs-at-LCA gives O(n&sup2;) globally. Each pair (u, w) contributes O(1) at exactly their LCA.<br>
+                        &bull; <strong>[Stage 3] Path DP: forgetting to BACKTRACK hashmap on DFS return:</strong> Missing hashmap[prefix] &minus;= 1 after processing children causes paths from unrelated subtrees to be counted.<br>
+                        &bull; <strong>[Stage 4] Applying tree DP when input contains cycles:</strong> Post-order invariant breaks for graphs. Fix: verify input is acyclic before applying.<br>
+                        &bull; <strong>[Stage 5] Small-to-large when merge is NOT associative/commutative:</strong> For aggregates like median, merging doesn't directly work. Fix: check associativity before applying.
+                    </div>
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="core-box">
+                        <strong>Stage 1 &mdash; Tree Diameter via Post-Order DFS</strong><br>
+                        <em>Claim:</em> diameter = max over all nodes v of (top1_arm[v] + top2_arm[v]).<br>
+                        <em>Proof:</em> Every path has a unique bend node (its LCA). At bend node v: path = arm into one child + arm into another = top1 + top2. Post-order DFS visits every node once as a potential bend. Since every path bends at exactly one node, the global maximum is the true diameter. &#9633;<br><br>
+                        <strong>Stage 2 &mdash; Rerooting DP Correctness (Sum of Distances)</strong><br>
+                        <em>Claim:</em> ans[v] = ans[parent(v)] + n &minus; 2&times;sz[v].<br>
+                        <em>Proof:</em> Re-rooting from p to v: sz[v] nodes get 1 closer; n &minus; sz[v] nodes get 1 farther. Change = (n &minus; sz[v]) &minus; sz[v] = n &minus; 2&times;sz[v]. ans[root] is correct from first pass; each re-root derives from a correct parent; by induction all ans[v] are correct. &#9633;<br><br>
+                        <strong>Stage 5 &mdash; Tree Knapsack Total Complexity O(n&sup2;)</strong><br>
+                        <em>Claim:</em> Merge cost O(|accumulated| &times; |child|) totals O(n&sup2;) across all merges.<br>
+                        <em>Proof:</em> For any pair (u, w), they contribute to exactly ONE merge at their LCA. There are at most C(n,2) pairs. Total cost = &sum; (size_A &times; size_B) = &sum; 1 over all pairs &le; C(n,2) = O(n&sup2;). &#9633;
+                    </div>
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box">
+                        <strong>Bug 1 &mdash; Diameter: returning sum of both arms to parent</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>return l + r + node.val   # BUG: parent receives full diameter
+return max(l, r) + node.val  # FIX: single best arm</code></pre><br>
+                        <strong>Bug 2 &mdash; MIS: dp[v][0] not allowing children to be either state</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>dp[v][0] = sum(dp[c][0] for c in ch)                # BUG
+dp[v][0] = sum(max(dp[c][0], dp[c][1]) for c in ch) # FIX</code></pre><br>
+                        <strong>Bug 3 &mdash; Rerooting: using parent's subtree size</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>ans[v] = ans[parent] + n - 2 * sz[parent]  # BUG
+ans[v] = ans[parent] + n - 2 * sz[v]       # FIX</code></pre><br>
+                        <strong>Bug 4 &mdash; Top-2 arms: using same child for both arms</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># FIX: precompute best1_child and best2_child per parent
+if best1_child[p] == v:
+    up[v] = max(up[p], down[best2_child[p]]) + 1
+else:
+    up[v] = max(up[p], down[best1_child[p]]) + 1</code></pre><br>
+                        <strong>Bug 5 &mdash; Three-state camera: null treated as "covered"</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>if not node: return (0, 0, 0)               # BUG
+if not node: return (0, float('inf'), 0)    # FIX: null can't have camera</code></pre><br>
+                        <strong>Bug 6 &mdash; Prefix hashmap path count: missing backtrack</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>hashmap[prefix] = hashmap.get(prefix, 0) + 1
+for child in node.children:
+    dfs(child, prefix + child.val)
+# BUG: missing backtrack
+hashmap[prefix] -= 1  # FIX</code></pre><br>
+                        <strong>Bug 7 &mdash; Tree knapsack: full n+1 sized arrays per node</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>dp = [[0] * (n+1) for _ in range(n+1)]  # BUG: O(n^2) space
+# FIX: dp[v] has size sz[v]+1; discard child DPs after merge</code></pre><br>
+                        <strong>Bug 8 &mdash; Small-to-large: iterating the LARGER set</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>for elem in large: small.add(elem)          # BUG: O(n) moves
+if len(a) < len(b): a, b = b, a            # FIX: ensure a is larger
+for elem in b: a.add(elem)                 # FIX: iterate smaller</code></pre>
+                    </div>
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box" style="line-height:1.75">
+                        &bull; <strong>[Stage 1] Treating the tree as a linear array and applying 1D DP:</strong> BFS level-order DP loses the parent-child relationship. In tree DP the "index" is a node, and transitions go children &rarr; parent.<br>
+                        &bull; <strong>[Stage 2] Forgetting top-2 arms optimisation in rerooting:</strong> O(n) scan over siblings gives O(n&sup2;) total. Precompute best1[v] and best2[v] by index for O(1) per child.<br>
+                        &bull; <strong>[Stage 3] Space is also O(n&sup2;) if child DPs aren't discarded:</strong> Time is O(n&sup2;) by pairs-at-LCA, but keeping all arrays makes space O(n&sup2;). Discard child DP after merge; space = O(n).<br>
+                        &bull; <strong>[Stage 4] Applying tree DP to implicit tree without verifying structure:</strong> Verify the extraction with a small example before coding DP.<br>
+                        &bull; <strong>[Stage 2] Rerooting: recomputing subtree sizes in second pass:</strong> Subtree sizes are defined relative to the original root. The second DFS reads stored values; never recomputes structure.<br>
+                        &bull; <strong>[Stage 5] Confusing DSU on tree with Union-Find DSU:</strong> "DSU on tree" = small-to-large merging. Union-Find = path-compressed connected components. Completely different algorithms with the same acronym.<br>
+                        &bull; <strong>[Stage 3] Not initialising count[0] = 1 before DFS for path hashmap:</strong> count[0] = 1 represents the "empty prefix." Missing this causes root-starting paths to be skipped.
+                    </div>
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Stage Push</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td>Stage 2</td><td>"Your House Robber III solution uses dp[v][0/1]. What if you could rob at most K consecutive non-adjacent nodes on any root-to-leaf path?"</td><td>Add run-length dimension: dp[v][s][r] where r = consecutive selections ending at v; transitions check r &le; K before allowing s=1; still O(n &times; K)</td></tr>
+                        <tr><td class="num-cell">2</td><td>Stage 2</td><td>"What if nodes in House Robber III have negative values? Does the algorithm change?"</td><td>No structural change; dp[v][0] naturally yields 0 contribution when skipping negative nodes; max() handles omitting negative-value nodes; no third "skip" state needed</td></tr>
+                        <tr><td class="num-cell">3</td><td>Stage 3</td><td>"Extend Sum of Distances to: for each node v, find the sum of SQUARED distances to all other nodes."</td><td>Compute cnt[v] and sumD[v] bottom-up; rerooting: ansQ[v] = ansQ[par] + 2&middot;ans[par] + (n &minus; 2&middot;sz[v]); derive by expanding (d+1)&sup2; and (d&minus;1)&sup2;; requires ans[v] already computed</td></tr>
+                        <tr><td class="num-cell">4</td><td>Stage 3</td><td>"How do you count paths with sum = K in a weighted tree where edge weights can be NEGATIVE?"</td><td>Algorithm is IDENTICAL; negative weights do NOT break correctness because hashmap keys are exact prefix sums; what changes: prefix sums are no longer monotone, so two-pointer fails &mdash; hashmap handles this perfectly</td></tr>
+                        <tr><td class="num-cell">5</td><td>Stage 4</td><td>"You need to run House Robber DP 10&sup5; times on the same tree, each query marks one node as 'forced included'. Can you avoid re-running?"</td><td>Precompute dp[v][0/1] bottom-up and up_dp[v][0/1] top-down; combine in O(1) per query; reduces 10&sup5; &times; O(n) to O(n log n) preprocessing + O(log n) per query</td></tr>
+                        <tr><td class="num-cell">6</td><td>Stage 4</td><td>"Given a tree with node colours, query (u, v, c): count nodes of colour c on the path from u to v. How for 10&sup5; queries?"</td><td>Offline: sort queries by colour; Euler tour + BIT tracks colour contributions; path(u,v) = prefix(u) + prefix(v) &minus; 2&times;prefix(LCA) &minus; val(LCA); O((n + q) log n)</td></tr>
+                        <tr><td class="num-cell">7</td><td>Stage 5</td><td>"Your tree knapsack is O(n&sup2;). How do you bring it to O(n log&sup2; n)?"</td><td>Small-to-large set merging: each element moves O(log n) times &times; O(log n) per insertion = O(n log&sup2; n); alternatively for path-graph (degenerate tree), 1D knapsack solvable in O(n log n) with divide-and-conquer; for general trees: merge at each centroid takes O(sz log sz)</td></tr>
+                        <tr><td class="num-cell">8</td><td>Stage 5</td><td>"10&sup5; queries each specify k &le; 20 key nodes. For each query, run a tree DP counting only nodes reachable from key nodes. How to avoid O(n) per query?"</td><td>Virtual tree: build compressed tree on k key nodes in O(k log n) using Euler tour order + pairwise LCA; O(k) nodes; run tree DP in O(k); total O(q &times; k log n) instead of O(q &times; n)</td></tr>
+                        <tr><td class="num-cell">9</td><td>Beyond Stage 5</td><td>"The tree is DYNAMIC &mdash; edges can be added or removed; after each update you need the new diameter. How do you maintain this in sub-O(n) per update?"</td><td>Link-Cut Tree (LCT): each path query is O(log n); maintain diameter using two "farthest node from root" queries after each structural update; O(log&sup2; n) per update amortised</td></tr>
+                        <tr><td class="num-cell">10</td><td>Beyond Stage 5</td><td>"You have a distributed system where each server holds one subtree of a large tree with n = 10&sup9; nodes. How would you compute the tree diameter across servers?"</td><td>Each server computes local diameter AND two deepest arms from its subtree root; combine across servers: diameter = max(local diameters, arm1[server_A] + arm1[server_B] + 1 for all adjacent server pairs); O(servers &minus; 1) messages</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Phase 1 &mdash; Solve (strictly by Stage):</strong><br>
+                        <strong>Stage 1 &mdash; Establish the post-order invariant:</strong><br>
+                        Solve in this exact order: S.No 2 (Path Sum III), S.No 1 (Diameter), S.No 4 (Distribute Coins), S.No 5 (Longest ZigZag).<br>
+                        After these four: given ANY single-pass tree DP problem, you must be able to state the return signature (val1, val2, ...) and global update formula before touching code. Time target: 10 min each.<br><br>
+                        <strong>Stage 2 &mdash; Add binary choice and rerooting:</strong><br>
+                        Solve in order: S.No 3 (House Robber III), S.No 6 (Longest Path Different Adjacent Values), S.No 9 (Sum of Distances), S.No 10 (Count Possible Roots), S.No 11 (Max&ndash;Min Price Difference).<br>
+                        Drill: for rerooting problems, always write the formula derivation (which nodes gain/lose distance) on paper before coding.<br><br>
+                        <strong>Stage 3 &mdash; State expansion and knapsack:</strong><br>
+                        Solve in order: S.No 8 (Binary Tree Cameras), S.No 18 (CF 161D Distance in Tree), S.No 29 (USACO Delegation), S.No 13 (Subtree Label Count).<br><br>
+                        <strong>Stage 4 &mdash; Implicit trees and hidden reductions:</strong><br>
+                        Solve in order: S.No 14 (Count Nodes Highest Score), S.No 21 (Reorder Array &rarr; Same BST), S.No 22 (Number of Good Paths), S.No 20 (Count Valid Paths &mdash; Centroid).<br><br>
+                        <strong>Stage 5 &mdash; Optimisation:</strong><br>
+                        Solve in order: S.No 26 (Lomsat Gelral CF 600E), S.No 32 (Smallest Missing Value), S.No 27 (USACO Sprinklers 2), S.No 31 (AtCoder Virtual Tree).<br><br>
+                        <strong>Phase 2 &mdash; Drill:</strong><br>
+                        &bull; 10-min drill (Stage 1): Write DFS signature and global update rule for: height, diameter, max path sum, count paths sum K &mdash; without referencing any solution.<br>
+                        &bull; Formula drill (Stage 2): Cover the problem; write the rerooting transition formula from scratch for: sum of distances, max arm difference, min height under rerooting. Verify on a 4-node star graph by hand.<br>
+                        &bull; State machine drill (Stage 3): Draw the state transition diagram for binary tree cameras BEFORE coding. Verify: do null nodes produce state 0, 1, or 2? (Answer: null &rarr; special sentinel; leaf has state 0).<br>
+                        &bull; Knapsack merge drill: Trace the tree knapsack merge for a 3-node path (root &rarr; child &rarr; grandchild) with budget k=2. Verify the pairs-at-LCA argument by listing all pairs and their LCA.<br>
+                        &bull; Implicit tree drill (Stage 4): For S.No 21 and S.No 22: cover the code; state the tree-extraction step in one sentence before writing any DP.<br><br>
+                        <strong>Phase 3 &mdash; Validate (unseen problem sources):</strong><br>
+                        &bull; Stage 1: USACO Silver 2020 Feb "Swapity Swapity Swap" &mdash; subtree tracking under repeated permutation<br>
+                        &bull; Stage 2: Codeforces Round 604 Div 1 C "Beautiful Regional Contest" &mdash; rerooting with conditional edge weights<br>
+                        &bull; Stage 3: AtCoder Educational DP Contest V "Subtree" &mdash; two-state tree DP with connectivity constraint<br>
+                        &bull; Stage 4: Codeforces Edu Round 67 F "Hive" &mdash; implicit tree from interval structure; tree DP on containment tree<br>
+                        &bull; Stage 5: USACO Platinum 2019 Feb "Mowing the Field" &mdash; virtual tree on sparse key nodes with path DP
+                    </div>
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="core-box">
+                        <strong>Problem 1 &mdash; "Balanced Forest Partition" (Stage 3 + Stage 4)</strong><br>
+                        <em>Source:</em> IOI 2017 / Codeforces 901C<br>
+                        <em>Stages tested:</em> Stage 4 (implicit tree) + Stage 3 (tree knapsack)<br>
+                        <em>Summary:</em> Given a tree where each node has a value, determine if you can remove exactly one edge to create two components with equal sum. If not, determine if you can add one node (with a chosen value) to make such a partition possible after one edge cut.<br>
+                        <em>Why it proves mastery:</em> A candidate who only knows Stage 1&ndash;2 computes total sum and checks each subtree &mdash; solves the basic version. The full problem requires recognising "achievable subtree sums" as a tree knapsack (Stage 3) AND that the added node can be placed anywhere (Stage 4 rerooting of the knapsack). No single stage is sufficient; all four must interoperate. Solving cold in 45 minutes certifies internalisation of both patterns.<br><br>
+                        <strong>Problem 2 &mdash; "CF 1188E" Tree Isomorphism Counting (Stage 3 + Stage 5)</strong><br>
+                        <em>Source:</em> Codeforces 1188E<br>
+                        <em>Stages tested:</em> Stage 5 (small-to-large) + Stage 3 (multi-dimensional state DP)<br>
+                        <em>Summary:</em> Given a tree with nodes coloured red or blue and edge weights, find the minimum weight set of edges to remove such that every resulting component has equal numbers of red and blue nodes.<br>
+                        <em>Why it proves mastery:</em> Candidate must (1) recognise balance = (red &minus; blue) is the DP dimension, (2) derive correct merge: new_balance = balance_so_far + balance_child at cost 0 (keep) or (edge_weight &minus; dp[child]) (cut), and (3) apply small-to-large to reduce O(n&sup2;) to O(n log n). All three realisations must arrive in sequence under time pressure.<br><br>
+                        <strong>Problem 3 &mdash; "Maximum XOR Path in Tree with K Updates" (Stage 4 + Stage 5)</strong><br>
+                        <em>Source:</em> Custom adaptation of CF 571D + trie-on-tree<br>
+                        <em>Stages tested:</em> Stage 4 (XOR path transformation) + Stage 5 (trie as per-centroid data structure)<br>
+                        <em>Summary:</em> Given a weighted tree, answer q queries: "What is the maximum XOR of values on any path in the tree?" After each query, one edge weight is updated.<br>
+                        <em>Why it proves mastery:</em> Three independent insights must all arrive: (1) XOR path = XOR of two root-to-node prefixes (Stage 4 reduction); (2) maximum XOR over all pairs = trie query (Stage 5 data structure); (3) updates require centroid decomposition to localise change to O(log n) centroids (Stage 5 decomposition). Missing any one makes the problem unsolvable. Solving cold certifies mastery of the full staircase.
+                    </div>
+                </div>
+            </div>
+            <div class="topic-card" id="tp39">
+                <div class="topic-header">
+                    <div class="topic-num">39</div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div class="topic-title">Dynamic Programming &middot; Digit DP</div>
+                            <span class="tier-badge tier-T3">Advanced Pattern</span>
+                            <span class="topic-type">Tight-Flag DP &middot; Leading Zero &middot; Digit Sum/Count &middot; Value mod K &middot; Bitmask &middot; Sum Tuple &middot; Matrix Exponentiation</span>
+                        </div>
+                        <div class="topic-meta">29 problems &middot; 5 stages &middot; (pos, tight), (pos, tight, prev), (pos, tight, leading, sum), bitmask, value mod K, two tight flags, matrix exp</div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="info-box"><strong>Why This Topic Matters:</strong> Digit DP solves a specific and recurring class of problems: count (or sum) integers in a range [L, R] satisfying a property defined on their decimal (or binary) digits. The core invariant is the prefix-tight constraint: when building a number digit by digit from most significant to least, at each position you are either tight (the prefix so far equals the prefix of the upper bound, so the next digit is limited) or free (the prefix is already strictly less, so the next digit can be anything 0&ndash;9). This boolean flag, combined with whatever property-specific state the problem demands, is the complete state space &mdash; memoisation over it runs in O(digits &times; state_space), typically O(18 &times; small_constant) for Google/ICPC/IOI-level problems. It appears constantly because range [1, 10&sup1;&#8312;] makes brute force impossible, recognisability is low ("count integers with property P"), and the template &mdash; once mastered &mdash; becomes a mechanical frame into which any digit property is slotted.</div>
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>Digit DP is "controlled digit-by-digit number construction."</strong> You are building the number one digit at a time from left to right, holding a permission slip (the tight flag) that says whether you are still constrained by the upper bound. At each position, you try every valid digit, update the permission slip, update any problem-specific running state, and memoise. The entire range [0, N] is implicitly enumerated in O(digits &times; state) time; [L, R] is answered as f(R) &minus; f(L&minus;1).<br><br>
+                        <strong>How this mental model scales through the 5 stages:</strong><br>
+                        &bull; <strong>Stage 1 &mdash; Simplest form:</strong> State = (position, tight). Count numbers &le; N with no extra restriction. Memo table has 18 &times; 2 = 36 entries. Pure mechanical framework.<br>
+                        &bull; <strong>Stage 2 &mdash; What changes:</strong> One digit constraint added (no two adjacent equal; digits sum &le; K; no digit 4). State gains one dimension: (pos, tight, prev_digit) or (pos, tight, digit_sum). Tight logic UNCHANGED &mdash; only the validity check at each digit placement is new.<br>
+                        &bull; <strong>Stage 3 &mdash; What expands:</strong> Composite property: two simultaneous constraints, or a running value (remainder mod m, bitmask of used digits, count of a specific digit). State = (pos, tight, leading, extra_1, extra_2). Transitions check ALL dimensions simultaneously.<br>
+                        &bull; <strong>Stage 4 &mdash; What is hidden:</strong> Problem does NOT say "count integers." It asks for a count of pairs, sequences, or strings &mdash; but counting structure is isomorphic to digit DP after reformulation (digits are bits; tight = lexicographic upper bound).<br>
+                        &bull; <strong>Stage 5 &mdash; What is optimised:</strong> State space is huge (bitmask over 10 digits = 1024 states, or mod a large prime). Matrix exponentiation collapses O(digits &times; states&sup2;) into O(states&sup3; log digits). Or meet-in-the-middle on digit halves.
+                    </div>
+                    <div class="sec-title">Core Invariants / Proof Sketches</div>
+                    <div class="core-box">
+                        <strong>Invariant 1: Prefix Decomposition Correctness</strong><br>
+                        <em>Claim:</em> count(N) = integers in [0, N] satisfying P = solve(pos=0, tight=true, leading=true, extra=initial).<br>
+                        <em>Proof sketch:</em> (1) <em>Completeness:</em> every integer x &le; N is enumerated by exactly one path through the recursion; at each position i, digit x[i] is chosen. (2) <em>No double-counting:</em> the recursion partitions [0, N] by the FIRST position where the chosen digit is strictly less than bound[i]; at that position, tight becomes false and future digits are free &mdash; creating a disjoint cover of [0, N]. (3) <em>Memoisation validity:</em> the sub-problem (pos, tight=false, leading, extra) is identical regardless of which prefix led to it, because once tight=false, future choices are unconstrained. Only (pos, tight=true, ...) depends on the specific bound. Distinct sub-problems = O(n &times; 2 &times; state_space). &#9633;<br><br>
+                        <strong>Invariant 2: Range Query via Subtraction</strong><br>
+                        <em>Claim:</em> count(integers in [L, R] satisfying P) = f(R) &minus; f(L&minus;1) where f(x) = count in [0, x].<br>
+                        <em>Proof sketch:</em> Let S(x) = set of integers in [0, x] satisfying P. Since S(L&minus;1) &sube; S(R): |S(R)| &minus; |S(L&minus;1)| = |S(R) \ S(L&minus;1)| = count in [L, R]. Standard inclusion-exclusion for ranges, valid because P is evaluated per integer independently. &#9633;
+                    </div>
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Group 1 &mdash; Counting with a single digit constraint:</strong><br>
+                        &bull; <strong>Count integers &le; N with no digit 4</strong> &mdash; Stage 1 | O(18 &times; 2) | (pos, tight) | pure framework; no extra state<br>
+                        &bull; <strong>Count integers &le; N with no two adjacent equal digits</strong> &mdash; Stage 2 | O(18 &times; 2 &times; 10) | (pos, tight, prev) | ONE new dim: previous digit<br>
+                        &bull; <strong>Count integers in [L, R] with digit sum = K</strong> &mdash; Stage 2 | O(18 &times; 2 &times; 2 &times; 163) | (pos, tight, leading, sum) | cumulative digit sum; leading zero handling<br>
+                        &bull; <strong>Digit sum divisible by K</strong> &mdash; Stage 2 | O(18 &times; 2 &times; K) | (pos, tight, sum_mod_k) | sum tracked mod K<br><br>
+                        <strong>Group 2 &mdash; Digit-set / bitmask constraint:</strong><br>
+                        &bull; <strong>Using only digits from allowed set</strong> &mdash; Stage 2 | O(18 &times; 2 &times; 2) | check digit &isin; allowed<br>
+                        &bull; <strong>Using AT MOST K distinct digits</strong> &mdash; Stage 3 | O(18 &times; 2 &times; 2 &times; 1024) | (pos, tight, leading, bitmask_used)<br>
+                        &bull; <strong>Pandigital (uses all 10 digits)</strong> &mdash; Stage 3 | O(18 &times; 2 &times; 2 &times; 1024) | terminal check mask == (1&lt;&lt;10)&minus;1<br><br>
+                        <strong>Group 3 &mdash; Modular constraint:</strong><br>
+                        &bull; <strong>Value &equiv; 0 (mod K)</strong> &mdash; Stage 2 | O(18 &times; 2 &times; K) | (pos, tight, val_mod_K) | recurrence: new_mod = (old &times; 10 + d) % K &mdash; NUMBER mod K, NOT digit-sum mod K<br>
+                        &bull; <strong>Self-dividing: digit sum divides number</strong> &mdash; Stage 3 | tracks digit_sum AND partial_value<br>
+                        &bull; <strong>Multiples of K with all digits &le; D</strong> &mdash; Stage 3 | combines val_mod_K with per-digit constraint<br><br>
+                        <strong>Group 4 &mdash; Sum (not count) over range:</strong><br>
+                        &bull; <strong>Sum of integers in [1, N]</strong> &mdash; Stage 2 | contribution = d &times; 10^remaining &times; free_count<br>
+                        &bull; <strong>Sum of digit sums in [1, N]</strong> &mdash; Stage 2 | DP returns (count, sum_of_digit_sums)<br>
+                        &bull; <strong>Sum of integers &le; N satisfying P</strong> &mdash; Stage 3 | DP returns (count, total_sum) tuple<br><br>
+                        <strong>Group 5 &mdash; Multi-variable / two-number constraints:</strong><br>
+                        &bull; <strong>Count pairs (a, b) with digit_property(a XOR b)</strong> &mdash; Stage 4 | TWO tight flags; both numbers built simultaneously<br>
+                        &bull; <strong>Binary rep: more 1s than 0s</strong> &mdash; Stage 3 | base-2; (pos, tight, leading, ones_minus_zeros)<br>
+                        &bull; <strong>Base-10 value &equiv; base-B value (mod K)</strong> &mdash; Stage 4 | state = (mod_base10, mod_baseB)<br><br>
+                        <strong>Group 6 &mdash; Non-adjacent / structural pattern constraints:</strong><br>
+                        &bull; <strong>No digit d appearing &gt; K times</strong> &mdash; Stage 3 | frequency vector or compressed state<br>
+                        &bull; <strong>Palindromes &le; N</strong> &mdash; Stage 3 | build outside-in; tight applies to first half only<br>
+                        &bull; <strong>Strictly increasing digits</strong> &mdash; Stage 2 | (pos, tight, prev) with d &gt; prev<br><br>
+                        <strong>Group 7 &mdash; Binary / bitwise digit DP:</strong><br>
+                        &bull; <strong>Exactly K set bits in [L, R]</strong> &mdash; Stage 3 | base 2; 60 bits; (pos, tight, leading, bits_so_far)<br>
+                        &bull; <strong>A AND x = 0 (no shared bits)</strong> &mdash; Stage 3 | per-bit constraint fixed by A<br>
+                        &bull; <strong>Maximum XOR of any two numbers in [L, R]</strong> &mdash; Stage 4 | greedy top-down on bits<br><br>
+                        <strong>Group 8 &mdash; Matrix exponentiation (huge n):</strong><br>
+                        &bull; <strong>n-digit numbers with no two adjacent equal (n &le; 10^18)</strong> &mdash; Stage 5 | O(10&sup3; log n) | transition matrix exp<br>
+                        &bull; <strong>Strings length L with property P (L &le; 10^9)</strong> &mdash; Stage 5 | O(states&sup3; log L)<br><br>
+                        <strong>Group 9 &mdash; Implicit / disguised Digit DP:</strong><br>
+                        &bull; <strong>Count good strings (LC 2466)</strong> &mdash; Stage 4 | (length, tight_equiv) | recognising equivalence IS the solve<br>
+                        &bull; <strong>Lexicographic K-th number</strong> &mdash; Stage 4 | count prefixes in lex order + binary search descent
+                    </div>
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed</th></tr></thead>
+                        <tbody>
+                        <tr><td>Count with forbidden digit</td><td>O(18 &times; 2) = O(36)</td><td>O(36)</td><td>Baseline: (pos, tight) only</td></tr>
+                        <tr><td>Previous-digit tracking</td><td>O(18 &times; 2 &times; 10) = O(360)</td><td>O(360)</td><td>+prev_digit dim</td></tr>
+                        <tr><td>Leading-zero flag</td><td>O(18 &times; 2 &times; 2 &times; 10)</td><td>O(720)</td><td>+leading boolean</td></tr>
+                        <tr><td>Digit-sum tracking</td><td>O(18 &times; 2 &times; 2 &times; 163)</td><td>~12K</td><td>+digit_sum running total (max 9&times;18=162)</td></tr>
+                        <tr><td>Modulo-K tracking</td><td>O(18 &times; 2 &times; K)</td><td>O(18 &times; 2 &times; K)</td><td>+value_mod_K; K up to ~10&#8310; feasible</td></tr>
+                        <tr><td>Bitmask of used digits</td><td>O(18 &times; 2 &times; 2 &times; 1024)</td><td>~74K</td><td>+bitmask over digits 0&ndash;9</td></tr>
+                        <tr><td>Two-variable digit DP</td><td>O(18 &times; 2 &times; 2 &times; state)</td><td>same &times; 2 tight</td><td>Two tight flags; build two numbers</td></tr>
+                        <tr><td>Sum DP (tuple return)</td><td>same as count</td><td>same</td><td>DP returns (count, sum) pair</td></tr>
+                        <tr><td>Binary digit DP</td><td>O(60 &times; 2 &times; 2 &times; state)</td><td>O(60 &times; state)</td><td>Base-2; 60 bits</td></tr>
+                        <tr><td>Matrix exponentiation</td><td>O(states&sup3; &times; log L)</td><td>O(states&sup2;)</td><td>Collapses O(L &times; states) recurrence</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">State Evolution for Each Sub-Variant Group</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Group 1: Single Digit Constraint</strong><br>
+                        <strong>Stage 1:</strong> dp[pos][tight] = count of valid completions<br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0;font-size:.78rem"><code>Recurrence:
+  limit = bound[pos] if tight else 9
+  dp[pos][tight] = SUM_&#123;d=0..limit&#125; dp[pos+1][tight AND (d==limit)]
+    (d rejected if violates property)
+Base: dp[n][tight] = 1  (n digits placed; one valid number)
+Preferred: TOP-DOWN with memo &mdash; tight=true branch differs per bound;
+  tight=false is fully reusable across queries.</code></pre>
+                        <strong>Stage 2:</strong> dp[pos][tight][prev] &mdash; adds previous digit; property(d, prev) checked per placement.<br><br>
+                        <strong>Stage 3:</strong> dp[pos][tight][leading][digit_sum] &mdash; adds digit sum accumulator.<br>
+                        next_leading = leading AND (d == 0); next_sum = sum + (0 if next_leading else d)<br>
+                        Base: dp[n][tight][leading][sum] = 1 if sum satisfies property else 0<br><br>
+                        <strong>Group 3: Modular Constraint (Number mod K)</strong><br>
+                        <strong>Stage 2:</strong> dp[pos][tight][mod_val] &mdash; the partial NUMBER value mod K<br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0;font-size:.78rem"><code>Recurrence:
+  dp[pos][tight][mod] = SUM_&#123;d&#125; dp[pos+1][...][(mod*10 + d) % K]
+Base: dp[n][tight][mod] = 1 if mod==0 else 0
+
+KEY DISTINCTION: tracks VALUE of the number mod K, not digit-sum mod K.
+Recurrence is (mod * 10 + d) % K &mdash; "shift left and add" in base 10.
+Optimisation (large K): meet-in-the-middle &mdash; split digits into halves,
+  enumerate all (half_value, count) per half, join via hashmap.</code></pre>
+                        <strong>Group 2: Bitmask of Used Digits</strong><br>
+                        <strong>Stage 3:</strong> dp[pos][tight][leading][mask]<br>
+                        next_leading = leading AND (d == 0); next_mask = mask if next_leading else (mask | (1 &lt;&lt; d))<br>
+                        Base: dp[n][...][mask] = 1 if popcount(mask) &le; K else 0 (or mask == (1&lt;&lt;10)&minus;1 for pandigital)<br>
+                        State size: 18 &times; 2 &times; 2 &times; 1024 &asymp; 74,000. Precompute popcount for all 1024 masks.<br><br>
+                        <strong>Group 4: Sum DP (Tuple Return)</strong><br>
+                        <strong>Stage 3:</strong> dp returns (count, total_value_sum)<br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0;font-size:.78rem"><code>For each valid digit d:
+  (sub_count, sub_sum) = dp[pos+1][...]
+  contribution of d at pos = d * 10^remaining * sub_count
+  total_count += sub_count
+  total_sum   += sub_sum + d * 10^remaining * sub_count
+Base: dp[n][...] = (1, 0)   # one number, tail sum = 0
+Precompute pow10[0..18] to avoid recomputation.</code></pre>
+                    </div>
+                    <div class="sec-title">Mastery Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Source</th><th class="prob-name">Problem</th><th>Diff</th><th>Sub-Variant</th><th class="insight">Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">1</span></td><td>1</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-the-number-of-powerful-integers/" target="_blank">LC 2999</a> Count the Number of Powerful Integers</td><td><span class="diff-h">Hard</span></td><td>Count &le; N with suffix = s and each digit &le; limit</td><td class="insight">THE baseline: pure (pos, tight) framework; suffix pre-fixed; count free choices in prefix. Separates free-prefix positions from the fixed suffix while maintaining tight through the junction</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">1</span></td><td>1</td><td>CSES</td><td class="prob-name">CSES &mdash; Counting Numbers</td><td><span class="diff-m">Medium</span></td><td>No two adjacent equal digits; (pos, tight, prev_digit)</td><td class="insight">Adds prev_digit as third state dim; validity = digit &ne; prev_digit. Establishes "carry a running property through DFS" pattern</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-digit-one/" target="_blank">LC 233</a> Number of Digit One</td><td><span class="diff-h">Hard</span></td><td>Total 1s across [1, N]; DP returns (count, ones_count)</td><td class="insight">Hard: shifts from counting NUMBERS to summing a DIGIT PROPERTY. WHY hard: decomposing "sum of digit occurrences over range" into per-position contributions requires tuple-return pattern</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-numbers-with-unique-digits/" target="_blank">LC 357</a> Count Numbers with Unique Digits</td><td><span class="diff-m">Medium</span></td><td>(pos, tight, bitmask_of_used)</td><td class="insight">First bitmask-based digit DP. ONE change: bitmask tracks which digits appear; bit checked before placement</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l1">1</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/numbers-with-repeated-digits/" target="_blank">LC 1012</a> Numbers With Repeated Digits</td><td><span class="diff-h">Hard</span></td><td>Complement counting: N &minus; (count with all unique)</td><td class="insight">Hard: COMPLEMENT counting pattern. WHY hard: leading-zero interaction with bitmask (leading zeros must NOT set bit 0 in mask)</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">2</span></td><td>2</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-special-integers/" target="_blank">LC 2376</a> Count Special Integers</td><td><span class="diff-h">Hard</span></td><td>(pos, tight, leading, bitmask)</td><td class="insight">Formally adds leading_zero flag; leading zeros do NOT set bits. Establishes canonical 4-component state (pos, tight, leading, property)</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">2</span></td><td>2</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1073/E" target="_blank">CF 1073E</a> Segment Sum</td><td><span class="diff-h">Hard</span></td><td>Sum over [L, R] with digits from set S; DP returns (count, sum)</td><td class="insight">Hard: tuple-return requires positional-contribution formula d &times; 10^remaining &times; sub_count. WHY hard: computing positional contribution when tight is active for some but not all digit choices</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l2">2</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/non-negative-integers-without-consecutive-ones/" target="_blank">LC 600</a> Non-negative Integers w/o Consecutive Ones</td><td><span class="diff-h">Hard</span></td><td>Base-2 digit DP; (pos, tight, prev_bit)</td><td class="insight">Hard: recognise this is digit DP in base 2 (not Fibonacci recursion). Binary digit DP = same framework, base changed</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l2">2</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/numbers-at-most-n-given-digit-set/" target="_blank">LC 902</a> Numbers At Most N Given Digit Set</td><td><span class="diff-h">Hard</span></td><td>Variable allowed set of size K</td><td class="insight">Branching factor per position = |D|, not 10. WHY hard: tight comparison must handle digits in D that are &le; bound digit but not equal</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l2">2</span></td><td>3</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/55/D" target="_blank">CF 55D</a> Beautiful Numbers</td><td><span class="diff-h">Hard</span></td><td>Divisible by ALL its own digits; dynamic LCM compressed to 2520 states</td><td class="insight">Hard: modulus is DYNAMIC (LCM of digits placed). Key: lcm(1..9) = 2520 has only 48 divisors; state = (pos, tight, mod_2520, lcm_index). WHY hard: recognising lcm(1..9)=2520 compression</td></tr>
+                        <tr><td class="num-cell" colspan="8" style="background:var(--error);color:#fff;font-weight:700;text-align:center">&#x26A1; CLIFF WARNING: Layer 2 &rarr; Layer 3 &mdash; Next problems combine digit DP with non-trivial math (LCM, XOR, palindrome symmetry, simultaneous modular constraints). DFS framework unchanged but STATE DESIGN requires mathematical insight BEFORE coding. Prepare: (1) write state tuple before any code; (2) verify state size fits memory; (3) for "divisible by own digits" variants, precompute digit-set &rarr; LCM map.</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/digit-count-in-range/" target="_blank">LC 1067</a> Digit Count in Range (Premium)</td><td><span class="diff-h">Hard</span></td><td>Total occurrences of specific digit d in [low, high]</td><td class="insight">Switches from counting NUMBERS to counting a specific digit's APPEARANCES; (pos, tight, leading, count_of_d). WHY hard: leading-zero interaction &mdash; digit 0 must not be counted during leading zeros</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/number-of-beautiful-integers-in-the-range/" target="_blank">LC 2827</a> Number of Beautiful Integers in the Range</td><td><span class="diff-h">Hard</span></td><td>Equal count of odd/even digits AND divisible by K</td><td class="insight">Hard: TWO independent property dimensions (parity balance + value mod K); state = (pos, tight, leading, balance, mod). WHY hard: balance = (odd_count &minus; even_count) as signed integer; leading zeros contribute 0 to either count</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l3">3</span></td><td>3</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/find-all-good-strings/" target="_blank">LC 1397</a> Find All Good Strings (Premium)</td><td><span class="diff-h">Hard</span></td><td>Strings in [s1, s2] not containing pattern p; KMP automaton state</td><td class="insight">Hard: "digit" is a character; tight applies lexicographically; "no pattern" tracked via KMP failure function state. WHY hard: KMP automaton precomputed + two tight flags (s1, s2) + KMP state combined</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l3">3</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-stepping-numbers-in-range/" target="_blank">LC 2801</a> Count Stepping Numbers in Range</td><td><span class="diff-h">Hard</span></td><td>abs(digit[i] &minus; digit[i+1]) = 1 for all adjacent pairs</td><td class="insight">Hard: string-bounded [low, high] given as DECIMAL STRINGS; two tight flags simultaneously; digit validity = abs(d &minus; prev) == 1. WHY hard: two tight flags + prev_digit + leading zero</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l3">3</span></td><td>4</td><td>AtCoder</td><td class="prob-name">ABC 228 F &mdash; Lamps</td><td><span class="diff-h">Hard</span></td><td>&le; N with &le; K set bits AND divisible by M</td><td class="insight">Hard: binary digit DP (60 bits) + (1) at-most-K-bits + (2) value mod M = 0; state = (pos, tight, bits_placed, mod_val). Bridges binary DP with two simultaneous constraints</td></tr>
+                        <tr><td class="num-cell" colspan="8" style="background:var(--error);color:#fff;font-weight:700;text-align:center">&#x26A1; CLIFF WARNING: Layer 3 &rarr; Layer 4 &mdash; Next problems do NOT present as "count integers." Digit DP structure is HIDDEN: "digits" may be bits, levels of a recursive structure, or characters lexicographically constrained. Recognition IS the challenge. For any "count valid x in [lo, hi]" where x is built sequentially with monotonicity, ask: is this digit DP in disguise?</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-of-integers/" target="_blank">LC 2719</a> Count of Integers</td><td><span class="diff-h">Hard</span></td><td>[num1, num2] with digit sum in [min_sum, max_sum]; two tight flags</td><td class="insight">ONE new idea: BOTH lower AND upper tight flag simultaneously; num1=tight_lo, num2=tight_hi; avoids computing f(upper) &minus; f(lower&minus;1) by building both bounds in one pass</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-symmetric-integers/" target="_blank">LC 2843</a> Count Symmetric Integers</td><td><span class="diff-m">Medium</span></td><td>First-half digit sum = second-half digit sum</td><td class="insight">Property links POSITION i with position n&minus;1&minus;i; tight framework unchanged; state tracks whether in first or second half + running balance</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l4">4</span></td><td>4</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/next-greater-numerically-balanced-number/" target="_blank">LC 2048</a> Next Greater Numerically Balanced Number</td><td><span class="diff-m">Medium</span></td><td>Digit d appears exactly d times</td><td class="insight">LOOKS like search. Insight: generate candidate structures (valid digit-counts with sum &le; 10); digit DP or direct construction finds smallest &ge; n among candidates</td></tr>
+                        <tr><td class="num-cell">19</td><td><span class="l4">4</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1286/F" target="_blank">CF 1286F</a> LCC</td><td><span class="diff-h">Hard</span></td><td>Pairs (a,b) with XOR digit property; TWO tight flags</td><td class="insight">Hard: two-variable digit DP; both numbers built simultaneously bit by bit; XOR of bits = new "digit". WHY hard: tight flags interact non-trivially when A and B have different lengths</td></tr>
+                        <tr><td class="num-cell">20</td><td><span class="l4">4</span></td><td>5</td><td>Codeforces</td><td class="prob-name"><a class="lc-link" href="https://codeforces.com/problemset/problem/1202/D" target="_blank">CF 1202D</a> Print String</td><td><span class="diff-h">Hard</span></td><td>Strings length n in [L, R] with no forbidden substrings</td><td class="insight">Hard: combines KMP/Aho-Corasick automaton state with TWO tight flags. "String" is the "number". WHY hard: automaton state space can be large; two tight flags compound state</td></tr>
+                        <tr><td class="num-cell">21</td><td><span class="l5">5</span></td><td>5</td><td>Custom</td><td class="prob-name">&#x1F527; Palindrome Digit DP</td><td><span class="diff-h">Hard</span></td><td>Count palindromes in [L, R]; build outside-in</td><td class="insight">Palindrome LINKS position i with position d&minus;1&minus;i; tight applies only to first half; effective free positions = ceil(d/2). For each length d, enumerate first-half values and count those whose mirror falls in [L, R]</td></tr>
+                        <tr><td class="num-cell">22</td><td><span class="l5">5</span></td><td>5</td><td>Codeforces</td><td class="prob-name">CF 1070E &mdash; Alternating Digit Sum</td><td><span class="diff-h">Hard</span></td><td>Sum of even-pos &minus; odd-pos digits divisible by K</td><td class="insight">Position PARITY determines SIGN of digit's contribution; next_sum = (sum + (&minus;1)^pos &times; digit) mod K</td></tr>
+                        <tr><td class="num-cell">23</td><td><span class="l5">5</span></td><td>5</td><td>Custom</td><td class="prob-name">&#x1F527; Matrix Exponentiation Digit DP</td><td><span class="diff-h">Hard</span></td><td>n-digit numbers no-two-adjacent-equal; n &le; 10^18</td><td class="insight">Hard: O(n &times; 10) too slow when n ~ 10^18. Recurrence is LINEAR: f(k) = T &times; f(k&minus;1). Build 10&times;10 matrix; exponentiate to n-th power; O(10&sup3; log n). Bridges "small n" to "astronomically large n"</td></tr>
+                        <tr><td class="num-cell">24</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/next-permutation/" target="_blank">LC 31</a> Next Permutation &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>Greedy reverse-scan; NOT digit DP</td><td class="insight">NOT digit DP: "find next number" problems are greedy (rightmost descent, swap, reverse suffix) in O(n). Digit DP counts; it does NOT construct specific numbers directly</td></tr>
+                        <tr><td class="num-cell">25</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/count-good-numbers/" target="_blank">LC 1922</a> Count Good Numbers &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>Modular exponentiation; pure combinatorics</td><td class="insight">NOT digit DP: no range constraint [L, R]; property independent per position. Answer = 5^ceil(n/2) &times; 4^floor(n/2) mod M via modexp</td></tr>
+                        <tr><td class="num-cell">26</td><td><span class="l5">5</span></td><td>&#x26A0;&#xFE0F;</td><td>LeetCode</td><td class="prob-name"><a class="lc-link" href="https://leetcode.com/problems/factorial-trailing-zeroes/" target="_blank">LC 172</a> Factorial Trailing Zeroes &#x26A0;&#xFE0F; TRAP</td><td><span class="diff-m">Medium</span></td><td>Legendre's formula</td><td class="insight">NOT digit DP: not a range-count problem. Count factors of 5 in n! = floor(n/5) + floor(n/25) + ... Mathematical formula, not a DP</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">Custom Problem Statements</div>
+                    <div class="core-box">
+                        <strong>&#x1F527; Custom Problem 1: Palindrome Digit DP (S.No 21)</strong><br>
+                        <em>Statement:</em> Given two integers L and R (1 &le; L &le; R &le; 10^18), count all integers in [L, R] whose decimal representation is a palindrome. Output count mod 10&#8313; + 7.<br>
+                        <em>Stage:</em> Stage 3 (structural property linking distant positions) + Stage 4 (building outside-in).<br>
+                        <em>Approach:</em> For each length d = 1..18, count d-digit palindromes in [L, R]. A d-digit palindrome is determined by its first ceil(d/2) digits. Enumerate "half-numbers" h such that mirror(h, d) &isin; [L, R]. This reduces to 1D range count on h in [10^(ceil(d/2)&minus;1), 10^ceil(d/2) &minus; 1], O(ceil(d/2) &times; 2) per length.<br>
+                        <em>Insight:</em> Palindrome constraint LINKS position i with position d&minus;1&minus;i. Building left-to-right, once first half is fixed, second half is determined. Effective free positions = ceil(d/2) instead of d.<br>
+                        <em>Example:</em> L=1, R=100. Palindromes: 1..9 (nine 1-digit) + 11,22,..,99 (nine 2-digit) = 18.<br><br>
+                        <strong>&#x1F527; Custom Problem 2: Matrix Exponentiation Digit DP (S.No 23)</strong><br>
+                        <em>Statement:</em> Given a positive integer n (1 &le; n &le; 10^18), count all n-digit positive integers (no leading zeros) such that no two adjacent digits are equal. Output mod 10&#8313; + 7.<br>
+                        <em>Stage:</em> Stage 5 (matrix exponentiation).<br>
+                        <em>Approach:</em> Let f(k, d) = k-digit numbers ending in d with no-adjacent-equal. Base: f(1, d) = 1 for d &isin; &#123;1..9&#125;, f(1, 0) = 0. Transition: f(k, d) = SUM over d' &ne; d of f(k&minus;1, d'). Build 10&times;10 transition matrix T where T[d][d'] = 1 if d &ne; d' else 0. Compute T^(n&minus;1) via matrix exponentiation. Answer = SUM over d=1..9 of [T^(n&minus;1) &times; init][d] where init = [0, 1, 1, ..., 1].<br>
+                        <em>Insight:</em> When n is too large for O(n &times; 10), note the recurrence is LINEAR: f(k) = T &times; f(k&minus;1). Linear recurrences on state vector of size S run in O(S&sup3; log n) via matrix exponentiation.<br>
+                        <em>Example:</em> n = 2. Answer = 9 &times; 9 = 81 (first: 9 choices; second: 9 choices &ne; first).
+                    </div>
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Linguistic Triggers:</strong><br>
+                        &bull; "Count integers in [L, R] satisfying [property on digits]" &rarr; Stage 1 digit DP; f(R) &minus; f(L&minus;1); property determines extra state<br>
+                        &bull; "How many numbers from 1 to N have [digit sum / count / pattern]" &rarr; Stage 2; extra dim = accumulated property (digit sum, count of specific digit)<br>
+                        &bull; "Count n-digit numbers where [adjacency / ordering between consecutive digits]" &rarr; Stage 2; add prev_digit<br>
+                        &bull; "Digits form [specific set / all unique / pandigital]" &rarr; Stage 3 bitmask digit DP; extra dim = bitmask of used digits<br>
+                        &bull; "Numbers &le; N divisible by K with additional digit constraint" &rarr; Stage 3; value_mod_K AND additional state simultaneously; check state size before coding<br><br>
+                        <strong>Structural Triggers:</strong><br>
+                        &bull; Range [L, R] given with L, R &le; 10^18 and property is about individual digits &rarr; digit DP is the ONLY feasible approach; brute force is impossible<br>
+                        &bull; Property defined RECURSIVELY on digit decomposition ("divisible by its own digits") &rarr; digit DP with dynamic modulus; precompute modulus space (lcm(1..9) = 2520)<br>
+                        &bull; "Strings in [s1, s2]" with character-pattern constraint &rarr; string digit DP; characters are "digits"; tight applies lexicographically<br><br>
+                        <strong>Constraint Triggers:</strong><br>
+                        &bull; N &le; 10^18 (18 decimal digits) AND property on digit structure &rarr; digit DP is the intended solution<br>
+                        &bull; n &le; 10^9 but represents NUMBER OF DIGITS &rarr; matrix exponentiation; recurrence is linear; O(states&sup3; log n)<br><br>
+                        <strong>Anti-Triggers:</strong><br>
+                        &bull; "Find the n-th lexicographically smallest number" &rarr; NOT direct digit DP &rarr; binary search on count function (f(x) uses digit DP internally) + greedy descent<br>
+                        &bull; "Count integers with exactly K prime factors in [L, R]" &rarr; NOT digit DP &rarr; number-theoretic sieve; factorisation is not a digit property<br>
+                        &bull; "Sum of all divisors of all integers in [1, N]" &rarr; NOT digit DP &rarr; Dirichlet hyperbola method; divisor sum is multiplicative
+                    </div>
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                        <pre style="white-space:pre-wrap;margin:.4rem 0;font-size:.78rem"><code>Q1: Does the problem ask for a COUNT (or SUM) over integers in [L, R]
+    where R can be up to 10^18?
+  YES: Digit DP is the primary candidate. Continue to Q2.
+  NO:  If R <= 10^6: brute force/sieve. If R <= 10^9: math formula.
+
+Q2: Is the property defined ENTIRELY by digits (decimal, binary, base-b),
+    independently of arithmetic properties?
+  YES: Digit DP applies directly. Continue.
+  NO:  Can the property be REDUCED to a digit property?
+       "divisible by K" = track value mod K = digit DP with mod state.
+
+Q3: What info must be CARRIED from left to right?
+    (Defines extra state dimensions beyond pos and tight)
+  Nothing:               (pos, tight).           Stage 1. O(18*2).
+  Previous digit:        (pos, tight, prev).     Stage 2. O(18*2*10).
+  Running sum/count:     (pos,tight,leading,sum).Stage 2. O(18*2*2*maxS).
+  Bitmask used digits:   (pos,tight,leading,mask)Stage 3. O(18*2*2*1024).
+  Value mod K:           (pos, tight, mod).      Stage 2-3. O(18*2*K).
+  Multiple simult props: Stage 3. Product of all state sizes.
+  Two tight flags:       Stage 4. state * 4.
+
+Q4: Does the problem LOOK like digit DP without saying so?
+    ("count strings in [s1, s2]", "count pairs (a,b) with a XOR b <= N",
+     "count x <= N with some bit property")
+  YES: Stage 4. Identify "digits" (bits, chars), "tight" (lex bound),
+       extra state. Apply standard framework.
+
+Q5: Is O(digits * state_space) too slow?
+    (n = digit count up to 10^18, or K up to 10^6)
+  YES: Stage 5:
+       - Linear recurrence + huge n: matrix exponentiation.
+       - Large K (mod K): meet in the middle (split at digit n/2).
+       - State space explosion: look for compression
+         (lcm(1..9)=2520 for "divisible by own digits").</code></pre>
+                    </div>
+                    <div class="sec-title">When This Technique Breaks</div>
+                    <div class="warn-box" style="line-height:1.75">
+                        &bull; <strong>[Stage 1] Using digit DP when range is small (&le; 10&#8310;):</strong> Non-trivial implementation overhead. For small ranges, sieve or brute force is faster to write and less bug-prone. Fix: use digit DP ONLY when N &gt; 10&#8310; or property is hard to enumerate directly.<br>
+                        &bull; <strong>[Stage 2] Missing leading-zero flag, counting 0-padded shorts as valid:</strong> Without leading flag, "007" is treated as 3-digit starting with 0, polluting bitmasks and adjacency checks. Fix: maintain leading = (all digits placed are 0). When leading=true, skip digit constraint.<br>
+                        &bull; <strong>[Stage 2] Caching tight=true across different bounds:</strong> tight=true depends on SPECIFIC upper bound. Running f(R) and f(L&minus;1) in same memo table contaminates results. Fix: two separate memo tables, OR only memoise tight=false (tight=true re-explored; only n positions).<br>
+                        &bull; <strong>[Stage 3] State explosion from large K (mod K with K up to 10&#8310;):</strong> 18 &times; 2 &times; K = 36M overflows memory. Fix: meet-in-the-middle &mdash; split digits in half; enumerate (prefix_mod, count) and (suffix_mod, count); join via hashmap in O(n/2 &times; K).<br>
+                        &bull; <strong>[Stage 3] Incorrect two-tight-flag transitions:</strong> When both tight_lo and tight_hi active, valid d &isin; [lo_digit if tight_lo else 0, hi_digit if tight_hi else 9]. Candidates forget to CLIP the lower bound. Fix: next_tight_lo = tight_lo AND (d == lo_digit); next_tight_hi = tight_hi AND (d == hi_digit).<br>
+                        &bull; <strong>[Stage 4] Applying digit DP for K-th valid number (construction):</strong> Digit DP counts; it does not construct. Fix: use digit DP as count function INSIDE binary search or greedy construction &mdash; try digits 0..9 in order, count completions, subtract until remainder found.<br>
+                        &bull; <strong>[Stage 5] Not precomputing powers of 10 for sum DP:</strong> Contribution = d &times; 10^remaining &times; sub_count. Recomputing 10^remaining inflates constants. Fix: precompute pow10[0..18] before DFS.
+                    </div>
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="core-box">
+                        <strong>Stage 1 &mdash; Counting Integers &le; N with No Digit 4</strong><br>
+                        <em>Claim:</em> solve(pos=0, tight=true) counts all integers in [0, N] with no digit 4.<br>
+                        <em>Proof:</em> (1) <em>Completeness:</em> every x &le; N is enumerated; if x[pos] &lt; N[pos], subsequent positions are free (tight=false); if x[pos] = N[pos], tight remains true. (2) <em>No over-counting:</em> DFS tree has no cycles; each root-to-leaf path = one integer. (3) <em>Tight correctness:</em> tight=false allows any digit; tight=true allows only 0..N[pos] &mdash; exactly enforces x &le; N. (4) <em>Memoisation validity:</em> dp[pos][tight=false] is independent of prefix (prefix already strictly below). &#9633;<br><br>
+                        <strong>Stage 2 &mdash; Leading Zero Correctness in Bitmask Digit DP</strong><br>
+                        <em>Claim:</em> With leading flag, bitmask captures only digits of the NUMBER (not leading zeros).<br>
+                        <em>Proof sketch:</em> When leading=true and d=0: number hasn't started; bitmask NOT updated with bit 0. When leading=true and d&gt;0: leading flips to false; bit d set. From this point, all subsequent digits (including 0) update mask. Therefore bitmask at completion contains exactly digits in x's significant representation. &#9633;<br><br>
+                        <strong>Stage 3 &mdash; Two-Tight-Flag Correctness</strong><br>
+                        <em>Claim:</em> Two-tight-flag DP (tight_lo for &ge; L, tight_hi for &le; R) counts integers in [L, R].<br>
+                        <em>Proof sketch:</em> <em>Invariant:</em> at every pos, if tight_lo still true, prefix equals L's prefix exactly; if tight_hi still true, prefix equals R's prefix exactly. <em>Valid range:</em> d &isin; [lo_digit if tight_lo else 0, hi_digit if tight_hi else 9]. At terminal pos=n: number satisfies x &ge; L AND x &le; R. By induction on n &minus; pos, sub-problem count is correct. &#9633;
+                    </div>
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box">
+                        <strong>Bug 1 &mdash; Caching tight=true across different bounds</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>@lru_cache(maxsize=None)
+def dp(pos, tight):
+    # BUG: tight=True cached globally; different N reuses stale results
+# FIX: clear cache between calls, OR only cache tight=False:
+def dp(pos, tight):
+    if not tight and pos in memo: return memo[pos]
+    result = compute(pos, tight)
+    if not tight: memo[pos] = result
+    return result</code></pre><br>
+                        <strong>Bug 2 &mdash; Leading zero sets bit 0 in bitmask</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>next_mask = mask | (1 &lt;&lt; d)  # BUG: sets bit 0 when d=0 and still leading
+# FIX:
+next_leading = leading and (d == 0)
+next_mask = mask if next_leading else (mask | (1 &lt;&lt; d))</code></pre><br>
+                        <strong>Bug 3 &mdash; Off-by-one: f(L) instead of f(L-1)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>answer = f(R) - f(L)      # BUG: subtracts L itself if L satisfies P
+answer = f(R) - f(L - 1)  # FIX</code></pre><br>
+                        <strong>Bug 4 &mdash; L-1 underflow at L=0</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>answer = f(R) - (f(L - 1) if L &gt; 0 else 0)  # FIX</code></pre><br>
+                        <strong>Bug 5 &mdash; Digit array built LSB-first</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: digits in LSB order; DP processes MSB first
+while n &gt; 0: digits.append(n % 10); n //= 10
+# FIX: reverse, or just:
+digits = [int(c) for c in str(n)]</code></pre><br>
+                        <strong>Bug 6 &mdash; Value mod K using digit-sum recurrence</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>next_mod = (current_mod + digit) % K        # BUG: digit-sum mod K
+next_mod = (current_mod * 10 + digit) % K  # FIX: NUMBER value mod K</code></pre><br>
+                        <strong>Bug 7 &mdash; LCM state not compressed (for "divisible by own digits")</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code># BUG: treating LCM as raw int grows unbounded
+# FIX: LCM of digits USED SO FAR; max = lcm(1..9) = 2520
+# Precompute 48 divisors of 2520; map each to an index 0..47
+next_digit_lcm = lcm(current_digit_lcm, digit) if digit != 0 else current_digit_lcm
+# State uses lcm_index, not raw LCM</code></pre><br>
+                        <strong>Bug 8 &mdash; Two-tight-flag: lower bound not clamped</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>for d in range(0, hi_limit + 1):      # BUG: starts from 0 when tight_lo is active
+# FIX:
+lo_limit = digits_lo[pos] if tight_lo else 0
+hi_limit = digits_hi[pos] if tight_hi else 9
+for d in range(lo_limit, hi_limit + 1):
+    next_tight_lo = tight_lo and (d == digits_lo[pos])
+    next_tight_hi = tight_hi and (d == digits_hi[pos])</code></pre><br>
+                        <strong>Bug 9 &mdash; Matrix exp: wrong initial vector (allowing 0 as first digit)</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>initial = [1] * 10          # BUG: includes numbers starting with 0
+initial = [0] + [1] * 9    # FIX: first digit in &#123;1..9&#125;</code></pre><br>
+                        <strong>Bug 10 &mdash; Sum DP: wrong positional contribution formula</strong><br>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>total_sum += d * pow10[remaining]  # BUG: missing sub_count multiplier
+# FIX:
+(sub_count, sub_sum) = dp(pos + 1, ...)
+total_sum += sub_sum + d * pow10[remaining] * sub_count
+total_count += sub_count</code></pre>
+                    </div>
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box" style="line-height:1.75">
+                        &bull; <strong>[Stage 1] Not using f(R) &minus; f(L&minus;1) and encoding both bounds in one DP:</strong> Beginners build a two-tight-flag DP when f(R) &minus; f(L&minus;1) suffices. Correct model for 95% of problems: define f(x); answer = f(R) &minus; f(L&minus;1). Only use two tight flags when bounds are given as strings or must be processed simultaneously.<br>
+                        &bull; <strong>[Stage 2] Confusing "digit sum mod K" with "value mod K":</strong> Recurrences differ completely. Digit sum: next = (current + d) % K &mdash; linear. Number value: next = (current &times; 10 + d) % K &mdash; polynomial. Mixing gives wrong answers silently.<br>
+                        &bull; <strong>[Stage 2] Omitting leading_zero flag when constraint involves digit 0:</strong> Without the flag, "007" contributes two 0s to digit count or sets bit 0 in bitmask. Any constraint involving digit 0 requires leading_zero; include by default.<br>
+                        &bull; <strong>[Stage 3] Building state tuple without verifying state space fits memory:</strong> 18 &times; 2 &times; 2 &times; 10&#8310; = 72M entries &times; 8 bytes = 576 MB. Before coding, multiply all dimensions. If &gt; 10&#8311;, seek compression (LCM, meet-in-middle, smarter encoding).<br>
+                        &bull; <strong>[Stage 4] Missing digit DP applicability for string-counting problems:</strong> Strings over lexicographic range [s1, s2] with char-level constraints ARE digit DP. "Digits" = characters; "tight" = lexicographic; upper bound = s2. Substitution is lossless.<br>
+                        &bull; <strong>[Stage 3] Not precomputing digit array:</strong> Repeatedly calling str(n)[pos] or n // 10^pos % 10 inside memoised DFS inflates constants and introduces subtle bugs. Precompute digits = [int(c) for c in str(N)].<br>
+                        &bull; <strong>[Stage 5] Standard DP when n (digit count) is ~10^18:</strong> O(n) states is infeasible. When n is a COUNT of digits (not the number), recurrence is linear &mdash; use matrix exponentiation in O(|S|&sup3; log n).
+                    </div>
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Stage Push</th><th>Question</th><th>Intended Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td>Stage 2</td><td>"Your solution counts integers &le; N with digit sum divisible by K. What if K changes per query, with Q queries up to 10&#8309;?"</td><td>Each query re-runs DP with K as state dim; O(18 &times; 2 &times; K) per query. Better: since digit_sum &le; 162, track ALL residues at once in one pass. Total O(18 &times; 162) per query regardless of K.</td></tr>
+                        <tr><td class="num-cell">2</td><td>Stage 2</td><td>"What if the constraint changes from 'digit sum divisible by K' to 'digit sum is a perfect square'?"</td><td>digit_sum runs 0..162 (9&times;18). At terminal, check if digit_sum is perfect square (precompute &#123;0,1,4,9,...,144&#125;). Zero code change to framework &mdash; only terminal acceptance changes. Emphasises plug-and-play nature.</td></tr>
+                        <tr><td class="num-cell">3</td><td>Stage 3</td><td>"Extend to: count integers &le; N where digit sum is divisible by K AND the number is a palindrome."</td><td>Two INDEPENDENT properties. Add palindrome_half tracking OR use outside-in palindrome construction. Modular constraint adds sum_mod_K; palindrome constraint handled by fixing digit n&minus;1&minus;pos = digit pos. State = (half_pos, tight, leading, sum_mod_K).</td></tr>
+                        <tr><td class="num-cell">4</td><td>Stage 3</td><td>"How to compute the SUM of integers in [L, R] with digit sum &le; K, not just the count?"</td><td>DP returns (count, value_sum) tuple. Contribution of d at pos = d &times; 10^remaining &times; sub_count. Precompute pow10. Both count and sum updated in same DFS. Formula: total_sum += d &times; pow10[remaining] &times; sub_count + sub_sum.</td></tr>
+                        <tr><td class="num-cell">5</td><td>Stage 4</td><td>"Given string s, count same-length strings lex &le; s, no two identical adjacent chars, no char appearing &gt; K times."</td><td>Digit DP on strings: tight is lexicographic. State = (pos, tight, prev_char, freq). For K=1: bitmask over 26 chars. For K&le;2: per-char counts. Framework identical to integer digit DP; "digits" are chars; "base" is alphabet size.</td></tr>
+                        <tr><td class="num-cell">6</td><td>Stage 4</td><td>"Count integers in [L, R] that are both palindromes AND divisible by 7."</td><td>Combine outside-in palindrome construction with value mod 7 tracking. Each palindrome digit at position i contributes d &times; (10^i + 10^(n&minus;1&minus;i)) mod 7. Precompute positional weights mod 7. State = (half_pos, tight, leading, value_mod_7).</td></tr>
+                        <tr><td class="num-cell">7</td><td>Stage 5</td><td>"Your digit DP is O(18 &times; 2 &times; 10 &times; K). What if K = 10&#8313; + 7?"</td><td>18 &times; 2 &times; 10&#8313; is impossible. Meet-in-the-middle: split at digit 9. Enumerate all (prefix_mod, count) pairs and (suffix_mod, count) pairs. Total: (prefix &times; 10&#8313; + suffix) mod K = 0 &rarr; suffix_mod = (&minus;prefix &times; 10&#8313;) mod K. Join via hashmap. For K this large, often problem has extra structure &mdash; use number-theoretic counting instead.</td></tr>
+                        <tr><td class="num-cell">8</td><td>Stage 5</td><td>"Count n-digit numbers (n &le; 10^18) with no two adjacent equal digits."</td><td>Custom Problem 2. Build 10&times;10 matrix T where T[i][j] = 1 if i &ne; j else 0. Initial v[d] = 1 for d &isin; &#123;1..9&#125;, v[0] = 0. Answer = sum(T^(n&minus;1) &times; v). O(10&sup3; log n) &asymp; 60,000 multiplications.</td></tr>
+                        <tr><td class="num-cell">9</td><td>Beyond Stage 5</td><td>"Online stream of queries (L_i, R_i). Each asks count in [L_i, R_i] with digit sum divisible by K. Can you answer each in O(1) after O(N log N) preprocessing?"</td><td>Precompute prefix A[x] = count in [0, x] for bounded x. For large R up to 10^18: digit DP is O(18 &times; K) per query &mdash; effectively O(1). For truly online with 10&#8313; queries: batch process; DP tables for specific K precomputed once; f(R) &minus; f(L&minus;1) is O(1) per query.</td></tr>
+                        <tr><td class="num-cell">10</td><td>Beyond Stage 5</td><td>"An adversary generates queries to maximise computation. What is optimal strategy, and defence?"</td><td>Adversary: choose large K (maximising mod state) or numbers keeping tight=true long (minimising memo reuse). Defence: meet-in-the-middle for large K. Note: tight=true has only O(digits) paths regardless of memoisation &mdash; adversary cannot make it worse than O(n) per query. O(n &times; K) is the true worst case.</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Phase 1 &mdash; Solve (strictly by Stage):</strong><br>
+                        <strong>Stage 1 &mdash; Mechanical frame + f(R) &minus; f(L&minus;1):</strong><br>
+                        Order: S.No 2 (CSES Counting Numbers), S.No 1 (LC 2999), S.No 4 (LC 357).<br>
+                        Rule: do NOT use any existing template. Write DFS from scratch with a comment on every variable.<br><br>
+                        <strong>Stage 2 &mdash; One new dim + leading_zero interaction:</strong><br>
+                        Order: S.No 3 (LC 233 tuple return), S.No 5 (LC 1012 complement), S.No 6 (LC 2376 canonical 4-component), S.No 8 (LC 600 binary), S.No 9 (LC 902 variable digit set).<br><br>
+                        <strong>Stage 3 &mdash; Two simultaneous state dims:</strong><br>
+                        Order: S.No 7 (CF 1073E sum+set), S.No 10 (CF 55D dynamic LCM &rarr; 2520 compression), S.No 12 (LC 2827 balance+mod), S.No 15 (ABC 228 F binary + two constraints).<br><br>
+                        <strong>Stage 4 &mdash; Hidden digit DP; train recognition reflex:</strong><br>
+                        For EACH, first write "This IS digit DP because ___" before coding. If you can't in 30s, re-read Stage 4.<br>
+                        S.No 13 (LC 1397 KMP + digit DP), S.No 16 (LC 2719 two tight flags), S.No 19 (CF 1286F two-variable XOR).<br><br>
+                        <strong>Stage 5 &mdash; Optimisation:</strong><br>
+                        S.No 23 (Custom matrix exp) &mdash; implement 10&times;10 transition matrix from scratch; verify for n=1,2,3 by hand.<br>
+                        S.No 11 (LC 1067 digit count) &mdash; verify positional contribution formula analytically before DP.<br><br>
+                        <strong>Phase 2 &mdash; Drill:</strong><br>
+                        &bull; <strong>10-minute drill (Stage 1):</strong> Given N (spoken), write digit array extraction + bare (pos, tight) DFS in 2 min. Add one constraint in 3 more min. Target: full Stage 1 in 10 min.<br>
+                        &bull; <strong>State-design drill (Stage 2&ndash;3):</strong> Given problem description, write ONLY state tuple + terminal acceptance. No code. 3 min per problem. Do 10 problems across Groups 1&ndash;5 before coding any. Builds "state first, code second" reflex.<br>
+                        &bull; <strong>Identification drill (Stage 4):</strong> From titles only: "Count strings in [s1, s2] with no repeated chars" &rarr; digit DP on strings, base = alphabet, tight = lex, extra = bitmask. "Count pairs (a, b) with a XOR b &le; K" &rarr; two-variable binary digit DP.<br>
+                        &bull; <strong>Complement drill:</strong> For every "at least one / at least K / contains X" problem, write: answer = total &minus; f_without_X. Verify complement always valid.<br><br>
+                        <strong>Phase 3 &mdash; Validate (unseen sources):</strong><br>
+                        &bull; Stage 1: SPOJ NUMTSN &mdash; integers where digits divide the number<br>
+                        &bull; Stage 2: LightOJ 1205 &mdash; digits read same rotated by 1<br>
+                        &bull; Stage 3: Codeforces 814D &mdash; game states via digit-DP-style counting<br>
+                        &bull; Stage 4: Codeforces 1290C &mdash; lex-bound prefix constraints<br>
+                        &bull; Stage 5: Codeforces 1081G &mdash; matrix exponentiation of digit DP transition matrix for n &le; 10&#8313;
+                    </div>
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="core-box">
+                        <strong>Problem 1 &mdash; LC 1397 Find All Good Strings (Stage 3 + Stage 4)</strong><br>
+                        <em>Stages tested:</em> Stage 4 (string digit DP + KMP) + Stage 3 (two tight flags + KMP state).<br>
+                        <em>Summary:</em> Count strings of length n in lex range [s1, s2] NOT containing evil substring p. Output mod 10&#8313; + 7.<br>
+                        <em>Why it proves mastery:</em> Stage 1&ndash;2 candidate cannot encode KMP state. Stage 3-only misses the recognition that strings-in-range = digit DP (Stage 4). Two-tight-flag implementation adds another hurdle. All three stages must be simultaneously active and correctly implemented. Solving in 45 minutes certifies the full recognition-expansion-implementation pipeline.<br><br>
+                        <strong>Problem 2 &mdash; CF 55D Beautiful Numbers (Stage 3 + Stage 4)</strong><br>
+                        <em>Stages tested:</em> Stage 4 (non-obvious state compression via LCM) + Stage 3 (two simultaneous modular constraints).<br>
+                        <em>Summary:</em> Count integers in [L, R] divisible by each of their own non-zero digits.<br>
+                        <em>Why it proves mastery:</em> Two non-obvious reductions: (1) dynamic LCM compresses to 48 divisors of 2520 (requires knowing lcm(1..9)=2520); (2) number's value mod 2520 is sufficient to check divisibility by any digit (since every digit divides 2520). Blindly applying the template builds an unbounded-state DP. Solving cold in 45 min proves deriving state compressions under pressure.<br><br>
+                        <strong>Problem 3 &mdash; LC 2719 Count of Integers (Stage 3 + Stage 4 + Stage 5 reflex)</strong><br>
+                        <em>Stages tested:</em> Stage 4 (two tight flags &mdash; string bounds) + Stage 3 (digit sum tracking) + Stage 5 reflex (recognise na&iuml;ve f(R) &minus; f(L&minus;1) is tricky for string-encoded numbers).<br>
+                        <em>Summary:</em> Given string num1, num2 and min_sum, max_sum, count x in [num1, num2] with digit sum in [min_sum, max_sum].<br>
+                        <em>Why it proves mastery:</em> Stage 1&ndash;2 candidate tries f(num2) &minus; f(num1&minus;1) and gets stuck computing string decrement of "1000...0". Stage 3 adds digit_sum but still struggles with string lower bound. Only a candidate internalising Stage 4 (two tight flags eliminate the lower-bound decrement problem) solves cleanly. Stage 5 reflex &mdash; a technique that seems to ADD complexity actually REDUCES it &mdash; is the final differentiator.
+                    </div>
+                </div>
+            </div>
             <div class="topic-card" id="tp40"><div class="coming">Content for DAGs &amp; Probability DP is coming soon.<br><br>Covers: Longest Path in DAG, Count paths in DAG, Dice Roll simulation, Knight Probability in Chessboard, New 21 Game, Soup Servings, Probability of reaching target &amp; more.</div></div>
             <div class="topic-card" id="tp41"><div class="coming">Content for Combinatorial &amp; Modulo DP is coming soon.<br><br>Covers: Number of Ways to Reorder Array, Unique BSTs (Catalan), Count Vowels Permutation, K Inverse Pairs Array, Count different palindromic subsequences, MOD arithmetic in DP &amp; more.</div></div>
             <div class="topic-card" id="tp42"><div class="coming">Content for Data Structure Optimized DP is coming soon.<br><br>Covers: Segment Tree + DP, BIT/Fenwick Tree + DP (LIS in O(n log n)), Monotonic Deque + DP (Sliding Window DP), Divide &amp; Conquer DP optimization, Convex Hull Trick, Knuth's optimization &amp; more.</div></div>
