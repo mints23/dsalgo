@@ -4023,7 +4023,390 @@ for ch in text:
                     </div>
                 </div>
             </div>
-            <div class="topic-card" id="tp19"><div class="coming">Content for Graph Fundamentals is coming soon.</div></div>
+            <div class="topic-card" id="tp19">
+                <div class="topic-header">
+                    <div class="topic-num">26</div>
+                    <div style="flex:1">
+                        <div class="topic-title">Graph Fundamentals — Absolute Mastery Guide</div>
+                        <div class="topic-meta"><span class="tier-badge tier-T3">T3</span> <span class="topic-type">Core Primitive</span></div>
+                    </div>
+                </div>
+                <div class="topic-body">
+                    <div class="sec-title">Why This Topic Matters</div>
+                    <div class="info-box">Graph Fundamentals are the bedrock of <strong>40–60% of all hard interview and competition problems</strong>. Every shortest-path, connectivity, scheduling, game-state, and constraint-propagation problem is secretly a graph problem. The core invariant is deceptively simple: <em>a graph is a set of states (nodes) and transitions (edges).</em> The candidate who internalises this model can reduce problems from completely unrelated domains — word ladders, DNA mutation chains, grid mazes, puzzle states — into a single canonical traversal, and then apply the right search strategy. Missing this foundation means failing silently: you can implement BFS correctly and still get the wrong answer because you modeled the graph wrong.</div>
+
+                    <div class="sec-title">The Mental Model</div>
+                    <div class="info-box"><strong>A graph is a state machine.</strong> BFS finds the shortest path through state space. DFS exhausts all reachable states. Every graph problem is asking: <em>"What states exist, what transitions are legal, and what property of the reachable set do I need?"</em></div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>Stage</th><th>Mental Model Form</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Stage 1</strong></td><td>Nodes are explicit vertices; edges are given. Count or traverse.</td></tr>
+                                <tr><td><strong>Stage 2</strong></td><td>Same graph, but one constraint mutates: directed vs undirected, weighted vs unweighted, one component vs many.</td></tr>
+                                <tr><td><strong>Stage 3</strong></td><td>State gains a second dimension: (node, visited-set), (node, color), (node, step-count mod k).</td></tr>
+                                <tr><td><strong>Stage 4</strong></td><td>The graph is not given — you must construct it from strings, grids, arithmetic rules, or game positions.</td></tr>
+                                <tr><td><strong>Stage 5</strong></td><td>The naive BFS/DFS is O(V·E) or worse. Replace the linear scan with a heap, deque, or bitset.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">Core Invariant / Proof Sketch</div>
+                    <div class="info-box"><strong>BFS Layer Invariant:</strong> When BFS dequeues a node <code>u</code> at distance <code>d</code>, every node at distance &lt; d has already been dequeued, and every node at distance d is either in the queue or about to be enqueued.<br><br>
+                        <em>Proof sketch (induction on d):</em><br>
+                        • Base: Source is enqueued at distance 0. Correct.<br>
+                        • Inductive step: Assume all nodes at distance &lt; d are correctly settled. When node u at distance d−1 is dequeued, every unvisited neighbor v of u has dist[v] ≥ d. We set dist[v] = d and enqueue. No shorter path to v exists because all nodes at distance &lt; d are already settled and cannot provide a path of length d−1 to v without u being an intermediate — contradicting that u is the first settled at d−1.<br>
+                        Therefore: first time v is enqueued = shortest distance. ∎
+                    </div>
+                    <div class="core-box"><strong>DFS Reachability Invariant:</strong> DFS from node s visits all and only nodes reachable from s via directed/undirected edges. The white-gray-black coloring scheme partitions nodes into: unseen (white), in current path (gray), fully explored (black). A back edge (gray → gray) proves a cycle exists.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>📌 A — Undirected Graph</strong><br>
+                        <strong>A1.</strong> Connectivity / Component Count — Stage 1 · O(V+E) · Union-Find or BFS/DFS · base traversal<br>
+                        <strong>A2.</strong> Bipartite Check (2-coloring) — Stage 2 · O(V+E) · BFS with coloring · adds odd-cycle detection<br>
+                        <strong>A3.</strong> Cycle Detection (undirected) — Stage 2 · O(V+E) · DFS with parent tracking · adds parent != visited neighbor check<br>
+                        <strong>A4.</strong> Bridges and Articulation Points — Stage 3 · O(V+E) · DFS + low/disc arrays (Tarjan) · adds low-link values over plain DFS<br>
+                        <strong>A5.</strong> Eulerian Path/Circuit — Stage 3 · O(V+E) · Hierholzer's algorithm · adds degree-parity constraint<br>
+                        <strong>A6.</strong> Minimum Spanning Tree — Stage 3 · O(E log V) · Kruskal / Prim · adds edge-weight optimization
+                    </div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>📌 B — Directed Graph</strong><br>
+                        <strong>B1.</strong> Reachability / DFS on Digraph — Stage 1 · O(V+E) · DFS · base directed traversal<br>
+                        <strong>B2.</strong> Topological Sort — Stage 2 · O(V+E) · Kahn's BFS / DFS post-order · adds ordering constraint on DAG<br>
+                        <strong>B3.</strong> Cycle Detection (directed) — Stage 2 · O(V+E) · DFS 3-color · adds gray-to-gray back-edge detection<br>
+                        <strong>B4.</strong> Strongly Connected Components — Stage 3 · O(V+E) · Kosaraju's / Tarjan's · adds condensation DAG concept<br>
+                        <strong>B5.</strong> Condensation Graph — Stage 3 · O(V+E) · SCC + DAG rebuild · adds collapsing SCCs to DAG nodes<br>
+                        <strong>B6.</strong> Functional Graph (out-degree = 1) — Stage 4 · O(V) · Rho-shaped cycle detection · adds the rho-structure insight
+                    </div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>📌 C — Grid Graph</strong><br>
+                        <strong>C1.</strong> Flood Fill / Island Count — Stage 1 · O(R·C) · BFS/DFS on 4-neighbors · base grid traversal<br>
+                        <strong>C2.</strong> Shortest Path on Grid — Stage 2 · O(R·C) · BFS (unweighted) · adds distance tracking on grid<br>
+                        <strong>C3.</strong> Multi-source BFS — Stage 2 · O(R·C) · multiple sources seeded simultaneously · adds virtual-source node concept<br>
+                        <strong>C4.</strong> 0-1 BFS on Grid — Stage 3 · O(R·C) · Deque · adds two-tier priority queue for 0/1 edge weights<br>
+                        <strong>C5.</strong> BFS on Grid with State — Stage 3 · O(R·C·K) · BFS with (row,col,extra_state) · adds state dimension to grid cell<br>
+                        <strong>C6.</strong> Minimum Cut on Grid — Stage 4 · O(R·C log(R·C)) · Binary search + BFS/DFS feasibility · adds non-obvious reduction to connectivity
+                    </div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>📌 D — Implicit Graph</strong><br>
+                        <strong>D1.</strong> Word Ladder (string state-space) — Stage 4 · O(N·L²) · BFS on string neighbors · graph constructed from alphabet transitions<br>
+                        <strong>D2.</strong> Sliding Puzzle / Game State BFS — Stage 4 · O(S·branching) · BFS on serialized state · state is a permutation, not a node ID<br>
+                        <strong>D3.</strong> Number Theory Graph — Stage 4 · O(√N·V) · BFS on arithmetic rules · edges defined by number-theoretic predicates<br>
+                        <strong>D4.</strong> Bidirectional BFS — Stage 5 · O(b^(d/2)) vs O(b^d) · Two simultaneous BFS frontiers · reduces exponential blowup for implicit graphs
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed from Previous</th></tr></thead>
+                            <tbody>
+                                <tr><td>Basic BFS/DFS traversal</td><td>O(V+E)</td><td>O(V)</td><td>Baseline</td></tr>
+                                <tr><td>Bipartite / cycle detection</td><td>O(V+E)</td><td>O(V)</td><td>Extra color array per node</td></tr>
+                                <tr><td>Bridges / Articulation points</td><td>O(V+E)</td><td>O(V)</td><td>Two extra arrays (disc, low) + DFS tree</td></tr>
+                                <tr><td>SCC (Tarjan/Kosaraju)</td><td>O(V+E)</td><td>O(V)</td><td>Stack for SCC extraction</td></tr>
+                                <tr><td>Topo sort + DAG DP</td><td>O(V+E)</td><td>O(V)</td><td>In-degree array + processing order</td></tr>
+                                <tr><td>0-1 BFS (deque)</td><td>O(V+E)</td><td>O(V)</td><td>Deque replaces queue; two-tier priority</td></tr>
+                                <tr><td>Dijkstra (positive weights)</td><td>O((V+E) log V)</td><td>O(V)</td><td>Min-heap; log factor from priority queue</td></tr>
+                                <tr><td>Multi-source BFS</td><td>O(V+E)</td><td>O(V)</td><td>Virtual source node; same complexity</td></tr>
+                                <tr><td>Implicit graph BFS</td><td>O(S·b)</td><td>O(S)</td><td>S = state-space size, b = branching factor</td></tr>
+                                <tr><td>Bidirectional BFS</td><td>O(b^(d/2))</td><td>O(b^(d/2))</td><td>Two frontiers; meet-in-middle</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">Mastery Problem Set — 📌 Section A (Undirected)</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Problem</th><th>Diff</th><th>Prem</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                            <tbody>
+                                <tr><td class="num-cell">1</td><td><span class="l1">Found</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-islands/" target="_blank">LC 200</a> Number of Islands</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Component count on grid</td><td class="insight">Mark cell visited in-place; count full DFS launches = components</td></tr>
+                                <tr><td class="num-cell">2</td><td><span class="l1">Found</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-provinces/" target="_blank">LC 547</a> Number of Provinces</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Component count on adjacency matrix</td><td class="insight">Same component logic; input format changes, algorithm identical</td></tr>
+                                <tr><td class="num-cell">3</td><td><span class="l1">Found</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/is-graph-bipartite/" target="_blank">LC 785</a> Is Graph Bipartite?</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">2-coloring / bipartite check</td><td class="insight">BFS with color array; odd cycle = conflict = not bipartite</td></tr>
+                                <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/redundant-connection/" target="_blank">LC 684</a> Redundant Connection</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cycle detection (undirected) via Union-Find</td><td class="insight">First edge where both endpoints share a root = redundant</td></tr>
+                                <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/graph-valid-tree/" target="_blank">LC 261</a> Graph Valid Tree</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Tree = connected + acyclic</td><td class="insight">V−1 edges + no cycle + connected = tree; two conditions must both hold</td></tr>
+                                <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/critical-connections-in-a-network/" target="_blank">LC 1192</a> Critical Connections</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Bridges (Tarjan low-link)</td><td class="insight">Bridge iff disc[u] &lt; low[v]; subtle off-by-one with parent edge</td></tr>
+                                <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/connecting-cities-with-minimum-cost/" target="_blank">LC 1135</a> Connecting Cities</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">MST (Kruskal)</td><td class="insight">Greedy edge selection; correctness from cut property of MSTs</td></tr>
+                                <tr><td class="num-cell">8</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/min-cost-to-connect-all-points/" target="_blank">LC 1584</a> Min Cost Connect All Points</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">MST (Prim on dense graph)</td><td class="insight">O(V²) Prim beats O(E log V) Kruskal when E = O(V²)</td></tr>
+                                <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td>3</td><td>CF 190E — Counter Game</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Bipartite + game theory</td><td class="insight">Bipartite graph → first player wins iff perfect matching exists</td></tr>
+                                <tr><td class="num-cell">10</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/" target="_blank">LC 1489</a> Critical &amp; Pseudo-Critical MST Edges</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">MST edge classification</td><td class="insight">Force-include or force-exclude each edge and recompute MST cost</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">📌 Section B (Directed)</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Problem</th><th>Diff</th><th>Prem</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                            <tbody>
+                                <tr><td class="num-cell">11</td><td><span class="l1">Found</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/keys-and-rooms/" target="_blank">LC 841</a> Keys and Rooms</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Reachability on directed graph</td><td class="insight">Visit all rooms reachable from room 0; return visited == total</td></tr>
+                                <tr><td class="num-cell">12</td><td><span class="l1">Found</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule/" target="_blank">LC 207</a> Course Schedule</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cycle detection (directed)</td><td class="insight">3-color DFS; gray→gray edge = cycle = impossible schedule</td></tr>
+                                <tr><td class="num-cell">13</td><td><span class="l1">Found</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule-ii/" target="_blank">LC 210</a> Course Schedule II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Topological sort (DFS postorder)</td><td class="insight">Reverse postorder DFS = valid topo order; same cycle detection</td></tr>
+                                <tr><td class="num-cell">14</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/alien-dictionary/" target="_blank">LC 269</a> Alien Dictionary</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Topo sort on derived DAG</td><td class="insight">Build DAG from adjacent word pairs; topo sort gives alphabet</td></tr>
+                                <tr><td class="num-cell">15</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/" target="_blank">LC 1203</a> Sort Items by Groups</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-level topo sort</td><td class="insight">Outer topo on groups, inner on items; interleave without breaking group boundaries</td></tr>
+                                <tr><td class="num-cell">16</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank">LC 802</a> Find Eventual Safe States</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Reverse reachability on DAG + SCC</td><td class="insight">Safe = cannot reach a cycle; reverse edges; topo order nodes</td></tr>
+                                <tr><td class="num-cell">17</td><td><span class="l2">Variants</span></td><td>3</td><td>CF 427C — Checkposts</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">SCC + optimization per SCC</td><td class="insight">Condense SCCs; cheapest node per SCC; multiply choice counts</td></tr>
+                                <tr><td class="num-cell">18</td><td><span class="l3">Combo</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/detonate-the-maximum-bombs/" target="_blank">LC 2101</a> Detonate Maximum Bombs</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Directed reachability (chain detonation)</td><td class="insight">Edge u→v if bomb u's radius covers bomb v's center; BFS/DFS</td></tr>
+                                <tr><td class="num-cell">19</td><td><span class="l4">Hard</span></td><td>4</td><td>CF 919D — Substring</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DAG DP + topo sort</td><td class="insight">Topo-sort DAG then propagate character counts; detect cycle early</td></tr>
+                                <tr><td class="num-cell">20</td><td><span class="l4">Hard</span></td><td>5</td><td>USACO 2017 Feb Gold — Why Did the Cow Cross the Road</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Functional graph + cycle analysis</td><td class="insight">Out-degree = 1; rho-structure; every node enters a cycle</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">📌 Section C (Grid)</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Problem</th><th>Diff</th><th>Prem</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                            <tbody>
+                                <tr><td class="num-cell">21</td><td><span class="l1">Found</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/flood-fill/" target="_blank">LC 733</a> Flood Fill</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Grid BFS/DFS flood fill</td><td class="insight">Replace all connected same-color cells; identical to component DFS</td></tr>
+                                <tr><td class="num-cell">22</td><td><span class="l1">Found</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/rotting-oranges/" target="_blank">LC 994</a> Rotting Oranges</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source BFS on grid</td><td class="insight">Seed all rotten at time=0; BFS propagates in waves; max distance</td></tr>
+                                <tr><td class="num-cell">23</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/as-far-from-land-as-possible/" target="_blank">LC 1162</a> As Far from Land as Possible</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source BFS for max-min</td><td class="insight">Multi-source from all land; last cell reached has max distance</td></tr>
+                                <tr><td class="num-cell">24</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-in-binary-matrix/" target="_blank">LC 1091</a> Shortest Path in Binary Matrix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS shortest path on grid</td><td class="insight">BFS on 8-neighbors; first time (n−1,n−1) reached = answer</td></tr>
+                                <tr><td class="num-cell">25</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/" target="_blank">LC 1293</a> Grid with Obstacles Elimination</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS (row, col, k_remaining)</td><td class="insight">3D visited; don't revisit (r,c,k) from a worse k</td></tr>
+                                <tr><td class="num-cell">26</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-knight-moves/" target="_blank">LC 1197</a> Minimum Knight Moves</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">BFS on infinite grid</td><td class="insight">Symmetry reduces to first quadrant; BFS with small boundary</td></tr>
+                                <tr><td class="num-cell">27</td><td><span class="l3">Combo</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/pacific-atlantic-water-flow/" target="_blank">LC 417</a> Pacific Atlantic Water Flow</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Reverse multi-source BFS</td><td class="insight">BFS inward from each ocean; intersect the two reachable sets</td></tr>
+                                <tr><td class="num-cell">28</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/word-ladder/" target="_blank">LC 127</a> Word Ladder</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Implicit graph on string states</td><td class="insight">Try all 26-char replacements at each position; BFS = min mutations</td></tr>
+                                <tr><td class="num-cell">29</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-moves-to-move-a-box-to-their-target-location/" target="_blank">LC 1263</a> Minimum Moves to Move Box</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS (box_pos, player_pos)</td><td class="insight">Outer BFS on box pushes, inner BFS checks if player can reach push pos</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">📌 Section D (Implicit)</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Problem</th><th>Diff</th><th>Prem</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                            <tbody>
+                                <tr><td class="num-cell">30</td><td><span class="l1">Found</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/open-the-lock/" target="_blank">LC 752</a> Open the Lock</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS on digit-string state space</td><td class="insight">Nodes = 4-digit strings; ±1 on each dial = 8 neighbors; BFS = min turns</td></tr>
+                                <tr><td class="num-cell">31</td><td><span class="l2">Variants</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-genetic-mutation/" target="_blank">LC 433</a> Minimum Genetic Mutation</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS with valid-set filter</td><td class="insight">Filter neighbors against HashSet; bank = valid state set</td></tr>
+                                <tr><td class="num-cell">32</td><td><span class="l2">Variants</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/bus-routes/" target="_blank">LC 815</a> Bus Routes</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS on route-level graph</td><td class="insight">Node = bus route (not stop); edge = routes sharing a stop; modeling choice is the key insight</td></tr>
+                                <tr><td class="num-cell">33</td><td><span class="l3">Combo</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/k-similar-strings/" target="_blank">LC 854</a> K-Similar Strings</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS with pruning on permutations</td><td class="insight">Only swap characters that make progress toward target</td></tr>
+                                <tr><td class="num-cell">34</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/word-ladder-ii/" target="_blank">LC 126</a> Word Ladder II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS-level DAG + DFS extract</td><td class="insight">Build BFS-level DAG; DFS/backtrack enumerates all shortest paths</td></tr>
+                                <tr><td class="num-cell">35</td><td><span class="l4">Hard</span></td><td>5</td><td>🔧 Custom — Bidirectional BFS Min Transformation</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Bidirectional BFS meet-in-middle</td><td class="insight">Expand smaller frontier; stop on intersection; O(b^(d/2))</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="sec-title">🔧 Custom Problem 35 — Full Statement</div>
+                    <div class="info-box"><strong>Minimum Transformation Distance (Bidirectional BFS)</strong><br>
+                        You are given two states <code>start</code> and <code>end</code>, each a binary string of length n (1 ≤ n ≤ 20). A single transition flips any one bit. Transitions to a "forbidden" state (given as a set of up to 10⁴ strings) are not allowed. Find the minimum number of transitions to reach <code>end</code> from <code>start</code>, or return −1.<br><br>
+                        <strong>Constraints:</strong> n ≤ 20, |forbidden| ≤ 10⁴, all strings length n.<br>
+                        <strong>Input:</strong> start = "00000", end = "11111", forbidden = ["10000", "01111"] → <strong>Output:</strong> 7<br><br>
+                        <strong>Intended Solution:</strong> Bidirectional BFS — expand from start forward and end backward simultaneously. At each step, expand the smaller frontier. Stop when a state appears in both frontiers. Check against forbidden set in O(1) per lookup.<br>
+                        <strong>Time:</strong> O(n · 2^(n/2)), dramatically better than O(n · 2^n) unidirectional.<br>
+                        <strong>Stage:</strong> 5 — BFS logic identical to Stage 4; only addition is bidirectionality.
+                    </div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="info-box"><strong>Linguistic Triggers:</strong><br>
+                        • "Find the minimum number of steps/moves/operations..." → Stage 2–3 BFS (guarantees shortest path in unweighted state space)<br>
+                        • "Return all nodes reachable from..." → Stage 1 DFS/BFS reachability<br>
+                        • "Determine if X and Y are in the same group/component..." → Stage 1 Union-Find or BFS/DFS connectivity<br>
+                        • "Find an ordering such that X comes before Y..." → Stage 2 Topological sort on a DAG<br>
+                        • "Detect if a cycle/loop exists..." → Stage 2 DFS 3-color (directed) or parent-check DFS (undirected)
+                    </div>
+                    <div class="info-box"><strong>Structural Triggers:</strong><br>
+                        • Input is a list of [u, v] edges or prerequisites[] → Explicit graph; check directed vs undirected from context<br>
+                        • Input is a 2D grid of 0s and 1s → Grid graph; 4/8 adjacent cells; default to BFS for min-steps<br>
+                        • Input is a set of strings/states with a "one step away" rule → Implicit graph; enumerate neighbors programmatically
+                    </div>
+                    <div class="info-box"><strong>Constraint Triggers:</strong><br>
+                        • V, E ≤ 10⁵ and answer is "minimum steps" → O(V+E) BFS expected; anything slower TLEs<br>
+                        • V ≤ 20 or state space ≤ 10⁶ → Implicit graph BFS over full state space is feasible
+                    </div>
+                    <div class="warn-box"><strong>Anti-Triggers ⚠️:</strong><br>
+                        🚩 "Find the shortest path with edge weights" → NOT plain BFS → Dijkstra / Bellman-Ford<br>
+                        🚩 "Find the minimum spanning tree" → NOT BFS/DFS traversal → Kruskal or Prim<br>
+                        🚩 "Find a path visiting every node exactly once" → NOT BFS/DFS → Hamiltonian path (backtracking / bitmask DP); NP-complete
+                    </div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="core-box" style="font-family:monospace;font-size:.88em;white-space:pre-wrap;line-height:1.55">
+<strong>Q1:</strong> Is the input a set of nodes with pairwise relationships (edges)?
+  → YES: You have a graph problem. Continue.
+  → NO:  Check if state transitions can be modeled as edges (implicit graph).
+
+<strong>Q2:</strong> Are edges weighted (non-unit cost)?
+  → YES: Use Dijkstra (non-negative) or Bellman-Ford (negative). Exit.
+  → NO:  BFS gives shortest path. Continue.
+
+<strong>Q3:</strong> Is the graph directed?
+  → YES: Go to Q4.
+  → NO:  Go to Q6.
+
+<strong>Q4 (Directed):</strong> Do you need an ordering, or to detect cycles?
+  → YES: Topological sort (Kahn's BFS or DFS postorder). Stage 2.
+  → NO:  Go to Q5.
+
+<strong>Q5 (Directed):</strong> Do you need strongly connected components?
+  → YES: Tarjan's or Kosaraju's SCC. Stage 3.
+  → NO:  Plain DFS reachability. Stage 1.
+
+<strong>Q6 (Undirected):</strong> Do you need to find components?
+  → YES: BFS/DFS component count or Union-Find. Stage 1.
+  → NO:  Go to Q7.
+
+<strong>Q7 (Undirected):</strong> Do you need bridges, articulation points, or MST?
+  → BRIDGES/APs: Tarjan's low-link DFS. Stage 3.
+  → MST:         Kruskal or Prim. Stage 3.
+  → NO:          Go to Q8.
+
+<strong>Q8:</strong> Is the graph a grid?
+  → YES: BFS for shortest path, multi-source BFS for min-distance. Stage 2–3.
+  → NO:  Go to Q9.
+
+<strong>Q9:</strong> Must you construct the graph from the problem description?
+  → YES: Implicit graph. Model states as nodes, transitions as edges. Stage 4.
+         → Is the state space large (&gt; 10⁷)? Use bidirectional BFS. Stage 5.
+  → NO:  You are at Stage 1–2. Expected O(V+E).
+
+<strong>Summary:</strong>
+  Reach Q9 YES → Stage 4. Expected time: O(S · b) where S = state space, b = branching.
+  If your solution exceeds this, look for the Stage 5 bidirectional or A* optimisation.
+                    </div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="warn-box">🚩 <strong>Negative edge weights with BFS</strong> — BFS assumes unit-cost edges; one negative edge invalidates the layer-invariant. [Stage 2 failure] → Bellman-Ford.</div>
+                    <div class="warn-box">🚩 <strong>Revisiting nodes in implicit graphs without proper state hashing</strong> — if two different states hash to the same key, you miss paths. [Stage 4 failure] → HashSet of serialized states, not node indices.</div>
+                    <div class="warn-box">🚩 <strong>DFS cycle detection on undirected graphs ignoring the parent edge</strong> — marking parent visited then seeing it is NOT a cycle. [Stage 2 failure] → Track parent explicitly; skip it.</div>
+                    <div class="warn-box">🚩 <strong>BFS when ALL shortest paths are needed</strong> — BFS finds one shortest path, not all. [Stage 3 failure] → Two-phase: BFS builds level-DAG, DFS enumerates paths (Problem 34).</div>
+                    <div class="warn-box">🚩 <strong>Recursive DFS on large graphs (stack overflow)</strong> — recursion depth = longest path; V = 10⁵ chain graphs blow the stack. [Stage 1 implementation failure] → Iterative DFS with explicit stack.</div>
+                    <div class="warn-box">🚩 <strong>Topo sort on a graph with cycles</strong> — Kahn silently produces incomplete ordering. [Stage 2 failure] → Verify count == V after Kahn's.</div>
+                    <div class="warn-box">🚩 <strong>SCC on undirected graphs</strong> — Tarjan's SCC is for directed graphs; on undirected every edge creates a trivial 2-node SCC. [Stage 3 failure] → Simple DFS component count.</div>
+
+                    <div class="sec-title">Proof of Correctness Skeleton</div>
+                    <div class="info-box"><strong>Stage 1 — BFS Reachability Completeness</strong><br>
+                        <em>Invariant:</em> At all times, V_t = set of all nodes reachable from source via paths of length ≤ t.<br>
+                        • <strong>Init:</strong> V_0 = &#123;source&#125;. Correct.<br>
+                        • <strong>Maintenance:</strong> When processing level t, every edge (u,v) with u ∈ V_t \\ V_&#123;t−1&#125; and v ∉ V_t adds v to V_&#123;t+1&#125;. All such edges are examined; no node is missed.<br>
+                        • <strong>Termination:</strong> Queue empties when no new reachable nodes exist. V_final = full reachable set. ∎
+                    </div>
+                    <div class="info-box"><strong>Stage 2 — Cycle Detection (Directed, 3-Color DFS)</strong><br>
+                        <em>Claim:</em> A directed graph has a cycle iff DFS discovers a gray-to-gray (back) edge.<br>
+                        • <strong>If:</strong> Cycle v₁→...→vₖ→v₁ exists; when DFS enters v₁, it reaches vₖ before v₁ is blackened. Edge vₖ→v₁ leads to a gray node = back edge.<br>
+                        • <strong>Only if:</strong> Back edge u→v (v gray) implies DFS tree path from v down to u. Adding u→v completes a cycle. ∎
+                    </div>
+                    <div class="info-box"><strong>Stage 3 — Topological Sort (Kahn's)</strong><br>
+                        Every node is enqueued only when its in-degree reaches 0 — all predecessors are already processed. By induction, the output is a valid topological sequence. If the queue empties with fewer than V nodes processed, a cycle exists. ∎
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls (Code-Level)</div>
+                    <div class="warn-box"><strong>Bug 1 — Not marking visited BEFORE enqueuing (duplicate processing)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// BUGGY
+queue.add(start);
+while (!queue.isEmpty()) &#123;
+    int u = queue.poll();
+    visited[u] = true;          // too late — u may be enqueued multiple times
+    for (int v : adj[u]) if (!visited[v]) queue.add(v);
+&#125;
+// FIX: mark visited when enqueuing
+visited[start] = true; queue.add(start);
+while (!queue.isEmpty()) &#123;
+    int u = queue.poll();
+    for (int v : adj[u]) if (!visited[v]) &#123; visited[v] = true; queue.add(v); &#125;
+&#125;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 2 — Undirected cycle detection treats parent edge as back-edge</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// FIX
+for (int v : adj[u]) &#123;
+    if (!visited[v]) dfs(v, u);
+    else if (v != parent) return true;  // only non-parent visited = real cycle
+&#125;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 3 — Bipartite check not handling multiple components</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// BUGGY: only starts BFS from node 0 — bfs(0, color);
+// FIX: iterate all nodes
+for (int i = 0; i &lt; n; i++)
+    if (color[i] == -1 &amp;&amp; !bfs(i, color)) return false;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 4 — Kahn's topo sort not validating all nodes were processed</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// FIX
+return result.size() == n ? result : new int[]&#123;&#125;;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 5 — Grid BFS using BOTH in-place mutation and visited array (double-counting)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// FIX: Choose ONE. Either grid[r][c] = '0' OR visited[r][c] = true. Never both.</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 6 — Tarjan's low-link: updating through tree edges only, forgetting back-edges</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>if (!visited[v]) &#123; dfs(v); low[u] = min(low[u], low[v]); &#125;
+else if (v != parent) low[u] = min(low[u], disc[v]);  // back-edge update</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 7 — Grid+state BFS: wrong visited dimensions</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// BUGGY: boolean[][] visited = new boolean[rows][cols];  // misses k
+// FIX:   boolean[][][] visited = new boolean[rows][cols][k+1];</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 8 — Implicit graph: List.contains O(n) instead of HashSet O(1)</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// FIX: Set&lt;String&gt; bankSet = new HashSet&lt;&gt;(bank);
+if (bankSet.contains(next)) queue.add(next);</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 9 — Word Ladder: not restoring character array after mutation</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>for (char c = 'a'; c &lt;= 'z'; c++) &#123;
+    char orig = arr[i]; arr[i] = c;
+    // ... process
+    arr[i] = orig;
+&#125;</code></pre>
+                    </div>
+                    <div class="warn-box"><strong>Bug 10 — Bidirectional BFS: expanding the wrong (larger) frontier</strong>
+                        <pre style="white-space:pre-wrap;margin:.4rem 0"><code>// FIX: always expand the smaller frontier
+if (frontierA.size() &lt;= frontierB.size()) expandFrontier(frontierA, frontierB);
+else                                        expandFrontier(frontierB, frontierA);</code></pre>
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box"><strong>Stage 1 — "I'll use DFS for shortest path"</strong> — DFS finds A path, not THE shortest. BFS guarantees the first time a node is visited = minimum distance in an unweighted graph.</div>
+                    <div class="warn-box"><strong>Stage 2 — "Every graph with a back-edge has a cycle"</strong> — In undirected graphs, every edge is a "back-edge" to the parent during DFS. A cycle requires an edge to a visited non-parent node.</div>
+                    <div class="warn-box"><strong>Stage 2 — "Topological sort works on any graph"</strong> — Topo sort is only defined on DAGs. Always validate output contains V nodes; otherwise a cycle exists and the answer is undefined.</div>
+                    <div class="warn-box"><strong>Stage 3 — "All SCCs can be found with one DFS pass"</strong> — Kosaraju requires two DFS passes. Tarjan's does it in one pass but uses an explicit stack + low-link values — not a plain DFS.</div>
+                    <div class="warn-box"><strong>Stage 4 — "The graph is explicit; I just need to traverse it"</strong> — Many Stage 4 problems hide the graph inside strings, numbers, or coordinates. Ask: "What is the state? What transitions are valid?" If you find answers, you have an implicit graph.</div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="info-box" style="line-height:1.75">
+                        <strong>Q1 (constraint mutation):</strong> "BFS finds shortest path. What if cells have cost 0 or 1?" → 0-1 BFS with deque; cost-0 push front, cost-1 push back. O(V+E) preserved.<br>
+                        <strong>Q2 (constraint mutation):</strong> "Edges traversable a limited number of times?" → Add edge-use count to state: (node, uses_remaining). BFS over expanded state. O(V·K).<br>
+                        <strong>Q3 (state expansion):</strong> "Graph is weighted. How does your approach change?" → Replace queue with min-heap → Dijkstra (non-negative weights).<br>
+                        <strong>Q4 (state expansion):</strong> "Find all components AND the largest size?" → Standard BFS/DFS tracking component size per traversal. One pass, O(V+E).<br>
+                        <strong>Q5 (hidden reduction):</strong> "Nodes are words, connected by one-char-diff; path exists?" → Implicit graph; build adjacency by mutating each char position; BFS for reachability.<br>
+                        <strong>Q6 (hidden reduction):</strong> "Word Ladder: reduce neighbor-gen from O(N·L·26)?" → Wildcard buckets: each word creates L patterns like <code>*ot, h*t, ho*</code>; group by shared pattern. O(N·L) preprocessing.<br>
+                        <strong>Q7 (optimisation pressure):</strong> "BFS visits 10⁸ states. Reduce this?" → Bidirectional BFS: expand from source and target, always expand smaller frontier. O(b^(d/2)).<br>
+                        <strong>Q8 (optimisation pressure):</strong> "Shortest path with millions of nodes + heuristic?" → A* search: f(n) = g(n) + h(n) with admissible h. Visits fewer nodes than Dijkstra when heuristic is tight.<br>
+                        <strong>Q9 (distributed):</strong> "10¹² nodes, doesn't fit in memory?" → External-memory / distributed BFS (Pregel model). Partition graph; each round = one BFS level; communicate frontier. O(diameter · communication_rounds).<br>
+                        <strong>Q10 (dynamic):</strong> "Edges added/removed dynamically; maintain connectivity?" → Link-Cut Trees (O(log n) per update/query), or offline divide-and-conquer on the edge timeline.
+                    </div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>Phase 1 — Solve (by Stage, cross-variant):</strong><br>
+                        • <strong>Week 1 (Stage 1):</strong> Problems 1, 2, 11, 21, 30 — recognize component/reachability instantly. 20 min each.<br>
+                        • <strong>Week 2 (Stage 2):</strong> Problems 3, 4, 12, 13, 22, 23, 31 — apply constraint mutations. 25 min each.<br>
+                        • <strong>Week 3 (Stage 3):</strong> Problems 6, 7, 14, 15, 16, 24, 25, 32 — expand state, second data structure. 30 min each.<br>
+                        • <strong>Week 4 (Stage 4 Implicit Graph):</strong> Problems 18, 27, 28, 33, 34 — model the graph from scratch. 35 min each. Most candidates fail here.<br>
+                        • <strong>Week 5 (Stage 5 Optimization):</strong> Problems 17, 19, 20, 34, 35 — replace brute scan with heap/deque/bidirectional. 40 min each.<br><br>
+                        <strong>Phase 2 — Drill (speed &amp; pattern recognition):</strong><br>
+                        • Stage 1 drills ≤ 10 min (1, 2, 11, 21). Stage 2 ≤ 15 min (3, 12, 22). Stage 3 ≤ 25 min (6, 15, 25).<br>
+                        • <em>Recognition exercise:</em> given ONLY the title, state stage / sub-variant / complexity BEFORE reading.<br>
+                        • <em>Re-solve rule:</em> any problem solved above target is re-solved 48 hours later from scratch.<br><br>
+                        <strong>Phase 3 — Validate (unseen sources):</strong><br>
+                        • Stage 1: USACO Bronze 2020+ "Cow Graph" connectivity<br>
+                        • Stage 2: Codeforces Div 2 C, tags: graphs / dfs-and-similar<br>
+                        • Stage 3: Codeforces Div 2 D, tags: graphs / strongly-connected-components<br>
+                        • Stage 4: AtCoder ABC 250–300 D/E — implicit graph construction<br>
+                        • Stage 5: Codeforces Div 1 C/D, tags: graphs / shortest-paths / bitmask
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box" style="line-height:1.8">
+                        <strong>Test 1 — Stages 3 + 4: <a class="lc-link" href="https://leetcode.com/problems/frog-position-after-t-seconds/" target="_blank">LC 1377</a> Frog Position After T Seconds (Hard)</strong><br>
+                        Stage 4: model the tree as a graph; recognize BFS level-by-level propagation. Stage 3: state = (node, time_remaining, probability); probability splits fractionally at branching nodes.<br>
+                        <em>Why it certifies mastery:</em> Tests implicit state propagation on a tree, fractional probability tracking, and leaf-node edge cases simultaneously. Pure BFS knowledge (Stage 2) is insufficient.<br><br>
+                        <strong>Test 2 — Stages 4 + 5: <a class="lc-link" href="https://leetcode.com/problems/k-similar-strings/" target="_blank">LC 854</a> K-Similar Strings (Hard)</strong><br>
+                        Stage 4: state space is permutations — implicit graph. Stage 5: without pruning (only swap characters that haven't matched target), BFS TLEs.<br>
+                        <em>Why it certifies mastery:</em> Forces recognition of a permutation as a graph state, valid-neighbor construction, and a non-trivial optimization requiring you to understand WHY certain swaps are never needed.<br><br>
+                        <strong>Test 3 — Stages 3 + 4 + 5: CF 1037D Valid BFS?</strong><br>
+                        Stage 4: verify a given BFS order — model BFS-tree construction as an implicit process. Stage 3: track which children of each node are "available" at each BFS level. Stage 5: naive verification is O(V²); efficient uses queue-simulation with sorted adjacency and deque comparison — O(V log V).<br>
+                        <em>Why it certifies mastery:</em> Tests BFS understanding at the meta-level (can you reason about what BFS produces, not just run it?), implicit state construction, AND optimization. Solving cold in 45 minutes proves first-principles BFS understanding.
+                    </div>
+
+                    <div class="sec-title">Mental Model Synthesis</div>
+                    <div class="info-box">The BFS vs DFS distinction illustrated above captures the foundational split that governs every graph problem in this guide. <strong>BFS expands in layers (guaranteeing shortest paths)</strong>, while <strong>DFS exhausts each branch (enabling cycle detection, topo sort, and SCC)</strong>. Every advanced technique — Tarjan's bridges, Kahn's topo sort, bidirectional BFS — is a structured extension of one of these two primitives. Master the mental model at Stage 1, and every Stage 2–5 variant becomes a predictable evolution.</div>
+                </div>
+            </div>
             <div class="topic-card" id="tp20"><div class="coming">Content for BFS is coming soon.</div></div>
             <div class="topic-card" id="tp21"><div class="coming">Content for DFS is coming soon.</div></div>
             <div class="topic-card" id="tp22"><div class="coming">Content for Multi-Source BFS is coming soon.</div></div>
