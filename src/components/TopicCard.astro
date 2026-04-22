@@ -1,0 +1,26 @@
+---
+import type { Topic } from '../data/types';
+
+export interface Props {
+  topic: Topic;
+}
+
+const { topic } = Astro.props;
+---
+
+<div class="topic-card" id={`tp${topic.id}`}>
+  <div class="topic-header">
+    <div class="topic-num">{topic.displayNumber}</div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+        <div class="topic-title">{topic.title}</div>
+        <span class={`tier-badge tier-${topic.tier.code}`}>{topic.tier.label}</span>
+        <span class="topic-type">{topic.typeLabel}</span>
+      </div>
+      <div class="topic-meta">{topic.summaryMeta}</div>
+    </div>
+  </div>
+
+  <div class="topic-body" set:html={topic.bodyHtml}></div>
+</div>
+

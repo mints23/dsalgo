@@ -1,0 +1,66 @@
+---
+import type { Topic } from '../data/types';
+
+export interface Props {
+  topics: Topic[];
+  sectionOrder?: string[];
+}
+
+const {
+  topics,
+  sectionOrder = ['Algorithms', 'Data Structures', 'Dynamic Programming', 'Graphs', 'Advanced Techniques'],
+} = Astro.props;
+
+const sidebarTopics = topics
+  .filter((t) => t.showInSidebar)
+  .slice()
+  .sort((a, b) => Number(a.displayNumber) - Number(b.displayNumber));
+
+const grouped = new Map<string, Topic[]>();
+for (const t of sidebarTopics) {
+  const arr = grouped.get(t.navSection) ?? [];
+  arr.push(t);
+  grouped.set(t.navSection, arr);
+}
+
+const sections = sectionOrder.filter((s) => grouped.has(s)).concat(
+  [...grouped.keys()].filter((s) => !sectionOrder.includes(s)),
+);
+---
+
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#01696f" />
+      <path d="M7 14h4l3-6 3 12 3-6h1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <div>
+      <div class="logo-text">DSA Mastery</div>
+      <div class="logo-sub">Interview Preparation Guide</div>
+    </div>
+  </div>
+
+  {sections.map((section) => (
+    <>
+      <div class="nav-section">{section}</div>
+      {grouped.get(section)!.map((t) => (
+        <button class="nav-item" data-topic-id={t.id}>
+          <span class="num">{t.displayNumber}</span>
+          {t.navLabel}
+          <span class="tier-dot" style={`background:${t.navTierDotColor}`}></span>
+        </button>
+      ))}
+    </>
+  ))}
+
+  <div class="sidebar-footer">
+    <button class="theme-btn" aria-label="Toggle theme">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      Theme
+    </button>
+    <span class="progress-summary">{topics.length} Topics</span>
+  </div>
+</nav>
+
