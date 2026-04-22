@@ -1,5 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
+<script is:inline>
+    // Apply theme before paint: saved pref → OS pref → light
+    (function () {
+        try {
+            var saved = localStorage.getItem('theme');
+            var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9126,11 +9138,12 @@ GOLDEN RULES:
     </button>
 </div>
 <script>
-    // Theme Toggler
+    // Theme Toggler (persists to localStorage)
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
+        try { localStorage.setItem('theme', newTheme); } catch (e) {}
     }
     document.querySelectorAll('.theme-btn, .theme-btn-top').forEach(btn => {
         btn.addEventListener('click', toggleTheme);
@@ -9218,32 +9231,56 @@ GOLDEN RULES:
         }
     }
 
-    // Table Filtering
+    // Table Filtering — searches across ALL topics.
+    // Empty query: restore normal single-topic view.
+    // Non-empty: reveal every topic card that contains ≥1 matching row, hide non-matching rows.
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', filterTable);
 
     function filterTable() {
-        const filter = searchInput.value.toLowerCase();
-        const activeCard = document.querySelector('.topic-card.active');
-        if (!activeCard) return;
+        const filter = searchInput.value.trim().toLowerCase();
 
-        const table = activeCard.querySelector('table');
-        if (!table) return;
+        if (!filter) {
+            // Reset: hide all cards except the currently active one, show every row.
+            topicCards.forEach(card => {
+                card.style.display = '';
+                card.querySelectorAll('tr').forEach(tr => tr.style.display = '');
+            });
+            return;
+        }
 
-        const rows = table.getElementsByTagName('tr');
-
-        for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-            const cells = rows[i].getElementsByTagName('td');
-            let shouldShow = false;
-            for (let j = 0; j < cells.length; j++) {
-                if (cells[j]) {
-                    if (cells[j].innerText.toLowerCase().indexOf(filter) > -1) {
-                        shouldShow = true;
-                        break;
-                    }
-                }
+        let firstMatch = null;
+        topicCards.forEach(card => {
+            const table = card.querySelector('table');
+            if (!table) {
+                card.style.display = 'none';
+                return;
             }
-            rows[i].style.display = shouldShow ? '' : 'none';
+            const rows = table.getElementsByTagName('tr');
+            let cardHasMatch = false;
+            for (let i = 1; i < rows.length; i++) { // skip header
+                const txt = rows[i].innerText.toLowerCase();
+                const match = txt.indexOf(filter) > -1;
+                rows[i].style.display = match ? '' : 'none';
+                if (match) cardHasMatch = true;
+            }
+            if (cardHasMatch) {
+                card.classList.add('active');
+                card.style.display = '';
+                if (!firstMatch) firstMatch = card;
+            } else {
+                card.classList.remove('active');
+                card.style.display = 'none';
+            }
+        });
+
+        if (firstMatch) {
+            const topicNum = firstMatch.id.replace('tp', '');
+            topbarTitle.textContent = `Results for "${searchInput.value.trim()}"`;
+            topbarMeta.textContent = topicMetas[topicNum] || '';
+        } else {
+            topbarTitle.textContent = `No matches for "${searchInput.value.trim()}"`;
+            topbarMeta.textContent = '';
         }
     }
 
