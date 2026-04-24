@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(awk 'NR>=200 && NR<=320')",
+      "Bash(awk 'NR>=1 && NR<=40')",
+      "Bash(npm run *)",
+      "Bash(cmd *)",
+      "PowerShell(npm run *)"
+    ]
+  }
+}

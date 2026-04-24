@@ -558,6 +558,21 @@ table tbody tr:hover {
   font-size: 0.7rem;
 }
 
+/* ── CODE BLOCK ── */
+.code-block {
+  background: var(--offset);
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  padding: 0.75rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--text);
+  margin: 0;
+}
+
 /* ── COVERAGE / WARN ── */
 .coverage-box {
   background: color-mix(in oklab, var(--primary) 7%, var(--surface));

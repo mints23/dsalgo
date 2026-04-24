@@ -2015,13 +2015,94 @@ while max_val % 2 == 0:
     navSection: "Advanced Techniques",
     navLabel: "Sieve of Eratosthenes",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Sieve of Eratosthenes",
+    tier: { code: "T4", label: "Advanced" },
+    typeLabel: "Number Theory",
+    summaryMeta: "16 problems · classic sieve, SPF, totient, segmented, Möbius",
     topbarMeta: "Advanced Techniques · Number Theory",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> The Sieve is the canonical tool for batch primality queries and number-theoretic precomputation. Any problem asking about prime counts, prime factorizations, smallest prime factors, or Euler's totient across a range up to ~10⁷ uses a sieve variant. It appears in interviews disguised as counting, divisibility, or GCD problems — recognising the need to precompute rather than test individually per query is the real skill.</div>
+                    <div class="core-box"><strong>Core Idea:</strong> Mark composites by iterating multiples starting at p² (all earlier multiples are already marked by smaller primes). The SPF variant stores the smallest prime factor at each index, enabling O(log N) factorisation per query. The two variants to master: (1) is_prime[] for membership — O(N log log N) time, (2) spf[] for factorisation — O(N log log N) build, O(log N) per factorisation. These two cover 95% of interview uses.</div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Classic sieve (is_prime array)</span><span class="pill">Linear sieve (O(N) strict)</span><span class="pill">SPF — smallest prime factor sieve</span><span class="pill">Euler's totient φ sieve</span><span class="pill">Sum / count of divisors sieve</span><span class="pill">Segmented sieve [L, R] up to 10¹²</span><span class="pill">Bitset sieve (memory-optimised)</span><span class="pill">Möbius function μ sieve</span><span class="pill">Modified sieve (non-prime properties)</span><span class="pill">SPF + Union-Find (shared-factor graph)</span><span class="pill">Sieve + Möbius inversion on divisors</span>
+                    </div>
+
+                    <div class="sec-title">Implementation Templates</div>
+<pre class="code-block">// Classic Sieve — O(N log log N)
+vector&lt;bool&gt; sieve(N+1, true);
+sieve[0] = sieve[1] = false;
+for (int p = 2; (long long)p*p &lt;= N; p++)
+    if (sieve[p])
+        for (int j = p*p; j &lt;= N; j += p)
+            sieve[j] = false;
+
+// SPF Sieve — factorize any x in O(log x)
+vector&lt;int&gt; spf(N+1); iota(spf.begin(), spf.end(), 0);
+for (int p = 2; (long long)p*p &lt;= N; p++)
+    if (spf[p] == p)                      // p is prime
+        for (int j = p*p; j &lt;= N; j += p)
+            if (spf[j] == j) spf[j] = p;
+// Factorize: while(x&gt;1){ freq[spf[x]]++; x /= spf[x]; }
+
+// Euler Totient Sieve
+vector&lt;int&gt; phi(N+1); iota(phi.begin(), phi.end(), 0);
+for (int p = 2; p &lt;= N; p++)
+    if (phi[p] == p)                      // p is prime
+        for (int j = p; j &lt;= N; j += p)
+            phi[j] -= phi[j] / p;
+
+// Segmented Sieve for [L, R], R up to 10^12
+// 1) Sieve small primes up to sqrt(R) with classic sieve
+// 2) vector&lt;bool&gt; seg(R-L+1, true); if(L==1) seg[0]=false;
+// 3) For each prime p: start = max(p*p, ((L+p-1)/p)*p);
+//    for(j=start; j&lt;=R; j+=p) seg[j-L]=false;</pre>
+
+                    <div class="sec-title">Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-primes/" target="_blank">LC 204</a></td><td class="prob-name">Count Primes</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic sieve</td><td class="insight">Sieve to N-1; inner loop starts at p², not 2p; count true entries</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/prime-pairs-with-target-sum/" target="_blank">LC 2761</a></td><td class="prob-name">Prime Pairs With Target Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic sieve + two-pointer</td><td class="insight">Pre-sieve to n; collect primes in array; treat as two-sum on the prime array</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/prime-arrangements/" target="_blank">LC 1175</a></td><td class="prob-name">Prime Arrangements</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Count primes in range</td><td class="insight">Count primes ≤ N; answer = primeCnt! × (N − primeCnt)! mod 10⁹+7</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/closest-prime-numbers-in-range/" target="_blank">LC 2523</a></td><td class="prob-name">Closest Prime Numbers in Range</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic sieve + adjacent scan</td><td class="insight">Sieve [lo, hi]; scan consecutive prime pairs; return the pair with minimum gap</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/prime-subtraction-operation/" target="_blank">LC 2601</a></td><td class="prob-name">Prime Subtraction Operation</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic sieve + greedy binary search</td><td class="insight">Sieve to 1000; for each element, binary search largest valid prime to subtract</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-count-of-numbers-which-are-not-special/" target="_blank">LC 3233</a></td><td class="prob-name">Count Numbers Which Are Not Special</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Prime squares</td><td class="insight">"Special" = exactly 2 divisors = prime square; count primes p where p² ∈ [l, r]</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-division-operations-to-make-array-non-decreasing/" target="_blank">LC 3326</a></td><td class="prob-name">Min Division Ops — Non-Decreasing</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">SPF sieve + greedy right-to-left</td><td class="insight">Only useful divisor of arr[i] is spf[arr[i]]; process right-to-left, dividing until valid</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/split-the-array-to-make-coprime-products/" target="_blank">LC 2584</a></td><td class="prob-name">Split Array — Coprime Products</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">SPF sieve + prefix prime tracking</td><td class="insight">Factorize each element via SPF; track open prime counts; valid split when no prime straddles the boundary</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-element-sum-of-a-complete-subset-of-indices/" target="_blank">LC 2862</a></td><td class="prob-name">Max Element-Sum of Complete Subset</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">SPF + squarefree kernel grouping</td><td class="insight">Indices i,j are in the same group iff i×j is a perfect square; group by squarefree kernel via SPF</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/gcd-sort-of-an-array/" target="_blank">LC 1998</a></td><td class="prob-name">GCD Sort of an Array</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">SPF sieve + Union-Find</td><td class="insight">Factor each element via SPF; union elements sharing a prime; check reachability — Hard: reducing sort-validity to graph connectivity is non-obvious</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/apply-operations-to-maximize-score/" target="_blank">LC 2818</a></td><td class="prob-name">Apply Operations to Maximize Score</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">SPF + monotonic stack + BIT</td><td class="insight">SPF counts distinct prime factors (score); monotonic stack finds dominant element per subarray; BIT counts combinations — Hard: three techniques fused</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-the-number-of-ideal-arrays/" target="_blank">LC 2338</a></td><td class="prob-name">Count the Number of Ideal Arrays</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">SPF + DP + stars-and-bars</td><td class="insight">For each chain root v, factorize via SPF; apply stars-and-bars per prime exponent across n positions — Hard: decomposing multiplicative chains into per-prime combinatorics simultaneously</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/largest-component-size-by-common-factor/" target="_blank">LC 952</a></td><td class="prob-name">Largest Component by Common Factor</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Sieve-style factor enumeration + Union-Find</td><td class="insight">For each value, iterate all factors sieve-style; union value with each factor; find largest component — Hard: O(V log V) sieve pass vs naive O(N√V) per-element</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/the-kth-factor-of-n/" target="_blank">LC 1492</a></td><td class="prob-name trap-name">⚠️ Kth Factor of N</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Trial division only — NOT sieve</td><td class="insight">Single query on N ≤ 1000; enumerate divisors in O(√N). Building a sieve is wasted effort for a single-query problem</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/ugly-number-ii/" target="_blank">LC 264</a></td><td class="prob-name trap-name">⚠️ Ugly Number II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Three-pointer DP — NOT sieve</td><td class="insight">Ugly numbers only have factors {2,3,5}; three-pointer DP is O(N). Sieve can't target this sparse sequence efficiently</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/largest-component-size-by-common-factor/" target="_blank">LC 952</a></td><td class="prob-name trap-name">⚠️ Don't sieve per element</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Sieve across value range, not per element</td><td class="insight">Iterating all factor pairs of each value individually is O(N × √V); the sieve pass is O(V log V) — always sieve the value range, not each number independently</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Count primes up to N..."</td><td class="trigger-variant">Classic sieve</td><td class="trigger-breaks">N &gt; 10⁸ — use segmented sieve or Miller-Rabin</td></tr>
+                        <tr><td class="trigger-phrase">"Factorize every element, values ≤ 10⁶..."</td><td class="trigger-variant">SPF sieve (build once, factorize each in O(log V))</td><td class="trigger-breaks">Values up to 10¹² — SPF table won't fit in memory</td></tr>
+                        <tr><td class="trigger-phrase">"Elements are related if they share a prime factor..."</td><td class="trigger-variant">SPF sieve + Union-Find</td><td class="trigger-breaks">More complex relations require a different graph model</td></tr>
+                        <tr><td class="trigger-phrase">"All primes in range [L, R], R up to 10¹²..."</td><td class="trigger-variant">Segmented sieve (primes to √R, mark range)</td><td class="trigger-breaks">R − L &gt; 10⁷ — array too large; must chunk the range</td></tr>
+                        <tr><td class="trigger-phrase">"Sum / count of φ(i) for i in [1, N]..."</td><td class="trigger-variant">Euler totient sieve + prefix sum</td><td class="trigger-breaks">φ of a single large number — use factorisation formula directly</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 8 problems:</strong> <span class="pill">LC 204</span><span class="pill">LC 2761</span><span class="pill">LC 1175</span><span class="pill">LC 2601</span><span class="pill">LC 2584</span><span class="pill">LC 1998</span><span class="pill">LC 2818</span><span class="pill">LC 952</span></div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>Inner loop starts at 2p instead of p²</strong> — composites below p² are already marked; correct but wastes ~2× time; know why p² is the valid start</div>
+                    <div class="warn-box">🚩 <strong>SPF factorisation doesn't stop at 1</strong> — while(x &gt; 1) is the correct termination; no special handling needed for 1 itself</div>
+                    <div class="warn-box">🚩 <strong>Using int for segmented sieve when L is near 10¹²</strong> — all arithmetic on L, R, p*p must use long long</div>
+                    <div class="warn-box">🚩 <strong>Confusing Ω (prime factors with multiplicity) vs ω (distinct prime factors)</strong> — LC 2818 uses distinct primes; using total factor count gives wrong score</div>
+                    <div class="warn-box">🚩 <strong>Re-sieving inside a per-query loop</strong> — O(N log log N × Q) instead of O(N log log N + Q); always precompute once</div>
+                    <div class="warn-box">🚩 <strong>Sieve array allocated at size N instead of N+1</strong> — index N is out-of-bounds; always allocate N+1 elements</div>
 `,
   },
   {
@@ -2031,13 +2112,98 @@ while max_val % 2 == 0:
     navSection: "Advanced Techniques",
     navLabel: "Fenwick Tree / BIT",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Fenwick Tree / Binary Indexed Tree (BIT)",
+    tier: { code: "T4", label: "Advanced" },
+    typeLabel: "Range Queries",
+    summaryMeta: "15 problems · point update, range update, 2D BIT, inversions, order statistics",
     topbarMeta: "Advanced Techniques · Range Queries",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> The BIT is the fastest practical structure for dynamic prefix sums with point updates — both in O(log N) with near-zero constants and ~5 lines of code. It transforms O(N²) inversion counting into O(N log N), answers rank queries after each insertion, and powers coordinate-compressed frequency counting. Recognising "count elements smaller than X seen so far" as a BIT prefix query is the critical interview insight.</div>
+                    <div class="core-box"><strong>Core Idea:</strong> Each index i stores the sum of a range of length lowbit(i) = i &amp; (−i). UPDATE: add to i, then i += lowbit(i) (go UP). QUERY prefix sum: read at i, then i −= lowbit(i) (go DOWN). Always 1-indexed — index 0 causes an infinite loop because lowbit(0) = 0. Coordinate-compress values to [1..M] before building the BIT whenever values can be large.</div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Point update, prefix sum query</span><span class="pill">Point update, range sum query</span><span class="pill">Range update, point query (difference BIT)</span><span class="pill">Range update, range sum (two BITs)</span><span class="pill">2D BIT (matrix point update, rectangle sum)</span><span class="pill">Coordinate-compressed BIT</span><span class="pill">BIT for order statistics (k-th smallest)</span><span class="pill">BIT for inversion counting</span><span class="pill">BIT + offline queries</span><span class="pill">BIT for counting LIS sequences</span>
+                    </div>
+
+                    <div class="sec-title">Implementation Templates</div>
+<pre class="code-block">// Canonical BIT — 1-indexed, O(log N) update and prefix query
+struct BIT {
+    int n; vector&lt;long long&gt; t;
+    BIT(int n) : n(n), t(n+1, 0) {}
+    void update(int i, long long v) {
+        for (; i &lt;= n; i += i &amp; -i) t[i] += v;
+    }
+    long long query(int i) {           // prefix sum [1..i]
+        long long s = 0;
+        for (; i &gt; 0; i -= i &amp; -i) s += t[i];
+        return s;
+    }
+    long long range(int l, int r) { return query(r) - query(l-1); }
+};
+
+// Range update, point query — store difference array in BIT:
+//   add v to [l, r]:  update(l, +v);  update(r+1, -v)
+//   query A[i]:       bit.query(i)
+
+// Count inversions — process right to left:
+//   inversions += bit.query(val - 1);   // elements smaller already seen
+//   bit.update(val, 1);
+
+// K-th smallest via binary lifting:
+//   int kth(int k) { int pos=0;
+//     for(int pw=1&lt;&lt;LOG; pw; pw&gt;&gt;=1)
+//       if(pos+pw&lt;=n &amp;&amp; t[pos+pw]&lt;k){pos+=pw; k-=t[pos];}
+//     return pos+1; }
+
+// Two-BIT range update + range sum:
+//   add v to [l,r]: B1.update(l,v); B1.update(r+1,-v);
+//                   B2.update(l,v*(l-1)); B2.update(r+1,-v*r);
+//   prefix sum [1,x]: B1.query(x)*x - B2.query(x)</pre>
+
+                    <div class="sec-title">Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-mutable/" target="_blank">LC 307</a></td><td class="prob-name">Range Sum Query — Mutable</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Point update, range sum</td><td class="insight">Canonical BIT: update(i, delta), query(r) − query(l−1); first BIT to implement from scratch</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-number-of-teams/" target="_blank">LC 1395</a></td><td class="prob-name">Count Number of Teams</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BIT for count-left / count-right</td><td class="insight">For each middle j: (count smaller on left) × (count larger on right) + symmetric; BIT gives each count in O(log N)</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-of-smaller-numbers-after-self/" target="_blank">LC 315</a></td><td class="prob-name">Count of Smaller Numbers After Self</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + coordinate compression</td><td class="insight">Process right to left; query prefix[val−1] for count of smaller, then update val — Hard: recognising "count smaller" as a dynamic rank query</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/reverse-pairs/" target="_blank">LC 493</a></td><td class="prob-name">Reverse Pairs</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + coordinate compression (modified inversion)</td><td class="insight">Count j &lt; i where nums[j] &gt; 2×nums[i]; compress values AND 2×values together — Hard: 2× factor means standard inversion template doesn't apply directly</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/create-sorted-array-through-instructions/" target="_blank">LC 1649</a></td><td class="prob-name">Create Sorted Array Through Instructions</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + coordinate compression (both sides)</td><td class="insight">Cost = min(count strictly less, count strictly greater); BIT gives prefix[v−1] and total−prefix[v] simultaneously — Hard: tracking both sides with running total</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-pairs-satisfying-inequality/" target="_blank">LC 2426</a></td><td class="prob-name">Number of Pairs Satisfying Inequality</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + algebraic rearrangement</td><td class="insight">nums1[i]−nums1[j] ≤ nums2[i]−nums2[j]+diff rearranges to a BIT rank query — Hard: recognising the algebraic form as a coordinate-compressed query</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-of-range-sum/" target="_blank">LC 327</a></td><td class="prob-name">Count of Range Sum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + prefix sums + coordinate compression</td><td class="insight">Count prefix sums in [lower+psum, upper+psum]; compress offline — Hard: double coordinate compression plus offline processing order</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-good-triplets-in-an-array/" target="_blank">LC 2179</a></td><td class="prob-name">Count Good Triplets in an Array</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + position mapping between two arrays</td><td class="insight">For each element by position in arr2, count elements before it in arr1 that appeared before AND after — Hard: mapping two arrays' order simultaneously</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/the-skyline-problem/" target="_blank">LC 218</a></td><td class="prob-name">The Skyline Problem</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + coordinate compression + sweep line</td><td class="insight">Sweep x-events; BIT on compressed y-values for max-height — Hard: deletion (remove height) requires max-BIT or segment tree; classical BIT only handles sum</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-sum-queries/" target="_blank">LC 2736</a></td><td class="prob-name">Maximum Sum Queries</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + offline sort + coordinate compression</td><td class="insight">Sort queries and elements by one dimension; BIT tracks max of second dimension for active elements — Hard: offline processing order and monotone BIT update</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-2d-mutable/" target="_blank">LC 308</a></td><td class="prob-name">Range Sum Query 2D — Mutable</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">2D BIT</td><td class="insight">Nested lowbit loops for both row and column; update (r,c), query rectangle (0,0)→(r,c); O(log N × log M)</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/make-array-empty/" target="_blank">LC 2659</a></td><td class="prob-name">Make Array Empty</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT for removed-position counting</td><td class="insight">Count moves when removing elements in sorted order; BIT tracks how many elements to the left have already been removed — Hard: framing circular-queue pops as a BIT prefix count</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/distribute-elements-into-two-arrays-ii/" target="_blank">LC 3072</a></td><td class="prob-name">Distribute Elements Into Two Arrays II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BIT + coordinate compression (suffix count)</td><td class="insight">For each element, count how many elements already in arr1 / arr2 are strictly greater; BIT suffix query decides which array to append to</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/subarray-sum-equals-k/" target="_blank">LC 560</a></td><td class="prob-name trap-name">⚠️ Subarray Sum Equals K</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Prefix sum + HashMap — NOT BIT</td><td class="insight">No updates; just counting prefix sums equal to (target − current). HashMap is O(N). BIT would add O(log N) for no gain</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-immutable/" target="_blank">LC 303</a></td><td class="prob-name trap-name">⚠️ Range Sum Query — Immutable</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">⚠️ Static prefix array — NOT BIT</td><td class="insight">No updates exist; plain prefix array answers every query in O(1). BIT is strictly worse here</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Count elements to the left smaller / larger than current..."</td><td class="trigger-variant">BIT + process in order + coordinate compress</td><td class="trigger-breaks">Need actual indices (not counts) — use Segment Tree or merge sort</td></tr>
+                        <tr><td class="trigger-phrase">"After each insertion, count previous elements satisfying condition..."</td><td class="trigger-variant">BIT on compressed value space</td><td class="trigger-breaks">Condition is not a prefix-sum query (e.g. range GCD) — use Segment Tree</td></tr>
+                        <tr><td class="trigger-phrase">"Count inversions in array..."</td><td class="trigger-variant">BIT; process left-to-right; query prefix[val−1] before update</td><td class="trigger-breaks">Inversions in subarrays / sliding window — more complex, BIT alone insufficient</td></tr>
+                        <tr><td class="trigger-phrase">"Add V to range [L, R], query point value..."</td><td class="trigger-variant">Difference-array BIT (update L, −V at R+1)</td><td class="trigger-breaks">Range updates + range sum queries → use two-BIT variant</td></tr>
+                        <tr><td class="trigger-phrase">"2D grid: update cell, query rectangle sum..."</td><td class="trigger-variant">2D BIT</td><td class="trigger-breaks">Range update on rectangle → 2D lazy Segment Tree</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 7 problems:</strong> <span class="pill">LC 307</span><span class="pill">LC 1395</span><span class="pill">LC 315</span><span class="pill">LC 493</span><span class="pill">LC 1649</span><span class="pill">LC 2179</span><span class="pill">LC 327</span></div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>Using 0-indexed BIT</strong> — index 0 causes an infinite loop because lowbit(0) = 0; always shift to 1-indexed or add 1 to every index</div>
+                    <div class="warn-box">🚩 <strong>Forgetting coordinate compression when values reach 10⁹</strong> — can't allocate a BIT of size 10⁹; compress values to [1..M] offline first</div>
+                    <div class="warn-box">🚩 <strong>Using BIT for range-max queries</strong> — BIT only handles invertible prefix operations like sum and XOR; max is not invertible; use Segment Tree</div>
+                    <div class="warn-box">🚩 <strong>Off-by-one in range query</strong> — range [l, r] = query(r) − query(l−1), NOT query(r) − query(l)</div>
+                    <div class="warn-box">🚩 <strong>Two-BIT range-sum formula error</strong> — prefix(x) = B1.query(x) × x − B2.query(x); mixing up the two BITs' coefficients gives wrong results</div>
+                    <div class="warn-box">🚩 <strong>Building BIT when there are no updates</strong> — static prefix array answers in O(1) with no build time; always check if updates actually exist</div>
 `,
   },
   {
@@ -2047,13 +2213,108 @@ while max_val % 2 == 0:
     navSection: "Advanced Techniques",
     navLabel: "Segment Tree",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Segment Tree",
+    tier: { code: "T4", label: "Advanced" },
+    typeLabel: "Range Queries",
+    summaryMeta: "18 problems · lazy propagation, DP nodes, persistent, segment tree beats, merge sort tree",
     topbarMeta: "Advanced Techniques · Range Queries",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> The Segment Tree is the most powerful general-purpose range query structure. Unlike the BIT, it handles non-invertible operations (range max, range GCD, range XOR) and supports lazy propagation for range updates. The ability to define custom node merge functions makes it universally applicable — every top-tier interview problem involving "dynamic range queries" that BIT can't handle requires a Segment Tree. Node-merge DP (bracket matching, max subarray, count of 1s) is the hardest variant and a direct Google interview target.</div>
+                    <div class="core-box"><strong>Core Idea:</strong> Divide [0, N−1] into a binary tree of ranges. Each node stores the aggregate for its range. QUERY: recurse left/right, skip non-overlapping nodes, return merged result. UPDATE (lazy): push pending lazy to children before recursing; apply to node after update. Lazy must compose correctly when a second lazy arrives before the first is pushed down — this composition is the most common source of bugs.</div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Point update, range query (sum / min / max)</span><span class="pill">Range add + range query (lazy)</span><span class="pill">Range assign + range query (lazy)</span><span class="pill">Two lazy types — add + assign (non-commuting)</span><span class="pill">Segment Tree DP (custom node merge)</span><span class="pill">Merge sort tree (sorted lists at nodes)</span><span class="pill">Persistent Segment Tree (version history)</span><span class="pill">Segment Tree beats (range Chmin + range sum)</span><span class="pill">Coordinate-compressed / implicit Segment Tree</span><span class="pill">2D sweep line + Segment Tree</span>
+                    </div>
+
+                    <div class="sec-title">Implementation Templates</div>
+<pre class="code-block">// Lazy Segment Tree — range add, range sum
+struct LazySegTree {
+    int n; vector&lt;long long&gt; t, lazy;
+    LazySegTree(int n): n(n), t(4*n,0), lazy(4*n,0){}
+    void apply(int v, int tl, int tr, long long val){
+        t[v] += val*(tr-tl+1); lazy[v] += val;
+    }
+    void push(int v, int tl, int tr){
+        if(!lazy[v]) return;
+        int tm=(tl+tr)/2;
+        apply(2*v,tl,tm,lazy[v]); apply(2*v+1,tm+1,tr,lazy[v]);
+        lazy[v]=0;
+    }
+    void update(int v,int tl,int tr,int l,int r,long long val){
+        if(l&gt;r) return;
+        if(l==tl &amp;&amp; r==tr){ apply(v,tl,tr,val); return; }
+        push(v,tl,tr); int tm=(tl+tr)/2;
+        update(2*v,tl,tm,l,min(r,tm),val);
+        update(2*v+1,tm+1,tr,max(l,tm+1),r,val);
+        t[v]=t[2*v]+t[2*v+1];
+    }
+    long long query(int v,int tl,int tr,int l,int r){
+        if(l&gt;r) return 0;
+        if(l==tl &amp;&amp; r==tr) return t[v];
+        push(v,tl,tr); int tm=(tl+tr)/2;
+        return query(2*v,tl,tm,l,min(r,tm))
+             + query(2*v+1,tm+1,tr,max(l,tm+1),r);
+    }
+};
+
+// DP Node merge — max subarray sum:
+// struct Node { ll maxPre,maxSuf,maxSub,total; };
+// Node merge(Node L, Node R){
+//   return { max(L.maxPre, L.total+R.maxPre),
+//            max(R.maxSuf, R.total+L.maxSuf),
+//            max({L.maxSub,R.maxSub,L.maxSuf+R.maxPre}),
+//            L.total+R.total }; }
+
+// Two lazy types — multiply THEN add (order matters):
+// apply multiply first; compose: if assign arrives, overwrite; if add arrives, add to existing</pre>
+
+                    <div class="sec-title">Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-sum-query-mutable/" target="_blank">LC 307</a></td><td class="prob-name">Range Sum Query — Mutable</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Point update, range sum</td><td class="insight">Build tree in O(N); each update and query O(log N); canonical Segment Tree</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-ii/" target="_blank">LC 731</a></td><td class="prob-name">My Calendar II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Lazy range add + range max</td><td class="insight">Add +1 on event interval; if max ≥ 3 anywhere, reject; lazy range-add + global-max query</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-iii/" target="_blank">LC 732</a></td><td class="prob-name">My Calendar III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy range add + range max (always accept)</td><td class="insight">Same as 731 but always accept and return global max; lazy propagation max-query — Hard: dynamic events with no early-exit; must handle large coordinate range with implicit seg tree</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/range-module/" target="_blank">LC 715</a></td><td class="prob-name">Range Module</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy range assign (0/1) + range sum</td><td class="insight">Track covered ranges as 0/1 segments; assign and query fractional coverage — Hard: lazy assign with merge of boolean ranges; partial-overlap handling</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/fancy-sequence/" target="_blank">LC 1622</a></td><td class="prob-name">Fancy Sequence</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy range add + range multiply + point query</td><td class="insight">Two lazy types: multiply then add (non-commuting); lazy composition must apply multiply before add — Hard: composing non-commuting lazy operations correctly</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/falling-squares/" target="_blank">LC 699</a></td><td class="prob-name">Falling Squares</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy range assign + range max</td><td class="insight">Each square sets height in [l, r] to max(current, new); query max height first, then assign — Hard: coordinate compression of floating-point interval endpoints</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-substring-of-one-repeating-character/" target="_blank">LC 2213</a></td><td class="prob-name">Longest Substring of One Repeating Character</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Seg Tree DP node — prefix/suffix run merge</td><td class="insight">Node stores max run, prefix run, suffix run, length; merge combines boundary runs — Hard: non-trivial node merge that tracks prefix/suffix is the key; after each update, query is O(log N)</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-sum-of-subsequence-with-non-adjacent-elements/" target="_blank">LC 3165</a></td><td class="prob-name">Max Sum Subsequence — Non-Adjacent</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Seg Tree DP node — 4-state take/skip</td><td class="insight">Node encodes best sum for (take/skip) × (leftmost/rightmost); point update triggers O(log N) remerge — Hard: 4-state DP encoded in each node and merged correctly</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/rectangle-area-ii/" target="_blank">LC 850</a></td><td class="prob-name">Rectangle Area II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Coordinate-compressed 2D sweep + seg tree</td><td class="insight">Sweep x-axis; seg tree on compressed y tracks total covered length; area = Σ covered_y_length × x_gap — Hard: 2D coordinate compression + sweep + seg tree integration</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/booking-concert-tickets-in-groups/" target="_blank">LC 2286</a></td><td class="prob-name">Booking Concert Tickets in Groups</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Seg tree binary search (two simultaneous constraints)</td><td class="insight">Query: prefix sum ≤ maxRow AND max in suffix ≥ k; binary search within seg tree in one O(log² N) pass — Hard: two simultaneous constraints answered in a single tree walk</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/online-majority-element-in-subarray/" target="_blank">LC 1157</a></td><td class="prob-name">Online Majority Element in Subarray</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Merge sort tree (sorted lists at nodes)</td><td class="insight">Candidate from Boyer-Moore merge at each node; verify with binary search in node's sorted list — Hard: combining Boyer-Moore candidate propagation with O(log² N) verification</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-complete-all-tasks/" target="_blank">LC 2589</a></td><td class="prob-name">Minimum Time to Complete All Tasks</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy assign + greedy interval scheduling</td><td class="insight">Greedily assign latest-available slots; seg tree with lazy assign tracks free slots — Hard: "assign latest" within a range requires binary search on free slots inside the tree</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/" target="_blank">LC 2940</a></td><td class="prob-name">Find Building Where Alice and Bob Can Meet</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Seg tree binary search (first index &gt; threshold)</td><td class="insight">For each query (a,b), find leftmost index &gt; max(a,b) with height &gt; max(h[a],h[b]); offline + walk inside seg tree — Hard: "find first satisfying condition" requires a descent into the tree, not a range query</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/count-integers-in-intervals/" target="_blank">LC 2276</a></td><td class="prob-name">Count Integers in Intervals</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Implicit / dynamic Segment Tree</td><td class="insight">Intervals arrive online; no fixed N up front; implicit seg tree on coordinate range 1..10⁹ allocates nodes on demand — Hard: implementing dynamic node allocation correctly</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/subarrays-distinct-element-sum-of-squares-ii/" target="_blank">LC 2916</a></td><td class="prob-name">Subarrays Distinct Element Sum of Squares II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Lazy range add + sum (contribution counting)</td><td class="insight">For each position maintain count of subarrays with each distinct count; range-add + sum tracks contribution changes — Hard: translating "distinct values in subarrays" to lazy seg tree updates</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank">LC 239</a></td><td class="prob-name trap-name">⚠️ Sliding Window Maximum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Monotonic deque — NOT Segment Tree</td><td class="insight">O(N) deque beats O(N log N) seg tree; static window maximum always use deque — seg tree is correct but strictly worse</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/my-calendar-i/" target="_blank">LC 729</a></td><td class="prob-name trap-name">⚠️ My Calendar I</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Sorted set (TreeMap) — NOT Segment Tree</td><td class="insight">Binary search on sorted intervals is O(log N) per insert; segment tree is overkill for a simple overlap check</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/corporate-flight-bookings/" target="_blank">LC 1109</a></td><td class="prob-name trap-name">⚠️ Corporate Flight Bookings</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Difference array — NOT Segment Tree</td><td class="insight">No queries during updates → difference array answers in O(N+Q); segment tree adds O(log N) overhead for no reason</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Range min / max / GCD with point updates..."</td><td class="trigger-variant">Segment Tree (BIT can't do non-invertible ops)</td><td class="trigger-breaks">N &gt; 10⁷ — recursion overhead; use iterative seg tree</td></tr>
+                        <tr><td class="trigger-phrase">"Range update (add / assign) + range query..."</td><td class="trigger-variant">Lazy propagation Segment Tree</td><td class="trigger-breaks">Two non-commuting lazy types — must compose in the right order; common bug source</td></tr>
+                        <tr><td class="trigger-phrase">"Longest consecutive run after updates..."</td><td class="trigger-variant">Seg Tree DP node (prefix/suffix/total run)</td><td class="trigger-breaks">Non-associative merge — verify merge function handles all boundary cases</td></tr>
+                        <tr><td class="trigger-phrase">"K-th smallest in range [l, r]..."</td><td class="trigger-variant">Persistent Seg Tree or Merge Sort Tree</td><td class="trigger-breaks">Updates exist → persistent seg tree; no updates → merge sort tree or wavelet tree</td></tr>
+                        <tr><td class="trigger-phrase">"Range Chmin / Chmax + range sum..."</td><td class="trigger-variant">Segment Tree beats</td><td class="trigger-breaks">Arbitrary range operations — break condition may not exist; only works when max and second-max are tracked</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 8 problems:</strong> <span class="pill">LC 307</span><span class="pill">LC 731</span><span class="pill">LC 732</span><span class="pill">LC 715</span><span class="pill">LC 1622</span><span class="pill">LC 2213</span><span class="pill">LC 3165</span><span class="pill">LC 2286</span></div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>Lazy push-down forgotten before recursing into children</strong> — must push before visiting children; forgetting this propagates stale lazy to leaves</div>
+                    <div class="warn-box">🚩 <strong>Lazy composition bug — overwrite instead of compose</strong> — when a second lazy arrives at a node with pending lazy, compose them; don't overwrite; especially critical for add-on-top-of-assign vs assign-on-top-of-add</div>
+                    <div class="warn-box">🚩 <strong>Allocating only 2×N nodes instead of 4×N</strong> — segment tree needs 4×N nodes to safely handle all split cases; under-allocation causes out-of-bounds writes</div>
+                    <div class="warn-box">🚩 <strong>Wrong identity element in node initialisation</strong> — sum identity is 0, min identity is +INF, max identity is −INF; wrong identity corrupts base-case merges</div>
+                    <div class="warn-box">🚩 <strong>Not updating the leaf's lazy field</strong> — when pushing a lazy to a leaf, apply to the value AND clear the lazy field; clearing only the value is insufficient</div>
+                    <div class="warn-box">🚩 <strong>Two-lazy composition order</strong> — "multiply then add" and "add then multiply" give different results; derive the composition rule once and write it in a comment</div>
 `,
   },
   {
@@ -2063,13 +2324,111 @@ while max_val % 2 == 0:
     navSection: "Advanced Techniques",
     navLabel: "KMP Pattern Matching",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "KMP Pattern Matching",
+    tier: { code: "T4", label: "Advanced" },
+    typeLabel: "String Matching",
+    summaryMeta: "17 problems · failure function, periodicity, borders, KMP automaton, Z-function",
     topbarMeta: "Advanced Techniques · String Matching",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> KMP solves exact substring search in O(N+M) — critical when naive O(N×M) times out. More importantly, its failure function encodes deep string structure: the longest proper prefix that is also a suffix. This encodes string periodicity, repeated borders, and automaton transitions. It appears in interviews disguised as "check rotation," "find minimal period," "count occurrences," or "shortest palindrome." Google and Bloomberg problems routinely use KMP structure without naming it.</div>
+                    <div class="core-box"><strong>Core Idea:</strong> Build the failure function fail[i] = length of the longest proper prefix of s[0..i] that is also a suffix. Construction is O(M) using a "fallback while no match" loop. Search: maintain state j (matched prefix length); on mismatch, set j = fail[j−1] (don't reset to 0). On full match, set j = fail[M−1] to allow overlapping matches. The Z-function is an alternative — Z[i] = length of longest match of s[i..] with s[0..]; same power, different index semantics.</div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Classic KMP — all occurrences of P in T</span><span class="pill">Failure function construction</span><span class="pill">String border (longest prefix = suffix)</span><span class="pill">String periodicity (minimum period)</span><span class="pill">KMP automaton (O(1) per char, streaming)</span><span class="pill">KMP for circular strings / rotations</span><span class="pill">KMP on integer arrays (non-char sequences)</span><span class="pill">Z-function (complement to failure function)</span><span class="pill">Palindrome via KMP (reversed-concat trick)</span><span class="pill">KMP + digit DP (pattern as FSM state)</span>
+                    </div>
+
+                    <div class="sec-title">Implementation Templates</div>
+<pre class="code-block">// Failure function — O(M)
+vector&lt;int&gt; build_fail(const string&amp; p) {
+    int m = p.size();
+    vector&lt;int&gt; fail(m, 0);
+    for (int i = 1; i &lt; m; i++) {
+        int j = fail[i-1];
+        while (j &gt; 0 &amp;&amp; p[i] != p[j]) j = fail[j-1];
+        if (p[i] == p[j]) j++;
+        fail[i] = j;
+    }
+    return fail;
+}
+
+// KMP search — all occurrences including overlapping
+vector&lt;int&gt; kmp_search(const string&amp; t, const string&amp; p) {
+    auto fail = build_fail(p);
+    vector&lt;int&gt; res; int j = 0;
+    for (int i = 0; i &lt; (int)t.size(); i++) {
+        while (j &gt; 0 &amp;&amp; t[i] != p[j]) j = fail[j-1];
+        if (t[i] == p[j]) j++;
+        if (j == (int)p.size()) {
+            res.push_back(i - j + 1);
+            j = fail[j-1];    // allow overlapping: do NOT reset to 0
+        }
+    }
+    return res;
+}
+
+// String period: period = len - fail[len-1]
+// String is periodic iff len % period == 0
+// Longest border (prefix = suffix): fail[len-1]
+
+// Z-function — O(N)
+vector&lt;int&gt; z_function(const string&amp; s) {
+    int n = s.size(); vector&lt;int&gt; z(n, 0); z[0] = n;
+    int l = 0, r = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (i &lt; r) z[i] = min(r-i, z[i-l]);
+        while (i+z[i] &lt; n &amp;&amp; s[z[i]] == s[i+z[i]]) z[i]++;
+        if (i+z[i] &gt; r) { l = i; r = i+z[i]; }
+    }
+    return z;
+}
+// Find P in T: z_function(P + "#" + T); z[i]==|P| means match at i-|P|-1</pre>
+
+                    <div class="sec-title">Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/" target="_blank">LC 28</a></td><td class="prob-name">Find First Occurrence in String</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Classic KMP — first match</td><td class="insight">Build fail on pattern; run KMP on text; state j tracks matched prefix length</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/repeated-substring-pattern/" target="_blank">LC 459</a></td><td class="prob-name">Repeated Substring Pattern</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">String periodicity via failure function</td><td class="insight">period = len − fail[len−1]; s is a repetition iff len % period == 0</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/rotate-string/" target="_blank">LC 796</a></td><td class="prob-name">Rotate String</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">KMP on doubled string</td><td class="insight">A is a rotation of B iff B is a substring of A+A; run KMP for pattern B in text A+A</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-happy-prefix/" target="_blank">LC 1392</a></td><td class="prob-name">Longest Happy Prefix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">String border (longest prefix = suffix)</td><td class="insight">Answer is the prefix of length fail[len−1]; the failure function directly answers border queries</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-palindrome/" target="_blank">LC 214</a></td><td class="prob-name">Shortest Palindrome</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">KMP on reversed concat (palindromic prefix)</td><td class="insight">Concat s + '#' + rev(s); fail[2n] gives length of longest palindromic prefix — Hard: reducing "palindrome prefix" to a failure function query is non-obvious; separator is mandatory</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/form-array-by-concatenating-subarrays-of-another-array/" target="_blank">LC 1764</a></td><td class="prob-name">Form Array by Concatenating Subarrays</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">KMP on integer arrays</td><td class="insight">KMP works on any comparable sequence, not just characters; build fail on integer arrays the same way</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/repeated-string-match/" target="_blank">LC 686</a></td><td class="prob-name">Repeated String Match</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">KMP on repeated text</td><td class="insight">Repeat A until length ≥ len(B); run KMP; answer is ceil or ceil+1 repetitions</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/sum-of-scores-of-built-strings/" target="_blank">LC 2223</a></td><td class="prob-name">Sum of Scores of Built Strings</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Z-function — direct score summation</td><td class="insight">Z[i] = score for suffix starting at i; total = Z[0] + Σ Z[i]; Z[0] = n by definition — Hard: mapping "score" definition directly to Z-function values requires careful reading</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-beautiful-indices-in-the-given-array-i/" target="_blank">LC 3006</a></td><td class="prob-name">Find Beautiful Indices I</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">KMP for two patterns + two-pointer</td><td class="insight">Run KMP independently for both patterns; collect two sorted lists of positions; two-pointer to find pairs within distance K</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/string-matching-in-an-array/" target="_blank">LC 1408</a></td><td class="prob-name">String Matching in an Array</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">KMP / Z for substring check across pairs</td><td class="insight">For each pair (s, t), check if s is a substring of t using KMP; join all words with separator for a single-pass approach</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-all-good-strings/" target="_blank">LC 1397</a></td><td class="prob-name">Find All Good Strings</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">KMP automaton + digit DP</td><td class="insight">DP[pos][kmp_state][tight] counts strings avoiding pattern; KMP automaton gives O(1) state transitions — Hard: three-dimensional DP state fused with KMP automaton; tight bound and pattern-free constraint must both be tracked</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-valid-strings-to-form-target-i/" target="_blank">LC 3292</a></td><td class="prob-name">Minimum Valid Strings to Form Target</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">KMP failure + greedy DP</td><td class="insight">For each position in target, find longest prefix of any word that matches; DP for min segments — Hard: running KMP with multiple patterns against target and combining with DP simultaneously</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-occurrence-of-first-almost-equal-substring/" target="_blank">LC 3303</a></td><td class="prob-name">First Almost Equal Substring</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Z-function + one-mismatch logic</td><td class="insight">Forward Z (P in T) and reverse Z give prefix and suffix match lengths at each position; positions where forward + reverse ≥ M−1 have exactly one mismatch — Hard: combining forward and backward Z values to isolate single-mismatch positions</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/encode-string-with-shortest-length/" target="_blank">LC 471</a></td><td class="prob-name">Encode String with Shortest Length</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">KMP periodicity + interval DP</td><td class="insight">Use KMP period detection to attempt RLE encoding of each substring; interval DP combines encodings — Hard: KMP period detection fused with O(N³) interval DP across all substrings</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-palindromic-substring/" target="_blank">LC 5</a></td><td class="prob-name trap-name">⚠️ Longest Palindromic Substring</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ Manacher's / expand-around-center — NOT KMP</td><td class="insight">KMP finds palindromic prefix but cannot find general longest palindromic substring efficiently; use Manacher's O(N) or expand-around-center O(N²)</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-window-substring/" target="_blank">LC 76</a></td><td class="prob-name trap-name">⚠️ Minimum Window Substring</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Sliding window — NOT KMP</td><td class="insight">This is a frequency-count problem; KMP requires a fixed exact pattern. Sliding window with char frequency maps is the correct approach</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-duplicate-substring/" target="_blank">LC 1044</a></td><td class="prob-name trap-name">⚠️ Longest Duplicate Substring</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">⚠️ Rolling hash or suffix array — NOT KMP</td><td class="insight">KMP finds one known pattern in one text; finding the longest repeated substring requires binary search + Rabin-Karp or a suffix array — completely different structure</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Find pattern P in text T efficiently..."</td><td class="trigger-variant">Classic KMP — O(N+M)</td><td class="trigger-breaks">Multiple patterns simultaneously → Aho-Corasick</td></tr>
+                        <tr><td class="trigger-phrase">"Is string A a rotation of string B..."</td><td class="trigger-variant">KMP on B+B with pattern A</td><td class="trigger-breaks">Only works for exact rotation; not for "rotation within tolerance"</td></tr>
+                        <tr><td class="trigger-phrase">"Longest prefix of string that equals a suffix..."</td><td class="trigger-variant">fail[len−1] directly from failure function</td><td class="trigger-breaks">Longest prefix = suffix AND appears internally → trace full fail chain</td></tr>
+                        <tr><td class="trigger-phrase">"Does string have a repeating unit / period..."</td><td class="trigger-variant">period = len − fail[len−1]; periodic iff len % period == 0</td><td class="trigger-breaks">Approximate period (allows mismatches) → different algorithm</td></tr>
+                        <tr><td class="trigger-phrase">"Match pattern against a streaming / online text..."</td><td class="trigger-variant">KMP automaton — O(1) per new character after O(M×Σ) preprocessing</td><td class="trigger-breaks">Pattern changes per query → must rebuild automaton per pattern</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 7 problems:</strong> <span class="pill">LC 28</span><span class="pill">LC 459</span><span class="pill">LC 796</span><span class="pill">LC 1392</span><span class="pill">LC 214</span><span class="pill">LC 2223</span><span class="pill">LC 1397</span></div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>Resetting KMP state to 0 after a match</strong> — must reset to fail[M−1] to allow overlapping occurrences; resetting to 0 misses them</div>
+                    <div class="warn-box">🚩 <strong>Forgetting the separator '#' in concat tricks</strong> — without it, the failure function can span across the join point; LC 214 and LC 796 both require a separator</div>
+                    <div class="warn-box">🚩 <strong>Quadratic failure function construction</strong> — naive "try all lengths" is O(M²); the while-fallback recurrence is O(M); know the difference</div>
+                    <div class="warn-box">🚩 <strong>Using KMP for multiple patterns</strong> — running KMP per pattern is O(T × |patterns|); Aho-Corasick is O(T + total pattern length); always prefer Aho-Corasick for the multi-pattern case</div>
+                    <div class="warn-box">🚩 <strong>Confusing Z[i] and fail[i] semantics</strong> — Z[i] = length of common prefix of s and s[i..] (indexed from i); fail[i] = longest proper prefix of s[0..i] that is also suffix (indexed from 0); different base cases and different applications</div>
+                    <div class="warn-box">🚩 <strong>Empty pattern edge case</strong> — len(P) == 0 causes division-by-zero in periodicity check (period = len − fail[len−1] when len = 0); always guard against empty pattern</div>
 `,
   },
   {
@@ -2079,13 +2438,95 @@ while max_val % 2 == 0:
     navSection: "Advanced Techniques",
     navLabel: "LIS O(N log N)",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "LIS — Longest Increasing Subsequence O(N log N)",
+    tier: { code: "T4", label: "Advanced" },
+    typeLabel: "Sequence DP",
+    summaryMeta: "18 problems · tails binary search, 2D LIS, reconstruction, LIS count, Dilworth's theorem",
     topbarMeta: "Advanced Techniques · Sequence",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> The O(N log N) LIS algorithm is the gateway to patience sorting and a class of DP optimisations. Raw O(N²) DP is easy to derive but times out for N &gt; 10⁴. The O(N log N) tails-array approach is a non-obvious insight that appears directly (LIS length) and indirectly (2D envelope problems, minimum chain covers via Dilworth's theorem, and patience sorting). Its connection to Dilworth's theorem — minimum chain cover = maximum antichain size — makes it the key to many scheduling and interval problems at FAANG level.</div>
+                    <div class="core-box"><strong>Core Idea:</strong> Maintain a "tails" array where tails[i] is the smallest possible tail element of any increasing subsequence of length i+1. For each new element x, binary search for the first tail ≥ x (lower_bound for strict increase) and replace it with x. If x is larger than all tails, append it. The array length at the end is the LIS length. Critical distinction: lower_bound → strictly increasing; upper_bound → non-decreasing. This is the single most common LIS implementation bug.</div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Standard LIS — strictly increasing, length only</span><span class="pill">LNDS — longest non-decreasing subsequence</span><span class="pill">LIS reconstruction (actual subsequence)</span><span class="pill">Count of distinct LIS sequences</span><span class="pill">Longest decreasing subsequence (reverse / negate)</span><span class="pill">2D LIS — pair chain (Russian Doll / Envelopes)</span><span class="pill">3D LIS — triple chain (box stacking)</span><span class="pill">LIS on DAG (predecessor relation)</span><span class="pill">LIS at each position (online, report per element)</span><span class="pill">LIS with gap constraint (|a[i]−a[j]| ≤ K)</span><span class="pill">Dilworth — minimum chain partition</span>
+                    </div>
+
+                    <div class="sec-title">Implementation Templates</div>
+<pre class="code-block">// LIS length — O(N log N)
+// lower_bound: strictly increasing
+// upper_bound: non-decreasing (change this and ONLY this for LNDS)
+int lis_length(vector&lt;int&gt;&amp; a) {
+    vector&lt;int&gt; tails;
+    for (int x : a) {
+        auto it = lower_bound(tails.begin(), tails.end(), x);
+        if (it == tails.end()) tails.push_back(x);
+        else *it = x;
+    }
+    return tails.size();
+}
+
+// LIS reconstruction — O(N log N) with parent tracking
+// For each i, record pos[i]=position in tails where a[i] was placed
+// parent[i] = idx[pos[i]-1] (previous element in the chain)
+// Trace back from idx[tails.size()-1] to recover the subsequence
+
+// 2D LIS — Russian Doll Envelopes
+// Sort by first dim ASC, ties by second dim DESC
+// Then standard LIS on second dim values only
+// The DESC tie-breaking prevents two same-width envelopes from both entering
+
+// Count distinct LIS — O(N^2) DP (no O(N log N) shortcut):
+// dp[i] = LIS length ending at i
+// cnt[i] = count of LIS of length dp[i] ending at i
+// cnt[i] = sum of cnt[j] for all j where dp[j]=dp[i]-1 and a[j]&lt;a[i]</pre>
+
+                    <div class="sec-title">Problem Set</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">1</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-increasing-subsequence/" target="_blank">LC 300</a></td><td class="prob-name">Longest Increasing Subsequence</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Standard LIS — length only</td><td class="insight">Tails array + lower_bound; length = tails.size(); implement from scratch in under 3 minutes</td></tr>
+                        <tr><td class="num-cell">2</td><td><span class="l1">Foundation</span></td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-longest-increasing-subsequences/" target="_blank">LC 673</a></td><td class="prob-name">Number of Longest Increasing Subsequences</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Count distinct LIS sequences</td><td class="insight">O(N²) DP with separate count array; tails trick gives length only — can't count without tracking predecessors</td></tr>
+                        <tr><td class="num-cell">3</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/russian-doll-envelopes/" target="_blank">LC 354</a></td><td class="prob-name">Russian Doll Envelopes</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">2D LIS — sort + LIS on one dimension</td><td class="insight">Sort by width ASC, height DESC for equal widths; LIS on heights — Hard: DESC tie-breaking prevents same-width envelopes from both entering one chain</td></tr>
+                        <tr><td class="num-cell">4</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-height-by-stacking-cuboids/" target="_blank">LC 1691</a></td><td class="prob-name">Maximum Height by Stacking Cuboids</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">3D LIS with all-dims comparison</td><td class="insight">Sort each cuboid's dims, then sort cuboids; O(N²) LIS with 3D ≤ check — Hard: proving that sorting dims within each cuboid is optimal (the key non-obvious step)</td></tr>
+                        <tr><td class="num-cell">5</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-string-chain/" target="_blank">LC 1048</a></td><td class="prob-name">Longest String Chain</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">LIS on DAG (predecessor via word removal)</td><td class="insight">Sort by length; LIS where predecessor = word with one character removed; O(N × L) build + O(N² × L) DP</td></tr>
+                        <tr><td class="num-cell">6</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-operations-to-make-the-array-k-increasing/" target="_blank">LC 2111</a></td><td class="prob-name">Min Operations — Array K-Increasing</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Multiple independent LIS (non-decreasing)</td><td class="insight">Split into K interleaved subsequences; min operations per subsequence = len − LNDS; use upper_bound for non-decreasing</td></tr>
+                        <tr><td class="num-cell">7</td><td><span class="l2">Variants</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-length-of-pair-chain/" target="_blank">LC 646</a></td><td class="prob-name">Maximum Length of Pair Chain</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Greedy / LIS on intervals</td><td class="insight">Sort by end; greedy O(N log N) equals LIS on pair's second element; same structure, different framing</td></tr>
+                        <tr><td class="num-cell">8</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-removals-to-make-mountain-array/" target="_blank">LC 1671</a></td><td class="prob-name">Min Removals — Mountain Array</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">LIS + LDS from both ends</td><td class="insight">For each peak i: compute LIS[i] (left) and LDS[i] (right) in O(N log N); mountain size = LIS[i]+LDS[i]−1; answer = N − max mountain — Hard: combining forward and backward LIS arrays with a peak validity constraint</td></tr>
+                        <tr><td class="num-cell">9</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-longest-valid-obstacle-course-at-each-position/" target="_blank">LC 1964</a></td><td class="prob-name">Longest Valid Obstacle Course at Each Position</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">LNDS — report answer at every position</td><td class="insight">Maintain tails with upper_bound; for each element, answer = position in tails where it was inserted + 1; must report mid-stream — Hard: answer changes at every step, can't wait until end</td></tr>
+                        <tr><td class="num-cell">10</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LC 435</a></td><td class="prob-name">Non-Overlapping Intervals</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dilworth — min removals = N − max compatible</td><td class="insight">Min removals = N − maximum non-overlapping intervals; greedy sort-by-end gives max non-overlapping in O(N log N)</td></tr>
+                        <tr><td class="num-cell">11</td><td><span class="l3">Combo</span></td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-profit-in-job-scheduling/" target="_blank">LC 1235</a></td><td class="prob-name">Maximum Profit in Job Scheduling</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Weighted interval scheduling (LIS structure)</td><td class="insight">Sort by end; DP[i] = max profit using jobs with end ≤ t; binary search for latest non-overlapping job — Hard: weighted intervals; pure greedy doesn't work; DP + binary search is the correct structure</td></tr>
+                        <tr><td class="num-cell">12</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-increasing-subsequence-ii/" target="_blank">LC 2407</a></td><td class="prob-name">LIS II (gap constraint)</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">LIS with |a[i]−a[j]| ≤ K constraint</td><td class="insight">Tails trick invalid (no monotone structure with gap constraint); segment tree DP on value range: dp[v] = max length of IS ending with value v; range-max query on [v−K, v−1] — Hard: recognising that tails breaks and switching to segment tree DP on value domain</td></tr>
+                        <tr><td class="num-cell">13</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/delete-columns-to-make-sorted-iii/" target="_blank">LC 960</a></td><td class="prob-name">Delete Columns to Make Sorted III</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">LIS on columns (custom comparator)</td><td class="insight">Keep columns: column j after column i valid iff all rows have s[row][i] ≤ s[row][j]; O(N²K) DP — Hard: comparator compares entire columns, not scalar values</td></tr>
+                        <tr><td class="num-cell">14</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/make-array-strictly-increasing/" target="_blank">LC 1187</a></td><td class="prob-name">Make Array Strictly Increasing</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">LIS variant with replacements from sorted array</td><td class="insight">Sort arr2; DP[i] = min ops to make arr1[0..i] strictly increasing; for each i, binary search cheapest replacement from arr2 — Hard: LIS-style DP but the "extension" involves purchasing elements from a separate sorted array</td></tr>
+                        <tr><td class="num-cell">15</td><td><span class="l4">Hard</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-ideal-subsequence/" target="_blank">LC 2370</a></td><td class="prob-name">Longest Ideal Subsequence</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">LIS with alphabet difference ≤ K</td><td class="insight">DP[char] = best length ending at that character; update window [c−k, c+k]; O(N×26); tails trick inapplicable — constraint is on character difference, not value monotonicity</td></tr>
+                        <tr><td class="num-cell">16</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-consecutive-sequence/" target="_blank">LC 128</a></td><td class="prob-name trap-name">⚠️ Longest Consecutive Sequence</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ HashSet O(N) — NOT LIS</td><td class="insight">Elements can be reordered; requires O(N) HashSet walk from start of each sequence; LIS would be O(N log N) and wrong (order in array doesn't matter here)</td></tr>
+                        <tr><td class="num-cell">17</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/longest-arithmetic-subsequence-of-given-difference/" target="_blank">LC 1218</a></td><td class="prob-name trap-name">⚠️ Longest Arithmetic Subsequence of Given Difference</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ HashMap O(N) — NOT LIS</td><td class="insight">Fixed difference d means predecessor of x is always x−d; dp[x] = dp[x−d] + 1 via HashMap. LIS tails trick doesn't apply — this is not a general "increasing" condition</td></tr>
+                        <tr><td class="num-cell">18</td><td><span class="l5">⚠️ Trap</span></td><td><a class="lc-link" href="https://leetcode.com/problems/largest-divisible-subset/" target="_blank">LC 368</a></td><td class="prob-name trap-name">⚠️ Largest Divisible Subset</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">⚠️ O(N²) DP with parent pointers — tails trick won't reconstruct</td><td class="insight">Can adapt LIS DP with divisibility comparator but output is the SET itself; O(N log N) tails trick loses reconstruction info — must use O(N²) DP with parent pointer array</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Longest subsequence where each element is greater than the previous..."</td><td class="trigger-variant">Standard LIS — lower_bound in tails array</td><td class="trigger-breaks">Need the actual subsequence (not just length) → add parent tracking; tails alone is insufficient</td></tr>
+                        <tr><td class="trigger-phrase">"Pair (a, b) fits inside (c, d) if a &lt; c AND b &lt; d; find longest chain..."</td><td class="trigger-variant">Sort by first dim ASC, ties DESC; LIS on second dim</td><td class="trigger-breaks">Equal first dim allowed in chain → sort ties ASC, not DESC</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum number of non-overlapping groups to partition all elements..."</td><td class="trigger-variant">Dilworth's theorem: min chains = max antichain size (often equals LIS or N−LIS)</td><td class="trigger-breaks">"Non-overlapping" must be carefully defined; verify the partial order matches Dilworth's chain definition</td></tr>
+                        <tr><td class="trigger-phrase">"Strictly increasing" vs "non-decreasing"</td><td class="trigger-variant">lower_bound → strictly increasing; upper_bound → non-decreasing</td><td class="trigger-breaks">This is the single most common LIS bug — always confirm which binary search variant before implementing</td></tr>
+                        <tr><td class="trigger-phrase">"LIS but consecutive elements must differ by at most K..."</td><td class="trigger-variant">Segment tree DP on value range [v−K, v−1] range-max</td><td class="trigger-breaks">K is large or values are not bounded → coordinate compress the value domain first</td></tr>
+                        </tbody></table></div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 8 problems:</strong> <span class="pill">LC 300</span><span class="pill">LC 673</span><span class="pill">LC 354</span><span class="pill">LC 1691</span><span class="pill">LC 1964</span><span class="pill">LC 1671</span><span class="pill">LC 1235</span><span class="pill">LC 2407</span></div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>lower_bound vs upper_bound confusion</strong> — lower_bound gives strictly increasing; upper_bound gives non-decreasing; using the wrong one is the most common LIS bug</div>
+                    <div class="warn-box">🚩 <strong>Thinking tails[i] is the element at position i in the LIS</strong> — tails[i] is the smallest tail element of ANY IS of length i+1; the actual subsequence elements are NOT stored in tails</div>
+                    <div class="warn-box">🚩 <strong>2D LIS tie-breaking direction</strong> — for strictly increasing in both dims, sort equal first-dim values by DESCENDING second dim; sorting ascending would allow two same-first-dim elements to both enter</div>
+                    <div class="warn-box">🚩 <strong>Using O(N log N) tails trick for LIS count</strong> — tails gives length only; counting requires O(N²) DP or O(N log² N) BIT-augmented; no shortcut exists</div>
+                    <div class="warn-box">🚩 <strong>LIS on unsorted input when rearrangement is allowed</strong> — if you can reorder the array first, the problem is different; LIS on the original order vs LIS on any permutation have completely different answers</div>
+                    <div class="warn-box">🚩 <strong>LIS with gap constraint — applying tails trick incorrectly</strong> — when |a[i]−a[j]| ≤ K, the tails array is no longer monotone; tails binary search is invalid; switch to segment tree DP on value domain</div>
 `,
   },
   {
@@ -4228,13 +4669,270 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "BFS",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "BFS (Breadth-First Search)",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Traversal",
+    summaryMeta: "36 problems · undirected, directed, grid, implicit state · 5 stages",
     topbarMeta: "Graphs · Traversal",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> BFS guarantees shortest paths in any unweighted graph by exploring nodes level by level. Its core invariant — the first time any node is reached, it is reached via the shortest path — makes it the mandatory tool for minimum hops, minimum steps, or earliest reachability. In top-tier interviews it appears as raw traversal (connected components, bipartite checking), propagation (rotting oranges, 01-matrix), and state-space search (word ladder, lock combinations). At competition level, 0-1 BFS, bidirectional BFS, and state-dimension expansion appear in Codeforces Div 1 C/D and USACO Gold.</div>
+                    <div class="core-box"><strong>Mental Model — Water Flooding:</strong> Drop water at your source node(s). Water expands outward uniformly — one edge per timestep, all directions simultaneously. The first moment water touches any cell equals the shortest distance from any source. The queue <em>is</em> the active wavefront. <strong>Mark visited at enqueue, not dequeue</strong> — once in the queue, a node will be processed; re-enqueuing it degrades O(V+E) to O(V·E).</div>
+
+                    <div class="sec-title">Core Invariant &amp; Proof</div>
+                    <div class="info-box"><strong>Invariant:</strong> When node v is first dequeued, dist[v] equals the true shortest-path distance from the source(s).<br><br><strong>Proof (induction on BFS level d):</strong> Base — source dequeued at dist=0, correct by definition. Step — assume all nodes at distance ≤ d correctly labeled. Any node v at distance d+1 was enqueued by neighbor u at distance d. By FIFO, all level-d nodes are dequeued before v. A shorter path (length ≤ d) would have enqueued v earlier — contradicting first appearance at level d+1. ∎<br><br>The proof has a direct implementation consequence: mark visited <em>at enqueue</em>. A node already in the queue will be processed. Marking at dequeue allows it to be enqueued O(degree) times first.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Basic BFS Traversal · Stage 1</span><span class="pill">Connected Components · Stage 1</span><span class="pill">SSSP Unweighted · Stage 1</span><span class="pill">Multi-Source BFS · Stage 2</span><span class="pill">Level-Order BFS · Stage 2</span><span class="pill">Bipartite 2-Coloring · Stage 2</span><span class="pill">Grid BFS 4/8-dir · Stage 2</span><span class="pill">Multi-Source Grid BFS · Stage 2</span><span class="pill">State Expansion (node, extra) · Stage 3</span><span class="pill">0-1 BFS with Deque · Stage 3</span><span class="pill">Implicit Graph BFS · Stage 4</span><span class="pill">Group-Clearing Pruning · Stage 4</span><span class="pill">Bidirectional BFS · Stage 4</span><span class="pill">BFS + Binary Search on Answer · Stage 5</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed From Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>Basic traversal</td><td>O(V+E)</td><td>O(V)</td><td>Baseline: queue + visited</td></tr>
+                        <tr><td>SSSP unweighted</td><td>O(V+E)</td><td>O(V)</td><td>+dist[] array; mark at enqueue</td></tr>
+                        <tr><td>Multi-source BFS</td><td>O(V+E)</td><td>O(V)</td><td>All k sources seeded at dist=0 simultaneously</td></tr>
+                        <tr><td>Grid BFS</td><td>O(R·C)</td><td>O(R·C)</td><td>Topology: 2D array; neighbors are directional offsets</td></tr>
+                        <tr><td>State expansion</td><td>O(V·K)</td><td>O(V·K)</td><td>visited gains K-dimension; K ≤ problem bound</td></tr>
+                        <tr><td>0-1 BFS</td><td>O(V+E)</td><td>O(V)</td><td>Deque replaces queue; 0-cost edges pushed to front</td></tr>
+                        <tr><td>Bidirectional BFS</td><td>O(b^(d/2))</td><td>O(b^(d/2))</td><td>Two frontiers; exponential reduction via meet-in-middle</td></tr>
+                        <tr><td>BFS + Binary Search</td><td>O((V+E)·log A)</td><td>O(V)</td><td>A = answer range; BFS only for feasibility per candidate</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Undirected Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/find-if-path-exists-in-graph/" target="_blank">LC 1971</a></td><td class="prob-name">Find if Path Exists in Graph</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Basic BFS reachability</td><td>Baseline — queue + visited; stop on target</td><td class="insight">Mark visited at enqueue; return true when target dequeued; builds the core BFS template every other problem extends</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-provinces/" target="_blank">LC 547</a></td><td class="prob-name">Number of Provinces</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Connected components</td><td>Adds outer loop seeding every unvisited node</td><td class="insight">Each BFS call floods one component; count calls; adjacency matrix input means iterate all j as neighbors, not an adj list</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/is-graph-bipartite/" target="_blank">LC 785</a></td><td class="prob-name">Is Graph Bipartite?</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">2-Coloring BFS</td><td>Adds color array; conflict on same-color neighbor</td><td class="insight">Assign alternating 0/1 colors during BFS; any edge connecting same-color nodes → not bipartite; must handle disconnected components with outer loop</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/possible-bipartition/" target="_blank">LC 886</a></td><td class="prob-name">Possible Bipartition</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Bipartite on constructed graph</td><td>Graph not given — must build adjacency from constraints</td><td class="insight">Build adj from dislikes[] pairs first; then identical 2-coloring BFS as A3; key: construction precedes traversal, same algorithm</td></tr>
+                        <tr><td class="num-cell">A5</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-height-trees/" target="_blank">LC 310</a></td><td class="prob-name">Minimum Height Trees</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Leaf-peeling BFS</td><td>BFS removes leaves inward; state tracks degree count</td><td class="insight">Enqueue all degree-1 nodes; remove them and decrement neighbor degrees; enqueue new degree-1 nodes; last 1–2 nodes are the roots; NOT a shortest-path BFS</td></tr>
+                        <tr><td class="num-cell">A6</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/minimize-malware-spread-ii/" target="_blank">LC 928</a></td><td class="prob-name">Minimize Malware Spread II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS + component-source attribution</td><td>Must attribute each component to exactly one infected source</td><td class="insight">BFS from each clean node (excluding all infected); find which single infected node can reach it; if only one → removing that node saves the component; WHY hard: exclusive-ownership reasoning across many components simultaneously</td></tr>
+                        <tr><td class="num-cell">A7</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-operations-to-make-network-connected/" target="_blank">LC 1319</a></td><td class="prob-name">Number of Operations to Make Network Connected</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Component count + redundant edge counting</td><td>Counts both disconnected components AND spare edges in one BFS pass</td><td class="insight">Need exactly (components−1) extra cables; if redundant_edges ≥ components−1 → possible; BFS counts components (seeds) and redundant edges (already-visited neighbor encountered) simultaneously</td></tr>
+                        <tr><td class="num-cell">A8</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-score-of-a-path-between-two-cities/" target="_blank">LC 2492</a></td><td class="prob-name">Minimum Score of a Path Between Two Cities</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS component membership + edge property scan</td><td>Answer is NOT on the direct path — any edge in the shared connected component qualifies</td><td class="insight">If node 1 and node n are in the same component, ANY edge in that component could lie on some path between them; BFS finds the component; answer = min edge weight within it</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Directed Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/keys-and-rooms/" target="_blank">LC 841</a></td><td class="prob-name">Keys and Rooms</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Directed BFS reachability</td><td>Directed edges only; keys collected expand reachable set</td><td class="insight">Start at room 0; keys in rooms unlock new rooms; BFS over directed adjacency; same template as A1 but directed — adjacency is one-way</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-vertices-to-reach-all-nodes/" target="_blank">LC 1557</a></td><td class="prob-name">Min Vertices to Reach All Nodes</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">In-degree analysis as source identification</td><td>Adds in-degree tracking; 0-in-degree nodes are mandatory seeds</td><td class="insight">Nodes with in-degree &gt; 0 are reachable from their predecessors — never mandatory. Only 0-in-degree nodes must be seeds. O(V+E) scan, no BFS needed.</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-with-alternating-colors/" target="_blank">LC 1129</a></td><td class="prob-name">Shortest Path with Alternating Colors</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">State = (node, last_edge_color)</td><td>State gains second dimension: last edge color used</td><td class="insight">dist[node][0/1] = min dist arriving via red/blue; only expand along opposite-colored edges; prevents same-color consecutive edges; BFS on (node, color) state space</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/reorder-routes-to-make-all-paths-lead-to-the-city-zero/" target="_blank">LC 1466</a></td><td class="prob-name">Reorder Routes to Make All Paths Lead to Capital</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS on mixed directed/undirected</td><td>Build undirected graph; count wrong-direction edges during BFS from 0</td><td class="insight">Store edges as undirected but tag original direction; BFS from city 0; each edge pointing away from 0 needs reversal — count them; traversal direction reveals answer</td></tr>
+                        <tr><td class="num-cell">B5</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://codeforces.com/problemset/problem/1037/D" target="_blank">CF 1037D</a></td><td class="prob-name">Valid BFS?</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Validate a claimed BFS ordering</td><td>Must replay BFS and verify claimed level structure matches</td><td class="insight">Simulate: for each node in claimed order, greedily assign next unvisited neighbors in order; check level boundaries match; WHY hard: requires internalizing BFS level invariant deeply enough to replay it</td></tr>
+                        <tr><td class="num-cell">B6</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/find-closest-node-to-given-two-nodes/" target="_blank">LC 2359</a></td><td class="prob-name">Find Closest Node to Given Two Nodes</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two independent directed BFS runs; find min-max intersection</td><td>Adds second BFS from a different source; answer = node minimising max(dist1, dist2)</td><td class="insight">BFS from node1 → dist1[]; BFS from node2 → dist2[]; iterate all nodes reachable by both; return node with minimum max(dist1[i], dist2[i]); each node has at most 1 outgoing edge → BFS is O(N)</td></tr>
+                        <tr><td class="num-cell">B7</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank">LC 802</a></td><td class="prob-name">Find Eventual Safe States</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Reverse graph BFS from terminal nodes</td><td>Reverses edge direction; BFS from 0-out-degree nodes (terminals) to find all safe nodes</td><td class="insight">Build reverse graph; find nodes with 0 out-degree in original (terminal); BFS outward in reversed graph; any node reachable from a terminal in the reversed graph is eventually safe — it can only reach terminals</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Grid Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/rotting-oranges/" target="_blank">LC 994</a></td><td class="prob-name">Rotting Oranges</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source grid BFS</td><td>Multiple simultaneous sources at t=0</td><td class="insight">Seed ALL rotten oranges at dist=0; BFS propagates rot uniformly; answer = max dist reached (or -1 if fresh orange unreachable)</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/01-matrix/" target="_blank">LC 542</a></td><td class="prob-name">01 Matrix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source SSSP — inverted source</td><td>Invert the source: seed all 0s, find distance for each 1</td><td class="insight">Seeding 1s to find nearest 0 = O(R·C²). Inversion — seed all 0s simultaneously and BFS outward — gives O(R·C). Source inversion is the key insight.</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/as-far-from-land-as-possible/" target="_blank">LC 1162</a></td><td class="prob-name">As Far from Land as Possible</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Maximize minimum distance</td><td>Objective inverts: find cell farthest from any source</td><td class="insight">Multi-source BFS from all land cells; track max dist reached among water cells; if all land or all water → return -1</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/map-of-highest-peak/" target="_blank">LC 1765</a></td><td class="prob-name">Map of Highest Peak</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS level as assigned cell value</td><td>BFS distance becomes the answer value stored at each cell</td><td class="insight">Multi-source from all water cells; height[cell] = BFS distance; adjacent-cells-differ-by-≤1 constraint is automatically satisfied by BFS wave structure</td></tr>
+                        <tr><td class="num-cell">C5</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-bridge/" target="_blank">LC 934</a></td><td class="prob-name">Shortest Bridge</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DFS + BFS two-phase</td><td>DFS flood-fills island 1 into source set; BFS then expands to island 2</td><td class="insight">Phase 1: DFS marks all cells of island 1 as BFS sources. Phase 2: BFS from that source set finds shortest path to island 2. Two-phase is the core pattern.</td></tr>
+                        <tr><td class="num-cell">C6</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/" target="_blank">LC 1293</a></td><td class="prob-name">Shortest Path in Grid with Obstacles Elimination</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">State = (r, c, k remaining)</td><td>State gains third dimension: remaining obstacle quota</td><td class="insight">visited[r][c][k]; enqueue (r,c,k-1) when stepping on obstacle; O(R·C·K) time and space; WHY hard: same cell can be legitimately re-entered at different k — failing to include k in state = wrong answer</td></tr>
+                        <tr><td class="num-cell">C7</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/" target="_blank">LC 1368</a></td><td class="prob-name">Min Cost to Make at Least One Valid Path in Grid</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">0-1 BFS on grid</td><td>Deque replaces queue; following arrow = 0 cost, redirect = 1 cost</td><td class="insight">0-cost edge (follow existing arrow) → deque front; 1-cost edge (redirect) → deque back. O(R·C) vs Dijkstra's O(R·C·log). WHY hard: recognizing this is 0-1 BFS and not a general Dijkstra problem</td></tr>
+                        <tr><td class="num-cell">C8</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-safest-path-in-a-grid/" target="_blank">LC 2812</a></td><td class="prob-name">Find the Safest Path in a Grid</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source BFS + binary search on answer</td><td>Precompute dist-to-thief map; binary search on safety threshold</td><td class="insight">Phase 1: multi-source BFS from all thieves → dist array. Phase 2: binary search on k; BFS/DFS feasibility check for path through cells with dist ≥ k. Two independent phases.</td></tr>
+                        <tr><td class="num-cell">C9</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/escape-the-spreading-fire/" target="_blank">LC 2258</a></td><td class="prob-name">Escape the Spreading Fire</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Binary search + dual independent BFS comparison</td><td>Two BFS runs compared per candidate wait time</td><td class="insight">Binary search on wait time t; run fire-BFS for t steps; run person-BFS; check person reaches exit before fire. WHY hard: off-by-one — person and fire cannot share a cell at the same timestep; boundary condition is subtle</td></tr>
+                        <tr><td class="num-cell">C10</td><td><span class="l1">Foundation</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-in-binary-matrix/" target="_blank">LC 1091</a></td><td class="prob-name">Shortest Path in Binary Matrix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">8-directional grid BFS</td><td>Adds diagonal movement — 8 directions instead of 4</td><td class="insight">BFS with 8-directional offsets; blocked cells = 1; check grid[0][0] and grid[n-1][n-1] are 0 before starting — if either is 1, return -1 immediately</td></tr>
+                        <tr><td class="num-cell">C11</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/nearest-exit-from-entrance-in-maze/" target="_blank">LC 1926</a></td><td class="prob-name">Nearest Exit from Entrance in Maze</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS to nearest valid boundary cell</td><td>Exit condition: boundary cell that is NOT the entrance</td><td class="insight">BFS from entrance; first boundary cell reached that is not the entrance = answer; level-order BFS gives exact step count directly; distinguish entrance from other boundary cells</td></tr>
+                        <tr><td class="num-cell">C12</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-visit-a-cell-in-a-grid/" target="_blank">LC 2577</a></td><td class="prob-name">Minimum Time to Visit a Cell In a Grid</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS with time-parity constraint</td><td>Pure BFS distance insufficient — must account for forced waiting via parity oscillation</td><td class="insight">If you arrive at (nr,nc) at time t but grid[nr][nc] &gt; t+1: you must oscillate back-and-forth until time allows entry; effective entry time = grid[nr][nc] if parity matches, else grid[nr][nc]+1; use Dijkstra-style BFS with (time, r, c) in min-heap; WHY hard: parity oscillation is not obvious from the problem statement</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section D — Implicit Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">D1</td><td><span class="l1">Foundation</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-genetic-mutation/" target="_blank">LC 433</a></td><td class="prob-name">Minimum Genetic Mutation</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Implicit graph from word set</td><td>Graph not given; transitions are single-char mutations in bank</td><td class="insight">BFS over gene strings; neighbors = all bank strings reachable by 1-char change; master this smaller template before Word Ladder</td></tr>
+                        <tr><td class="num-cell">D2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/word-ladder/" target="_blank">LC 127</a></td><td class="prob-name">Word Ladder</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Implicit graph at scale</td><td>Scale: 10k-word dictionary; naive O(N²) pairwise comparison TLEs</td><td class="insight">For each word, try all L·26 char substitutions and check set membership; neighbor generation is O(L·26) per word not O(N); WHY hard: this efficiency insight is non-obvious</td></tr>
+                        <tr><td class="num-cell">D3</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/open-the-lock/" target="_blank">LC 752</a></td><td class="prob-name">Open the Lock</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">4-dimensional implicit state space</td><td>State is a 4-digit tuple; 8 neighbors per state (±1 each digit)</td><td class="insight">BFS on 10⁴ states; 8 transitions per state; dead-end states blocked; bidirectional BFS reduces frontier from ~10⁴ to ~2×10² per direction</td></tr>
+                        <tr><td class="num-cell">D4</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-operations-to-convert-number/" target="_blank">LC 2059</a></td><td class="prob-name">Min Operations to Convert Number</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Arithmetic transitions as graph edges</td><td>Arithmetic operations define the graph; state = current number</td><td class="insight">State = number in [0,100000]; each operation = one edge; BFS for min steps; edge case: 0 is both possible target AND a number reachable via operations — handle boundary carefully</td></tr>
+                        <tr><td class="num-cell">D5</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/jump-game-iv/" target="_blank">LC 1345</a></td><td class="prob-name">Jump Game IV</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Implicit graph + same-value group clearing</td><td>Same-value nodes form a clique; must clear group after first use</td><td class="insight">Build val→[indices] map; BFS to i±1 and all same-value indices; after expanding a same-value group, remove it from map entirely; WHY hard: without clearing, large groups re-expand on every arrival → O(N²) TLE</td></tr>
+                        <tr><td class="num-cell">D6</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/bus-routes/" target="_blank">LC 815</a></td><td class="prob-name">Bus Routes</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-level implicit graph (stops + routes)</td><td>Two interlocked graph layers: stop-level + route-level</td><td class="insight">State = current stop; expand to all stops on any route passing through here; track visited routes AND visited stops separately; WHY hard: two-layered state is non-obvious — thinking only about stops causes TLE</td></tr>
+                        <tr><td class="num-cell">D7</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/word-ladder-ii/" target="_blank">LC 126</a></td><td class="prob-name">Word Ladder II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS layer graph + DFS path reconstruction</td><td>Must find all shortest paths, not just one distance</td><td class="insight">BFS builds a level-graph (only keep edges between consecutive BFS levels); DFS/backtracking on that layer graph collects all paths; WHY hard: exponential paths require careful pruning — reconstruct backwards from end, skip edges that don't connect consecutive levels</td></tr>
+                        <tr><td class="num-cell">D8</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/the-time-when-the-network-becomes-idle/" target="_blank">LC 2039</a></td><td class="prob-name">The Time When the Network Becomes Idle</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS distance + algebraic formula on intervals</td><td>BFS result feeds a formula — traversal and computation are separate phases</td><td class="insight">BFS from master (node 0) → dist[i] for each server; round-trip = 2·dist[i]; resend count = ceil(2·dist[i] / patience[i]) − 1; last message arrives at (resend_count · patience[i]) + 2·dist[i]; answer = max over all servers + 1 (idle after last packet)</td></tr>
+                        <tr><td class="num-cell">D9</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-moves-to-reach-target-with-rotations/" target="_blank">LC 1210</a></td><td class="prob-name">Minimum Moves to Reach Target with Rotations</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">State = (tail_row, tail_col, orientation)</td><td>Snake occupies two cells; orientation (H/V) is mandatory state dimension</td><td class="insight">State = (r, c, dir) where (r,c) = tail cell, dir = 0 (horizontal) or 1 (vertical); 4 transitions: move right, move down, rotate CW, rotate CCW; check BOTH snake cells are empty for each move; standard BFS on this 3D state; WHY hard: multi-cell entity requires tracking both body cells explicitly</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/network-delay-time/" target="_blank">LC 743</a></td><td class="prob-name trap-name">⚠️ Network Delay Time</td><td><span class="diff-m">Med</span></td><td>Weighted edges — BFS gives wrong distances when edge weight &gt; 1</td><td>Dijkstra (min-heap); BFS is only correct for unit-weight edges</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/all-paths-from-source-to-target/" target="_blank">LC 797</a></td><td class="prob-name trap-name">⚠️ All Paths From Source to Target</td><td><span class="diff-m">Med</span></td><td>"All paths" not "shortest path" — BFS visits each node once and cannot enumerate all paths</td><td>DFS with path accumulation + backtracking</td></tr>
+                        <tr><td class="num-cell">T3</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule/" target="_blank">LC 207</a></td><td class="prob-name trap-name">⚠️ Course Schedule</td><td><span class="diff-m">Med</span></td><td>Kahn's algorithm uses a queue and looks like BFS — but the invariant is topological ordering, not shortest-path distance</td><td>Topological sort via Kahn's; treat as a topo problem conceptually</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Minimum number of steps/moves" + graph or grid</td><td class="trigger-variant">Stage 1–2 SSSP BFS</td><td class="trigger-breaks">Edge weights &gt; 1 → use Dijkstra instead</td></tr>
+                        <tr><td class="trigger-phrase">"All cells infected / reachable at time T"</td><td class="trigger-variant">Stage 2 Multi-source BFS</td><td class="trigger-breaks">Sources appear dynamically — can't pre-seed all at t=0</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum steps to transform X to Y" + discrete states</td><td class="trigger-variant">Stage 4 Implicit BFS</td><td class="trigger-breaks">State space &gt;10⁷ without pruning → bidirectional BFS needed</td></tr>
+                        <tr><td class="trigger-phrase">"Connected components" / "How many islands"</td><td class="trigger-variant">Stage 1 BFS + outer seed loop</td><td class="trigger-breaks">Need component structure (not just count) → Union-Find may be cleaner</td></tr>
+                        <tr><td class="trigger-phrase">"Can you reach" / "Is it possible to get from X to Y"</td><td class="trigger-variant">Stage 1 Reachability BFS</td><td class="trigger-breaks">Weighted costs → Dijkstra; all paths → DFS</td></tr>
+                        <tr><td class="trigger-phrase">2D grid + movement rules + "shortest"</td><td class="trigger-variant">Grid BFS; add state dim if there's an exception</td><td class="trigger-breaks">Using 8-directional when only 4-directional is correct (diagonal trap)</td></tr>
+                        <tr><td class="trigger-phrase">Dictionary of valid states + single-step transitions given</td><td class="trigger-variant">Stage 4 Implicit BFS</td><td class="trigger-breaks">State space has cycles and no visited set → infinite loop</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Anti-Triggers — Do NOT Use BFS</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Why NOT BFS</th><th>Use Instead</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Minimum cost" where edges have varying positive weights</td><td>BFS gives min-hops, not min-cost when weights differ</td><td class="trigger-variant">Dijkstra</td></tr>
+                        <tr><td class="trigger-phrase">"All possible paths" / "Count distinct paths"</td><td>BFS visits each node once; cannot enumerate all paths</td><td class="trigger-variant">DFS + backtracking or DP</td></tr>
+                        <tr><td class="trigger-phrase">"K-th shortest path"</td><td>Standard BFS finds only the 1st shortest; revisiting required for K-th</td><td class="trigger-variant">Modified Dijkstra / Yen's algorithm</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                        <strong>Q1:</strong> Is there a graph (explicit or implicit) and a "shortest" / "minimum steps" objective?<br>
+                        &nbsp;&nbsp;→ YES: Q2<br>
+                        &nbsp;&nbsp;→ NO: BFS not primary technique. Consider DFS, DP, or greedy.<br><br>
+                        <strong>Q2:</strong> Are ALL edge weights equal (unit-weight, or 0/1)?<br>
+                        &nbsp;&nbsp;→ YES: Q3<br>
+                        &nbsp;&nbsp;→ NO (arbitrary positive weights): Use <strong>Dijkstra</strong>. NOT BFS.<br>
+                        &nbsp;&nbsp;→ NEGATIVE weights possible: Use <strong>Bellman-Ford</strong>.<br><br>
+                        <strong>Q3:</strong> Is the graph given explicitly (adj list / matrix) or defined by state transitions?<br>
+                        &nbsp;&nbsp;→ EXPLICIT: Q4<br>
+                        &nbsp;&nbsp;→ IMPLICIT (word mutations, arithmetic ops, lock rotations): <strong>Stage 4 Implicit BFS</strong>. State = problem configuration. Generate neighbors on-the-fly. Expected: O(|states| × branching_factor).<br><br>
+                        <strong>Q4:</strong> Is the graph a 2D/3D grid?<br>
+                        &nbsp;&nbsp;→ YES: Q5<br>
+                        &nbsp;&nbsp;→ NO: Q6<br><br>
+                        <strong>Q5 (Grid path):</strong> Does the state require extra info beyond (row, col)?<br>
+                        &nbsp;&nbsp;→ NO: Standard grid BFS. O(R·C). <strong>Stage 2</strong>.<br>
+                        &nbsp;&nbsp;→ YES (obstacle quota, key, orientation, color): State expansion. visited[r][c][extra]. <strong>Stage 3</strong>. O(R·C·K).<br>
+                        &nbsp;&nbsp;→ EDGES COST 0 OR 1: 0-1 BFS with deque. <strong>Stage 3</strong>. O(R·C).<br>
+                        &nbsp;&nbsp;→ MAXIMISE MINIMUM DISTANCE / BINARY SEARCH ON ANSWER: BFS precompute + binary search feasibility. <strong>Stage 5</strong>. O(R·C·log A).<br><br>
+                        <strong>Q6 (Explicit non-grid):</strong> Are there MULTIPLE sources at time 0?<br>
+                        &nbsp;&nbsp;→ YES: Seed all at dist=0 simultaneously. <strong>Multi-source BFS. Stage 2</strong>.<br>
+                        &nbsp;&nbsp;→ NO: Single-source BFS. <strong>Stage 1</strong>.<br><br>
+                        <strong>Q7:</strong> Does visiting a node depend on more than just (node)?<br>
+                        &nbsp;&nbsp;→ YES: State expansion. visited[node][extra_dim]. <strong>Stage 3</strong>.<br>
+                        &nbsp;&nbsp;→ NO: Standard BFS. Stage 1–2.<br><br>
+                        <strong>Q8:</strong> Is the search space symmetrical (defined start AND end, no directed constraint) AND large (&gt;10⁵ states)?<br>
+                        &nbsp;&nbsp;→ YES: Bidirectional BFS. <strong>Stage 4</strong>. O(b^(d/2)).<br><br>
+                        <strong>Conclusion:</strong> If you reach Q8 → Stage 4–5. Expected: O(b^(d/2)) or O((V+E)·log A). If your solution is O(states²), look for the Stage 5 optimisation.
+                    </div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Stage</th><th>Question</th><th>Answer Direction</th></tr></thead>
+                        <tbody>
+                        <tr><td><span class="l2">Stage 2</span></td><td>Your BFS finds the shortest path in a grid. What if the grid wraps around (toroidal topology)?</td><td>Modify neighbor generation only: use (r+1)%R and (c+1)%C. Bounds check becomes always true. Same BFS algorithm, different neighbor function.</td></tr>
+                        <tr><td><span class="l2">Stage 2</span></td><td>What's the time complexity difference if you check bounds at dequeue vs at enqueue?</td><td>Same asymptotic O(V+E), but enqueue-check avoids pushing invalid states — better constant factor. Dequeue-check may push O(degree) invalid states per node.</td></tr>
+                        <tr><td><span class="l3">Stage 3</span></td><td>In LC 1293 (grid + K eliminations), what if K ≥ R+C-2?</td><td>Any direct path exists — a straight-line path has at most R+C-2 steps with R+C-3 obstacles. Early return: if k ≥ (R-1)+(C-1), answer = R+C-2. Eliminates state expansion entirely.</td></tr>
+                        <tr><td><span class="l3">Stage 3</span></td><td>In LC 1293, what if each obstacle elimination had a different cost (0 to W)?</td><td>0-1 BFS breaks. Need Dijkstra: state = (r, c, cost_so_far), min-heap on cost. Same state definition, different data structure — recognizing this is the key.</td></tr>
+                        <tr><td><span class="l4">Stage 4</span></td><td>In Word Ladder, what if you need the SECOND shortest transformation sequence?</td><td>Standard BFS gives first shortest. K-th shortest: allow each node to be popped from the queue up to K times (Yen's algorithm). First pop = shortest, second pop = second shortest, etc.</td></tr>
+                        <tr><td><span class="l4">Stage 4</span></td><td>How would you solve Word Ladder if the dictionary has 10 million words?</td><td>Bidirectional BFS: search from beginWord AND endWord simultaneously; meet in middle. Also pregroup words by wildcard patterns for O(1) neighbor lookup. Reduces from O(26·L·N) to O(26·L·√N) per direction.</td></tr>
+                        <tr><td><span class="l5">Stage 5</span></td><td>Your BFS on an N×N grid is O(N²). Can you answer Q independent shortest-path queries in under O(Q·N²) total?</td><td>If all queries share the same source: one BFS answers all queries O(N²) total. If sources vary: no better than O(Q·N²) in general without APSP precomputation or special structure.</td></tr>
+                        <tr><td><span class="l5">Stage 5</span></td><td>In bidirectional BFS, when exactly should you terminate?</td><td>Terminate when a node being expanded exists in the OPPOSITE side's visited set (not just frontier). Answer = dist_source[node] + dist_target[node]. Terminating on frontier overlap misses some shortest paths.</td></tr>
+                        <tr><td>Beyond 5</td><td>How would you find shortest paths between ALL pairs in a word-ladder implicit graph?</td><td>Run BFS from each word as source: O(N²·L·26) total. No better general algorithm unless the graph has special structure (tree, bounded diameter, etc.). APSP via repeated SSSP.</td></tr>
+                        <tr><td>Beyond 5</td><td>If the graph streams new edges, how do you maintain shortest distances efficiently?</td><td>Dynamic SSSP. Insertion-only: ES-tree maintains BFS distances in O(V·E) amortized per session. Full dynamic (insert + delete): more complex; WULFF-NILSEN or THORUP structures. Interview answer: "Insertion-only is tractable; deletions are significantly harder."</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="info-box">
+                        <strong>Bug 1 — Marking visited at dequeue instead of enqueue [Stage 1]:</strong><br>
+                        <code>visited.add(node)</code> inside the dequeue loop → same node enqueued O(degree) times → O(V·E) time.<br>
+                        Fix: <code>visited.add(nb)</code> immediately when appending nb to queue.<br><br>
+
+                        <strong>Bug 2 — Level counting: not snapshotting queue size [Stage 2]:</strong><br>
+                        <code>for _ in range(len(q))</code> while also appending to q — len(q) grows mid-loop.<br>
+                        Fix: <code>size = len(q)</code> before inner loop, then <code>for _ in range(size)</code>.<br><br>
+
+                        <strong>Bug 3 — Bipartite check on disconnected graph [Stage 2]:</strong><br>
+                        Only seeding one component → other components never 2-colored → false positive.<br>
+                        Fix: outer <code>for node in range(n): if unvisited: bfs_from(node)</code>.<br><br>
+
+                        <strong>Bug 4 — Grid BFS bounds check after enqueue [Stage 2]:</strong><br>
+                        Appending (r+1, c) then checking bounds at dequeue → wasted space or IndexError.<br>
+                        Fix: check <code>0 &lt;= nr &lt; R and 0 &lt;= nc &lt; C</code> before appending.<br><br>
+
+                        <strong>Bug 5 — State expansion: visited tracks node only, not full state [Stage 3]:</strong><br>
+                        <code>visited.add(node)</code> instead of <code>visited.add((node, k))</code> → legitimate states at different k are skipped.<br>
+                        Fix: include entire state tuple in visited set.<br><br>
+
+                        <strong>Bug 6 — 0-1 BFS: pushing 0-cost edges to back [Stage 3]:</strong><br>
+                        <code>q.append((nb, dist))</code> for 0-cost edge → destroys monotone distance property → wrong answers.<br>
+                        Fix: <code>q.appendleft((nb, dist))</code> for 0-cost; <code>q.append((nb, dist+1))</code> for 1-cost.<br><br>
+
+                        <strong>Bug 7 — Implicit graph: mutable state as dict/set key [Stage 4]:</strong><br>
+                        <code>visited.add([d0, d1, d2, d3])</code> → TypeError: unhashable type 'list'.<br>
+                        Fix: <code>visited.add(tuple(state))</code>.<br><br>
+
+                        <strong>Bug 8 — Multi-source BFS: running BFS after seeding each source individually [Stage 2]:</strong><br>
+                        Running BFS to completion for source[0] before seeding source[1] → non-uniform distances.<br>
+                        Fix: enqueue ALL sources with dist=0 first; then single unified BFS loop.<br><br>
+
+                        <strong>Bug 9 — Bidirectional BFS: summing distance from only one side [Stage 4]:</strong><br>
+                        <code>return dist_source[node]</code> on intersection → misses dist_target[node].<br>
+                        Fix: <code>return dist_source[node] + dist_target[node]</code> at the meeting node.<br><br>
+
+                        <strong>Bug 10 — Implicit graph: enqueuing invalid transitions without membership check [Stage 4]:</strong><br>
+                        Generating all 26 char substitutions and appending all → mostly invalid states; TLE or WA.<br>
+                        Fix: check <code>new_state in valid_set and new_state not in visited</code> before enqueue.
+                    </div>
+
+                    <div class="sec-title">Red Flags</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1–2] Marking visited at dequeue, not enqueue</strong> — Wrong model: "I haven't processed it yet, so it's not visited yet." Correct: once in queue it will be processed; double-enqueuing causes O(V·E) blowup in dense graphs.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 1–2] Using BFS on a weighted graph and assuming correctness</strong> — Wrong model: "BFS finds shortest paths." Correct: BFS finds shortest paths measured in edge-count only. Non-unit weights require Dijkstra.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Full state not included in visited set during state expansion</strong> — Wrong model: "I've visited this cell/node before, skip it." Correct: (cell, 2 keys remaining) ≠ (cell, 0 keys remaining). Same node with different extra-dimension = different state = must explore.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 3] Using a regular queue for 0-1 BFS</strong> — Wrong model: "It's just BFS with a tiny edge-weight variant." Correct: 0-1 BFS requires maintaining monotone distance via front-insertion for 0-cost edges. A regular queue destroys this property and produces wrong answers.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 4] Not clearing same-value groups after first expansion (Jump Game IV)</strong> — Wrong model: "Check all same-value nodes every time one is visited." Correct: after expanding a group once, remove it from the map. Any future arrival is already superseded. Failure causes O(N²) re-expansion on large groups → TLE.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Bidirectional BFS: alternating sides equally instead of expanding smaller frontier</strong> — Wrong model: "Alternate source-side and target-side evenly." Correct: always expand the smaller frontier. Asymmetric growth makes alternating suboptimal.</div>
+                    <div class="warn-box">🚩 <strong>[Stage 5] Running full BFS inside binary search without precomputing distance map</strong> — Wrong model: "Each binary search candidate needs a fresh BFS." Correct: precompute BFS distance array once; use O(V) feasibility BFS for each candidate. One BFS, many feasibility checks.</div>
+
+                    <div class="sec-title">80% Coverage Set</div>
+                    <div class="coverage-box"><strong>Minimum 18 problems:</strong> <span class="pill">LC 1971</span><span class="pill">LC 547</span><span class="pill">LC 785</span><span class="pill">LC 994</span><span class="pill">LC 542</span><span class="pill">LC 1162</span><span class="pill">LC 1091</span><span class="pill">LC 1926</span><span class="pill">LC 934</span><span class="pill">LC 1293</span><span class="pill">LC 1368</span><span class="pill">LC 841</span><span class="pill">LC 1129</span><span class="pill">LC 1466</span><span class="pill">LC 433</span><span class="pill">LC 127</span><span class="pill">LC 752</span><span class="pill">LC 1345</span></div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box">
+                        <strong>Phase 1 — Solve (strictly by Stage across ALL sub-variants before advancing)</strong><br><br>
+                        <em>Week 1 — Stage 1 (core template):</em> A1, A2, B1, C1, C2, D1<br>
+                        <em>Week 1 — Stage 2 (constraint mutations):</em> A3, A4, A7, B2, B6, C3, C4, C10, C11, D2, D3<br>
+                        <em>Week 2 — Stage 3 (state expansion):</em> A5, A8, B3, B4, B7, C5, C6, C7, D4, D8<br>
+                        <em>Week 2 — Stage 4 (input transformation + implicit graphs):</em> A6, B5, C8, D5, D6, D9<br>
+                        <em>Week 3 — Stage 5 (optimisation layer):</em> C9, C12, D7 + implement bidirectional BFS from scratch<br><br>
+                        <strong>Why this order?</strong> Solving Stage 1 across ALL sub-variants before moving to Stage 2 in ANY builds the generalised mental model faster than diving deep on one sub-variant at a time.<br><br>
+                        <strong>Phase 2 — Drill (speed and recognition)</strong><br><br>
+                        Speed targets: Stage 1 ≤ 10 min · Stage 2 ≤ 15 min · Stage 3 ≤ 25 min · Stage 4 ≤ 35 min<br>
+                        Recognition drill: given only problem title + constraints, name the Stage and sub-variant BEFORE reading the full problem. Do this daily for 5 problems.<br>
+                        Re-solve rule: any problem that exceeded its time target gets re-solved within 48 hours from scratch — no notes.<br><br>
+                        <strong>Phase 3 — Validate (unseen problems only)</strong><br><br>
+                        Stage 1–2: Codeforces Div 2 C/D tagged "bfs" from 2023–2025 (≥ 5 problems — none from this guide)<br>
+                        Stage 3: USACO Gold 2020–2023 BFS/grid problems (Moocast, Icy Perimeter, Visits)<br>
+                        Stage 4: Codeforces Div 1 C tagged "bfs/graphs" (CF 1051F, CF 1034D — check they're not in this guide)<br>
+                        Stage 5: AtCoder ABC 250–300 G/Ex problems involving BFS + optimisation<br>
+                        Graduation criterion: solve 2 of 3 graduation test problems cold within 45 minutes each.
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                        <strong>Test 1 — LC 2290: Minimum Obstacle Removal to Reach Corner (Hard)</strong><br>
+                        Tests Stage 2 (grid BFS) + Stage 3 (0-1 BFS deque) + Stage 4 (recognizing this IS 0-1 BFS, not LC 1293's state-expansion). Solving cold certifies that recognition is active, not just mechanics memorized from C7.<br><br>
+                        <strong>Test 2 — CF 1037E: Trips (Hard)</strong><br>
+                        Friends leave daily; find max group size each day in reverse (friends join day-by-day). Tests Stage 4 (reversing time = non-obvious reduction) + Stage 1 (BFS component size) + Stage 5 (maintain components under insertions efficiently). Solving cold proves Stage 4 inversion insight and Stage 5 structure maintenance simultaneously.<br><br>
+                        <strong>Test 3 — LC 854: K-Similar Strings (Hard)</strong><br>
+                        Tests Stage 4 (implicit graph from permutation swaps) + Stage 5 (bidirectional BFS required; forward BFS TLEs on worst cases) + competition-level pruning (only swap when the first mismatched position gets fixed). True ceiling of BFS mastery — requires recognition, bidirectionality, AND a non-obvious pruning argument cold.
+                    </div>
 `,
   },
   {
@@ -4244,13 +4942,209 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "DFS",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "DFS (Depth-First Search)",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Traversal",
+    summaryMeta: "30 problems · trees, undirected/directed graphs, backtracking · 5 stages",
     topbarMeta: "Graphs · Traversal",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> DFS is the universal exploration primitive. While BFS finds shortest paths, DFS discovers structure — cycles, topological order, connected components — and exhaustively searches all solutions via backtracking. In top-tier interviews it appears as tree traversal (LCA, diameter, max path sum), flood fill (islands, enclosed regions), cycle detection (course schedule, safe states), topological sort, and backtracking (permutations, N-Queens, word search). At competition level, Tarjan's SCC, bridge-finding, articulation points, and Euler paths all rely on DFS-exclusive mechanisms: discovery time, finish time, and low-link values.</div>
+                    <div class="core-box"><strong>Mental Model — Diving Deep:</strong> DFS is a deep-sea diver: plunge as far as possible on one branch before surfacing and trying the next. The call stack <em>is</em> the current path from root to active node — at any point in recursion you hold the full ancestor chain implicitly. <strong>Preorder</strong>: process node before children — pass context downward (bounds, accumulated sum, current path). <strong>Postorder</strong>: process after all children return — aggregate results upward (height, max path, subtree size). <strong>Mark visited before recursing</strong> — creates the gray (in-progress) state that signals cycles in directed graphs.</div>
+
+                    <div class="sec-title">Core Invariant &amp; Edge Classification</div>
+                    <div class="info-box"><strong>3-Color DFS (directed graphs):</strong> WHITE=0 (unvisited) → GRAY=1 (on current stack) → BLACK=2 (fully finished)<br><br>
+                    <strong>Edge classification:</strong><br>
+                    • <em>Tree edge:</em> u→v where v is WHITE — normal recursive descent into unvisited neighbor<br>
+                    • <em>Back edge:</em> u→v where v is GRAY — v is on the current call stack → <strong>CYCLE detected</strong><br>
+                    • <em>Cross/Forward edge:</em> u→v where v is BLACK — v already finished (occurs only in directed graphs; never a cycle)<br><br>
+                    <strong>Parenthesis Theorem:</strong> Each node u gets discovery time d[u] and finish time f[u]. For any u,v: intervals [d[u],f[u]] and [d[v],f[v]] are either nested (ancestor-descendant) or disjoint (unrelated). Never partial overlap. This underpins Tarjan's SCC, bridge-finding, and articulation points.<br><br>
+                    <strong>Undirected simplification:</strong> Every back edge = cycle. When checking a visited neighbor, skip the edge back to the parent (pass parent as parameter) to avoid false positives.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Basic Recursive DFS · Stage 1</span><span class="pill">Tree DFS Preorder (pass-down) · Stage 1</span><span class="pill">Tree DFS Postorder (return-up) · Stage 1</span><span class="pill">Flood Fill · Stage 1</span><span class="pill">3-Color Cycle Detection · Stage 2</span><span class="pill">Topological Sort via DFS · Stage 2</span><span class="pill">Boundary-Triggered Inverse DFS · Stage 2</span><span class="pill">Global Accumulator + Local Return · Stage 2</span><span class="pill">Two Independent DFS Passes + Intersection · Stage 3</span><span class="pill">Backtracking with Pruning · Stage 3</span><span class="pill">DFS + In-Place Visited Marking on Grid · Stage 3</span><span class="pill">Island Coloring + Metadata Map · Stage 4</span><span class="pill">Euler Path DFS (Hierholzer's) · Stage 4</span><span class="pill">Trie-Pruned Backtracking · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed From Previous</th></tr></thead>
+                        <tbody>
+                        <tr><td>Basic tree / graph DFS</td><td>O(V+E)</td><td>O(V)</td><td>Baseline: recursion stack + visited array</td></tr>
+                        <tr><td>Flood fill on grid</td><td>O(R·C)</td><td>O(R·C)</td><td>2D topology; max recursion depth = R·C — use iterative if overflow risk</td></tr>
+                        <tr><td>3-color directed DFS</td><td>O(V+E)</td><td>O(V)</td><td>+color[] array; back edge to GRAY = cycle</td></tr>
+                        <tr><td>Topological sort DFS</td><td>O(V+E)</td><td>O(V)</td><td>Postorder push + reverse; same cycle detection passthrough</td></tr>
+                        <tr><td>Backtracking</td><td>O(k^d) worst</td><td>O(d)</td><td>k = branching factor, d = depth; pruning slashes k dramatically in practice</td></tr>
+                        <tr><td>Grid backtracking (word search)</td><td>O(R·C·4^L)</td><td>O(L)</td><td>L = word length; in-place board mutation avoids extra visited array</td></tr>
+                        <tr><td>Trie-pruned DFS</td><td>O(R·C·4^L) amortized</td><td>O(W·L)</td><td>Trie prunes dead-end prefixes; W words of length L; practically much faster</td></tr>
+                        <tr><td>Euler path DFS (Hierholzer's)</td><td>O(E)</td><td>O(E)</td><td>Each edge visited once; result built in postorder then reversed</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Tree DFS</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-depth-of-binary-tree/" target="_blank">LC 104</a></td><td class="prob-name">Maximum Depth of Binary Tree</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">Postorder return — height</td><td>Baseline: null→0; return 1 + max(left, right)</td><td class="insight">Canonical postorder template: null returns 0; each node returns 1 + max of children's results. Every "aggregate over subtree" problem extends this skeleton — learn it cold</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/path-sum/" target="_blank">LC 112</a></td><td class="prob-name">Path Sum</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">Preorder pass-down — accumulated value</td><td>Pass remaining = target − val downward; check remaining==0 at leaf</td><td class="insight">Data flows ROOT→LEAF. Pass (remaining = target − node.val) into each child call; at leaf (no children) check remaining == 0. This is the preorder template — information travels from parent to child</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l1">Foundation</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/diameter-of-binary-tree/" target="_blank">LC 543</a></td><td class="prob-name">Diameter of Binary Tree</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">Global max + local return diverge</td><td>Function returns height for parent; global updated with left+right for this node</td><td class="insight">Diameter at node u = left_height + right_height (for global); return height to parent (for subtree use). Dual-purpose DFS — return something for ancestors, update global for current node — is the #1 tree DFS pattern in interviews</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l4">Hard</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/binary-tree-maximum-path-sum/" target="_blank">LC 124</a></td><td class="prob-name">Binary Tree Maximum Path Sum</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">One-side return vs two-side global combination</td><td>Return only ONE downward arm; global combines BOTH arms at each node</td><td class="insight">A path through u can use both arms for the global max, but must return only one arm to parent (a path cannot branch). Return max(0, max(left,right)) + val; update global with left + right + val. Clamping to 0 excludes negative-valued subtrees</td></tr>
+                        <tr><td class="num-cell">A5</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/" target="_blank">LC 236</a></td><td class="prob-name">LCA of a Binary Tree</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Postorder signal propagation upward</td><td>Both left and right return non-null → current node is LCA</td><td class="insight">Return non-null signal when p or q found. If BOTH left and right return non-null → current node is where both signals meet = LCA. If only one → propagate it up. LCA is the first node where signals converge while returning upward</td></tr>
+                        <tr><td class="num-cell">A6</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/validate-binary-search-tree/" target="_blank">LC 98</a></td><td class="prob-name">Validate Binary Search Tree</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Preorder — pass (lo, hi) bounds downward</td><td>Bounds tighten at each descent; checking only direct parent is WRONG</td><td class="insight">Left subtree gets upper bound = node.val; right subtree gets lower bound = node.val. Pass as arguments, tightened at each step. Use Long.MIN/MAX for integer boundary edge cases. Checking only direct parent misses globally out-of-range subtree values</td></tr>
+                        <tr><td class="num-cell">A7</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/serialize-and-deserialize-binary-tree/" target="_blank">LC 297</a></td><td class="prob-name">Serialize and Deserialize Binary Tree</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Preorder encoding with null markers</td><td>Preorder + null tokens uniquely encodes structure for exact reconstruction</td><td class="insight">Serialize: preorder DFS, emit node values and "N" for null. Deserialize: consume tokens from a queue in the SAME preorder order; each recursive call consumes exactly one token; if "N" return null; else create node and recurse for left then right children</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Undirected Graph DFS</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-islands/" target="_blank">LC 200</a></td><td class="prob-name">Number of Islands</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Flood fill — count components</td><td>DFS from each unvisited '1'; mark visited in-place; count seeds</td><td class="insight">Outer loop seeds each unvisited '1'; DFS flood-fills all connected '1's as visited. Count = number of DFS launches. The call stack replaces BFS's queue as the frontier. Mark in-place to avoid extra visited grid</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/max-area-of-island/" target="_blank">LC 695</a></td><td class="prob-name">Max Area of Island</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Flood fill — return component size</td><td>DFS returns 1 + sum(children) instead of void</td><td class="insight">Extends B1: DFS returns size (postorder return pattern from A1 applied to a grid graph). Each cell returns 1 to its component. Track max across all seeds</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/surrounded-regions/" target="_blank">LC 130</a></td><td class="prob-name">Surrounded Regions</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Boundary-triggered inverse marking</td><td>Find what's NOT enclosed; DFS from boundary marks safe cells first</td><td class="insight">Don't find enclosed regions directly — invert: DFS from all boundary 'O' cells, mark them safe. Flip all unmarked interior 'O' to 'X'. Source-inversion is the key — same technique as multi-source BFS inverted-source pattern</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-closed-islands/" target="_blank">LC 1254</a></td><td class="prob-name">Number of Closed Islands</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Boundary pre-elimination then count</td><td>Phase 1: eliminate boundary-connected '0' components. Phase 2: count remaining</td><td class="insight">Phase 1: DFS from all boundary '0' cells — mark visited. Phase 2: count remaining unvisited '0' seeds = fully enclosed (closed) islands. Pre-elimination in Phase 1 is the critical setup step that makes Phase 2 trivial</td></tr>
+                        <tr><td class="num-cell">B5</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/pacific-atlantic-water-flow/" target="_blank">LC 417</a></td><td class="prob-name">Pacific Atlantic Water Flow</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two independent reverse DFS; set intersection</td><td>Reverse flow direction; DFS inward from each ocean's boundary independently</td><td class="insight">Direct naive = O(R²C²). Reverse: water flows UP from ocean borders. DFS from Pacific boundary → Pacific-reachable boolean grid. DFS from Atlantic boundary → Atlantic-reachable grid. Answer = cells set in BOTH grids</td></tr>
+                        <tr><td class="num-cell">B6</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/making-a-large-island/" target="_blank">LC 827</a></td><td class="prob-name">Making A Large Island</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Island coloring + O(1) connection query</td><td>Assign unique color ID to each island; store color→size; query 0-cells</td><td class="insight">Phase 1: DFS each island, assign unique color int, store color→size map. Phase 2: for each 0-cell, collect ≤4 unique neighbor colors; answer candidate = 1 + sum of their sizes. WHY hard: color-indexed metadata for O(1) merge is non-obvious</td></tr>
+                        <tr><td class="num-cell">B7</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-enclaves/" target="_blank">LC 1020</a></td><td class="prob-name">Number of Enclaves</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Boundary elimination + cell count</td><td>Count individual enclosed land cells, not component count</td><td class="insight">Same boundary-elimination as B3/B4 but answer is total enclosed '1' cell count. DFS from boundary marks all reachable land. Sum all remaining unvisited '1' cells. Distinction: count cells not components</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Directed Graph DFS</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule/" target="_blank">LC 207</a></td><td class="prob-name">Course Schedule</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">3-color cycle detection</td><td>Set GRAY on enter, BLACK on finish; GRAY neighbor = cycle</td><td class="insight">Assign GRAY when entering a node's DFS, BLACK on finish. Any GRAY neighbor = back edge = cycle = infeasible schedule. 3-color is required — 2-color misidentifies cross-edges (to BLACK nodes) as cycles giving false positives</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule-ii/" target="_blank">LC 210</a></td><td class="prob-name">Course Schedule II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Topological sort via postorder push</td><td>Push node to stack on finish (postorder); reverse = topo order</td><td class="insight">DFS postorder yields reverse topological order. Node pushed only after ALL dependencies processed → reverse gives them first. Same 3-color as C1 plus output collection. Alternatively: Kahn's BFS topo is equally valid</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank">LC 802</a></td><td class="prob-name">Find Eventual Safe States</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">3-color safe/unsafe classification</td><td>BLACK = confirmed safe (no cycle reachable); GRAY neighbor = unsafe</td><td class="insight">A node is safe iff ALL paths from it terminate. 3-color: if DFS from u ever reaches GRAY → u is unsafe. All neighbors BLACK → mark u BLACK (safe). Safe nodes form the topological "sink" region of the graph</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/all-paths-from-source-lead-to-destination/" target="_blank">LC 1059</a></td><td class="prob-name">All Paths from Source Lead to Destination</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">DFS with cycle + dead-end detection</td><td>Two failure modes: cycle (GRAY neighbor) AND dead-end not at destination</td><td class="insight">Two failure modes: (1) GRAY neighbor = cycle → false; (2) node has no outgoing edges AND is not destination = dead-end → false. Missing the dead-end check is the common mistake when focusing only on cycle detection</td></tr>
+                        <tr><td class="num-cell">C5</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/reconstruct-itinerary/" target="_blank">LC 332</a></td><td class="prob-name">Reconstruct Itinerary</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Euler path via Hierholzer's DFS</td><td>Postorder appending builds Euler path in reverse; lex sort for smallest result</td><td class="insight">Sort adjacency lists lexicographically. DFS: always take smallest available destination. Push node to result in POSTORDER (after all edges exhausted). Reverse at end. Works because postorder ensures no dead-end except the final Euler path node</td></tr>
+                        <tr><td class="num-cell">C6</td><td><span class="l4">Hard</span></td><td>5</td><td><a class="lc-link" href="https://leetcode.com/problems/cracking-the-safe/" target="_blank">LC 753</a></td><td class="prob-name">Cracking the Safe</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">De Bruijn sequence as Eulerian circuit</td><td>Construct de Bruijn graph: each (n-1)-char string = node; each digit append = edge</td><td class="insight">Nodes = all (n-1)-char strings over k digits; edge s→t when s[1:]+digit = t. An Euler circuit on this graph = de Bruijn sequence. Apply Hierholzer's DFS. WHY hard: recognizing this as a graph construction at all is the insight</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section D — Backtracking DFS</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">D1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/permutations/" target="_blank">LC 46</a></td><td class="prob-name">Permutations</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Choose–Explore–Unchoose template</td><td>Baseline: used[] array; mark, append, recurse, unappend, unmark</td><td class="insight">The undo step IS backtracking. Without it you have plain DFS that permanently mutates shared state — subsequent branches see contaminated paths. Master this 3-step skeleton; every backtracking problem extends it</td></tr>
+                        <tr><td class="num-cell">D2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/subsets/" target="_blank">LC 78</a></td><td class="prob-name">Subsets</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Include/exclude decision tree with start index</td><td>Binary choice at each index: include or skip; record at EVERY node not just leaves</td><td class="insight">At each index: include nums[i] or skip. Start index prevents reuse and duplicates. Every subset appears exactly once at some node of the decision tree. Record result at EVERY recursion level — every prefix is a valid subset</td></tr>
+                        <tr><td class="num-cell">D3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/combination-sum/" target="_blank">LC 39</a></td><td class="prob-name">Combination Sum</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Pruning by remaining target</td><td>Sort candidates; break (not continue) when candidate &gt; remaining</td><td class="insight">Sort first: if candidates[i] &gt; remaining → BREAK (all subsequent also too large). Pass start index to allow reuse of same element. Pruning converts exponential worst-case to practically fast execution for bounded targets</td></tr>
+                        <tr><td class="num-cell">D4</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/word-search/" target="_blank">LC 79</a></td><td class="prob-name">Word Search</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DFS + in-place visited marking on grid</td><td>board[r][c]='#' before recursing; restore original char on backtrack</td><td class="insight">In-place mutation avoids extra visited array. Always restore board[r][c] in the backtrack step — permanent mutation breaks subsequent paths. Return true immediately on full word match to short-circuit all remaining exploration</td></tr>
+                        <tr><td class="num-cell">D5</td><td><span class="l4">Hard</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/n-queens/" target="_blank">LC 51</a></td><td class="prob-name">N-Queens</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Constraint-set backtracking</td><td>Three O(1)-check sets (col, +diag, -diag) replace O(N²) board scanning</td><td class="insight">Track: col_set, pos_diag (r−c constant), neg_diag (r+c constant). At each row, try each column: if no conflict in all 3 sets, place queen, update sets, recurse to next row, undo all 3. O(1) per placement check</td></tr>
+                        <tr><td class="num-cell">D6</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/word-search-ii/" target="_blank">LC 212</a></td><td class="prob-name">Word Search II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Backtracking + Trie prefix pruning</td><td>Trie replaces per-word matching; prune dead Trie leaf nodes after finding each word</td><td class="insight">Build Trie from all words. DFS from each grid cell; traverse Trie simultaneously. Null Trie node = dead-end prefix → prune immediately. Found word end → record and clear marker. Remove exhausted Trie leaf nodes to prevent re-visiting and prune future dead branches</td></tr>
+                        <tr><td class="num-cell">D7</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/sudoku-solver/" target="_blank">LC 37</a></td><td class="prob-name">Sudoku Solver</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Multi-constraint backtracking with bitmask checks</td><td>Three constraint bit-sets (row, col, box) give O(1) conflict check per placement</td><td class="insight">Track row[r], col[c], box[r/3*3+c/3] as bitmasks. For each empty cell, try digits 1-9: check all 3 bitmasks in O(1). Place, recurse to next empty cell, undo on failure. Return true immediately on success to short-circuit all remaining recursion</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/word-ladder/" target="_blank">LC 127</a></td><td class="prob-name trap-name">⚠️ Word Ladder</td><td><span class="diff-h">Hard</span></td><td>"Transform word to word" sounds like DFS exploration — but asks for MINIMUM steps. DFS finds A path, not the shortest path</td><td>BFS: guarantees shortest path; generate neighbors via character substitution not pairwise comparison</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/longest-increasing-path-in-a-matrix/" target="_blank">LC 329</a></td><td class="prob-name trap-name">⚠️ Longest Increasing Path in Matrix</td><td><span class="diff-h">Hard</span></td><td>Looks like backtracking DFS on grid — without memoization it's exponential O(2^(R·C)); with memoization it's trivial O(R·C)</td><td>DFS + memoization (memo[r][c] = longest path from here). No visited array needed — strictly increasing property prevents cycles. O(R·C)</td></tr>
+                        <tr><td class="num-cell">T3</td><td><a class="lc-link" href="https://leetcode.com/problems/all-paths-from-source-to-target/" target="_blank">LC 797</a></td><td class="prob-name trap-name">⚠️ All Paths From Source to Target</td><td><span class="diff-m">Med</span></td><td>Correct to use DFS; the trap is saving path by REFERENCE not copy — all collected results end up identical after recursion unwinds</td><td>DFS with backtracking; save path.copy() (Python) or new ArrayList&lt;&gt;(path) (Java) at each result collection point</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Number of connected components" / "how many islands"</td><td class="trigger-variant">Stage 1 Flood Fill DFS</td><td class="trigger-breaks">Need shortest distance between components → BFS instead</td></tr>
+                        <tr><td class="trigger-phrase">"All possible combinations / permutations / subsets"</td><td class="trigger-variant">Stage 1–2 Backtracking DFS</td><td class="trigger-breaks">If only COUNT needed → DP is usually better; exponential enumeration unavoidable if full list required</td></tr>
+                        <tr><td class="trigger-phrase">"Detect cycle in directed graph" / "can finish all courses"</td><td class="trigger-variant">Stage 2 3-Color DFS</td><td class="trigger-breaks">Undirected: simpler parent-skip pattern; no 3-color needed</td></tr>
+                        <tr><td class="trigger-phrase">"Valid ordering of tasks" / "topological order"</td><td class="trigger-variant">Stage 2 Postorder DFS Topo Sort</td><td class="trigger-breaks">Multiple valid orderings OK → Kahn's BFS topo is equally valid and often simpler to implement</td></tr>
+                        <tr><td class="trigger-phrase">"Compute property of each subtree" in a tree</td><td class="trigger-variant">Stage 2–3 Postorder Aggregation</td><td class="trigger-breaks">Property requires ancestor info → preorder pass-down; requires both directions → two-pass or rerooting DP</td></tr>
+                        <tr><td class="trigger-phrase">"Cells reachable from boundary" / "cannot escape grid"</td><td class="trigger-variant">Stage 2 Boundary-Triggered DFS</td><td class="trigger-breaks">Need minimum distance to boundary → multi-source BFS from boundary instead</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Anti-Triggers (Do NOT use DFS here)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Pattern</th><th>Why DFS Fails</th><th>Use Instead</th></tr></thead>
+                        <tbody>
+                        <tr><td>"Minimum number of steps/hops/moves"</td><td>DFS commits to one path before exploring others — cannot guarantee shortest path found</td><td>BFS</td></tr>
+                        <tr><td>"Shortest path" in any graph</td><td>DFS first path found may not be shortest</td><td>BFS (unweighted), Dijkstra (weighted)</td></tr>
+                        <tr><td>Recursion depth &gt; 10k on large connected graphs/grids</td><td>Stack overflow: Python ~1k default frames, Java ~10k frames</td><td>Iterative DFS with explicit stack; sys.setrecursionlimit in Python</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Enumerate ALL solutions / configurations?</strong><br>→ Backtracking DFS. Add pruning before recursing (bound check, constraint sets, start index).<br><br>
+                    <strong>Q2: Compute a property of each subtree in a tree?</strong><br>→ Postorder DFS (aggregate returns up). OR Preorder DFS (pass context down). Choose based on data flow direction.<br><br>
+                    <strong>Q3: Minimum steps / shortest path?</strong><br>→ NOT DFS. BFS (unweighted) or Dijkstra (weighted).<br><br>
+                    <strong>Q4: Cycle detection in directed graph?</strong><br>→ 3-color DFS. GRAY neighbor = cycle. (Undirected: visited non-parent = cycle.)<br><br>
+                    <strong>Q5: Topological ordering of a DAG?</strong><br>→ DFS postorder push + reverse, OR Kahn's BFS — both O(V+E) and correct.<br><br>
+                    <strong>Q6: Exclude boundary-connected cells from interior processing?</strong><br>→ Boundary-triggered DFS first. Run DFS from all boundary nodes to mark safe; process remaining interior nodes afterward.<br><br>
+                    <strong>Q7: Traverse every edge exactly once?</strong><br>→ Euler path/circuit: verify degree conditions; use Hierholzer's DFS (postorder append, reverse result).<br><br>
+                    <strong>Q8: Connected components / reachability in undirected graph?</strong><br>→ Flood fill DFS. Outer loop seeds unvisited nodes; DFS floods each component.
+                    </div>
+
+                    <div class="sec-title">Interviewer Follow-Up Questions</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Question</th><th>Strong Answer</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Why DFS over BFS for this problem?</td><td>DFS preferred when: (a) all paths needed not just shortest — backtracking; (b) subtree aggregation via postorder returns; (c) cycle detection via call stack gray-marking; (d) topological ordering. BFS for shortest paths and level-order processing.</td></tr>
+                        <tr><td>2</td><td>Space complexity of recursive vs iterative DFS?</td><td>Both O(V) space. Recursive: O(depth) call frames. Iterative: O(V) explicit stack entries. Practical difference: recursive overflows at depth ~10k+ (Python ~1k default, Java ~10k); iterative avoids this at cost of more verbose code.</td></tr>
+                        <tr><td>3</td><td>Can DFS find shortest paths?</td><td>Only in trees (single path between any two nodes). In general graphs, DFS takes the first deep path found — may not be shortest. For shortest paths in graphs: BFS (unweighted), Dijkstra (weighted).</td></tr>
+                        <tr><td>4</td><td>Why 3 colors instead of 2 for directed cycle detection?</td><td>2-color works for undirected. In directed graphs, a visited node may be BLACK (finished) — that is a cross/forward edge, not a cycle. We need GRAY to specifically identify nodes on the CURRENT DFS stack. Only GRAY neighbor = back edge = cycle.</td></tr>
+                        <tr><td>5</td><td>Why does backtracking need the undo step?</td><td>Backtracking explores a shared mutable state (current path). When returning from one branch, we must undo our last choice so the same state is available for the next branch. Without undo, one branch's choices contaminate all subsequent branches.</td></tr>
+                        <tr><td>6</td><td>Preorder vs postorder — how do you choose?</td><td>Preorder: parent passes info to children (bounds, accumulated sum, current path). Postorder: children pass info to parent (height, subtree sum, LCA signal). The data flow direction — parent-to-child or child-to-parent — determines which order to use.</td></tr>
+                        <tr><td>7</td><td>How does Hierholzer's build an Euler path?</td><td>Sort adjacency lists. DFS: always take next available edge. When node has no more edges → push to result (postorder). Path builds in reverse. Reverse at end. Correctness: node pushed only when it cannot continue, ensuring the result fragment is a valid Euler sub-path.</td></tr>
+                        <tr><td>8</td><td>When does grid DFS risk stack overflow?</td><td>When all cells are connected and grid is large — recursion depth equals R·C. On Python (default ~1000 frames) and Java (thread stack ~512KB ≈ ~10k frames), a 300×300 grid (90k cells) overflows. Fix: iterative DFS with explicit stack, or increase Python recursion limit.</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Undirected cycle check: not skipping parent edge</td><td>Every undirected edge looks like a back-edge; always reports cycle = false positive</td><td>Pass parent node as parameter; skip edge back to parent</td></tr>
+                        <tr><td>2</td><td>Directed cycle: 2-color instead of 3-color</td><td>Cross-edges to BLACK nodes falsely reported as cycles</td><td>WHITE=0, GRAY=1, BLACK=2; only GRAY neighbor = cycle</td></tr>
+                        <tr><td>3</td><td>Backtracking: save path by reference not copy</td><td>All collected results end up identical (point to the same mutated list)</td><td>path.copy() (Python) or new ArrayList&lt;&gt;(path) (Java) at each result collection</td></tr>
+                        <tr><td>4</td><td>Tree max path sum: not clamping negative subtrees</td><td>Negative paths extend the max path sum incorrectly (LC 124)</td><td>Return max(0, recursive_result) to exclude negative-valued subtrees</td></tr>
+                        <tr><td>5</td><td>Grid backtracking: not restoring cell after backtrack</td><td>Cells permanently marked; subsequent DFS calls find no valid paths</td><td>Always restore board[r][c] to original char in the backtrack step</td></tr>
+                        <tr><td>6</td><td>BST validation: only checking vs direct parent</td><td>Globally out-of-range subtree values pass validation</td><td>Pass (lo, hi) arguments; tighten at each descent level</td></tr>
+                        <tr><td>7</td><td>Postorder topo sort: forgetting to reverse result</td><td>Dependencies appear after dependents in output</td><td>Reverse the postorder stack at end; or prepend instead of append</td></tr>
+                        <tr><td>8</td><td>Null check missing at tree DFS entry</td><td>NullPointerException or infinite recursion</td><td>First line: if node is null → return base value (0, false, null as appropriate)</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Red Flags During Interview</div>
+                    <div class="warn-box">
+                        <strong>1.</strong> Using DFS for "minimum steps" — BFS guarantees shortest path; DFS does not.<br>
+                        <strong>2.</strong> Forgetting the undo step in backtracking — you have plain DFS with permanently corrupted shared state.<br>
+                        <strong>3.</strong> Using 2-color for directed cycle detection — cross-edges to BLACK nodes give false cycle positives.<br>
+                        <strong>4.</strong> Saving path by reference in backtracking — all results are the same mutable list after recursion unwinds.<br>
+                        <strong>5.</strong> Not clamping to max(0,…) in tree max-path-sum — negative subtrees incorrectly extend the path.<br>
+                        <strong>6.</strong> Checking only direct parent for BST validation — misses globally out-of-range subtree values.<br>
+                        <strong>7.</strong> Recursive DFS on 300×300+ grid without stack overflow consideration.
+                    </div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable (master before any interview):</strong><br>
+                        LC 104 · LC 543 · LC 124 · LC 236 · LC 200 · LC 207 · LC 46 · LC 79<br><br>
+                        <strong>High Frequency (cover within 2 weeks):</strong><br>
+                        LC 112 · LC 98 · LC 130 · LC 417 · LC 210 · LC 39 · LC 51 · LC 297<br><br>
+                        <strong>Depth (FAANG+ / senior roles):</strong><br>
+                        LC 827 · LC 332 · LC 212 · LC 37 · LC 753
+                    </div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="info-box">
+                    <strong>Phase 1 — Foundation (Days 1–5):</strong> Solve in order: LC 104 → LC 112 → LC 543 → LC 200 → LC 695 → LC 46 → LC 207. Goal: internalize postorder-return and choose–explore–unchoose templates. Write both skeletons from memory on Day 5 without notes.<br><br>
+                    <strong>Phase 2 — Variant Mastery (Days 6–12):</strong> LC 124 → LC 236 → LC 98 → LC 130 → LC 417 → LC 210 → LC 39 → LC 51 → LC 79. For each problem: identify the DFS type (preorder/postorder/backtrack) BEFORE coding. What's passed down? What's returned up? What's global?<br><br>
+                    <strong>Phase 3 — Integration (Days 13–20):</strong> LC 297 → LC 827 → LC 802 → LC 332 → LC 212 → LC 37 → LC 329 (trap: use memo not backtracking). After each hard problem, state what follow-up an interviewer would ask.
+                    </div>
+
+                    <div class="sec-title">Graduation Test</div>
+                    <div class="info-box">
+                    <strong>Test 1 — Theory:</strong> Without notes: (a) explain why 3-color is required for directed cycle detection but not undirected; (b) state the parenthesis theorem and what edge types it distinguishes; (c) explain why Hierholzer's appends in postorder then reverses. Unclear on any → return to Section C.<br><br>
+                    <strong>Test 2 — Cold Solve (30 min each):</strong> LC 124 (max path sum) and LC 212 (word search II) from scratch. LC 124 tests the dual-return pattern (one arm vs both arms). LC 212 tests Trie-pruned backtracking. Both solvable in &lt;25 min after Phase 3.<br><br>
+                    <strong>Test 3 — Classification Speed:</strong> Given a new problem, classify it in &lt;2 min into one of: tree postorder / tree preorder / flood fill / boundary-triggered / 3-color directed / topo sort / backtrack+prune. Slower than 2 min → drill Pattern Recognition Triggers until classification is instant.
+                    </div>
 `,
   },
   {
@@ -4260,13 +5154,117 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Multi-Source BFS",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Multi-Source BFS",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Traversal Technique",
+    summaryMeta: "18 problems · simultaneous seeding, source inversion, time-based propagation · 4 stages",
     topbarMeta: "Graphs · Traversal",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> Multi-source BFS is the technique of seeding ALL source nodes at distance 0 simultaneously and running a single BFS pass. This transforms the naive O(K·(V+E)) — running BFS separately from each of K sources — into O(V+E), making K disappear from the complexity. It solves the entire "distance from nearest X" class of problems in one pass and is the standard tool for time-based grid propagation, Voronoi-like cell partitioning, and competitive BFS problems. The key conceptual insight: introduce a virtual "super-source" node with zero-cost edges to all real sources. BFS from the super-source is mathematically identical to multi-source BFS.</div>
+                    <div class="core-box"><strong>Mental Model — Simultaneous Wavefronts:</strong> Drop stones at K locations in a pond simultaneously. All K wavefronts expand outward at the same rate. The first wave to reach any point P is from the nearest source. <strong>Multi-source BFS invariant:</strong> the first time any cell/node is dequeued, it is reached from the closest source via the shortest path. Critical rule: seed ALL sources into the queue at distance 0 BEFORE beginning the BFS loop — seeding sequentially breaks the invariant by giving earlier-seeded sources false priority.</div>
+
+                    <div class="sec-title">Core Invariant</div>
+                    <div class="info-box"><strong>Invariant:</strong> If all K sources are enqueued at distance 0 simultaneously, dist[v] = minimum distance from v to its nearest source for all v.<br><br>
+                    <strong>Proof:</strong> Virtual super-source S connects to all real sources at zero cost. BFS from S processes all sources at distance 0 simultaneously. Every other node v is first settled at its true minimum distance because BFS processes in non-decreasing distance order — identical to single-source BFS correctness proof.<br><br>
+                    <strong>Source Inversion Pattern:</strong> When asked for "distance from each TYPE-A cell to nearest TYPE-B cell," it is often faster to invert: seed all TYPE-B cells and run multi-source BFS outward. This fills every TYPE-A cell with its distance to the nearest TYPE-B cell in O(V+E) instead of O(K·(V+E)).</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Simultaneous Source Seeding · Stage 1</span><span class="pill">Time-Based Propagation · Stage 1</span><span class="pill">Source Type Inversion · Stage 2</span><span class="pill">Maximize Minimum Distance (last-dequeued) · Stage 2</span><span class="pill">BFS Level as Assigned Cell Value · Stage 2</span><span class="pill">Two Competing Multi-Source BFS Runs · Stage 3</span><span class="pill">Multi-Source + State Dimension · Stage 3</span><span class="pill">Multi-Source + Binary Search on Answer · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Approach</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+                        <tbody>
+                        <tr><td>Naive: K separate BFS runs</td><td>O(K·(V+E))</td><td>O(V)</td><td>Correct but slow when K is large relative to V</td></tr>
+                        <tr><td>Multi-source BFS (virtual super-source)</td><td>O(V+E)</td><td>O(V)</td><td>K disappears; all sources seeded at t=0 before BFS loop starts</td></tr>
+                        <tr><td>Grid multi-source BFS</td><td>O(R·C)</td><td>O(R·C)</td><td>V=R·C, E=O(R·C) for 4-neighbor grid</td></tr>
+                        <tr><td>Multi-source BFS + binary search</td><td>O((V+E)·log A)</td><td>O(V)</td><td>A = answer range; BFS precomputation once then binary search uses it</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Distance from Nearest Source (Grid)</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/rotting-oranges/" target="_blank">LC 994</a></td><td class="prob-name">Rotting Oranges</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Time-based propagation from all sources</td><td>Baseline: seed ALL rotten oranges at t=0; BFS propagates rot simultaneously; answer = max level reached</td><td class="insight">Count fresh oranges BEFORE BFS. Add ALL rotten cells to queue first. BFS propagates: each dequeued rotten orange infects 4-neighbors. After BFS: if freshCount &gt; 0 → -1; else answer = last BFS level. This is the canonical multi-source template</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/01-matrix/" target="_blank">LC 542</a></td><td class="prob-name">01 Matrix</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Source type inversion</td><td>Invert: seed all 0s (not 1s); BFS outward fills each 1-cell with min distance to nearest 0</td><td class="insight">Naive: BFS from each 1-cell = O(R²C²). Inversion: seed all 0-cells at distance 0; BFS fills 1-cells with distance. Source inversion is the key insight — seed the TARGET type (0s) not the query type (1s). O(RC) result</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l1">Foundation</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/as-far-from-land-as-possible/" target="_blank">LC 1162</a></td><td class="prob-name">As Far from Land as Possible</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Maximize minimum distance (last-dequeued cell)</td><td>Multi-source from all land; last water cell dequeued has maximum distance to any land</td><td class="insight">Multi-source BFS from all land (1) cells. The LAST water cell dequeued has the maximum BFS distance = answer. If all land or all water → -1. Max-min via last-dequeued is the pattern for "farthest from all sources"</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/map-of-highest-peak/" target="_blank">LC 1765</a></td><td class="prob-name">Map of Highest Peak</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS level becomes assigned cell value</td><td>height[cell] = BFS distance from nearest water cell; constraint satisfied automatically</td><td class="insight">Multi-source BFS from all water cells (value=0). Assign height[cell] = BFS distance to nearest water. The "adjacent cells differ by ≤1" constraint is automatically satisfied by BFS wave structure — each expanding wave adds exactly 1 to height</td></tr>
+                        <tr><td class="num-cell">A5</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/walls-and-gates/" target="_blank">LC 286</a></td><td class="prob-name">Walls and Gates</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Fill INF rooms with distance to nearest gate</td><td>Seed all gates (value=0) simultaneously; BFS fills INF-cells level by level</td><td class="insight">Initialize queue with all gate cells. BFS: for each adjacent INF room, set dist = BFS level. Walls (-1) block traversal. Rooms remaining at INF after BFS are unreachable. The canonical "fill distance from nearest special cell" template</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Multi-Source on Graphs</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-bridge/" target="_blank">LC 934</a></td><td class="prob-name">Shortest Bridge</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DFS flood-fill → multi-source BFS</td><td>Phase 1: DFS marks island 1 entirely as BFS source set; Phase 2: multi-source BFS expands to island 2</td><td class="insight">Phase 1: DFS from any '1' cell — mark ALL cells of island 1 as BFS sources. Phase 2: BFS expands from entire source set; first '1' cell of island 2 reached = minimum bridge length. DFS for source collection, BFS for shortest expansion — two-phase combination</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-safest-path-in-a-grid/" target="_blank">LC 2812</a></td><td class="prob-name">Find the Safest Path in a Grid</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Multi-source BFS precompute + binary search on safety threshold</td><td>Phase 1: multi-source BFS from all thieves → safety dist array. Phase 2: binary search on minimum safety k</td><td class="insight">Multi-source BFS from all thief cells gives dist[r][c] = distance to nearest thief. Binary search on k: can we reach (n-1,n-1) through cells with dist ≥ k only? Two completely independent phases — precompute with BFS, answer with binary search + BFS feasibility check</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l4">Hard</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-visiting-all-nodes/" target="_blank">LC 847</a></td><td class="prob-name">Shortest Path Visiting All Nodes</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Multi-source BFS with state = (node, visited_bitmask)</td><td>Seed ALL N nodes as sources at distance 0; state expands with visited bitmask</td><td class="insight">State = (node, visited_mask); seed every node at distance 0 (any node can be a starting point). BFS finds minimum steps to reach full mask (all bits set). visited[node][mask] prevents re-exploration. N ≤ 12 makes O(N·2^N) feasible</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/escape-the-spreading-fire/" target="_blank">LC 2258</a></td><td class="prob-name">Escape the Spreading Fire</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two competing multi-source BFS + binary search on wait time</td><td>Multi-source fire BFS gives fire arrival times; person BFS checked against fire for each wait time candidate</td><td class="insight">Multi-source BFS from all fire cells → fire_dist[r][c]. Binary search on wait time t: simulate person starting at t; check if person reaches exit before fire. Off-by-one critical: person and fire cannot occupy same cell at same timestep</td></tr>
+                        <tr><td class="num-cell">B5</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/nearest-exit-from-entrance-in-maze/" target="_blank">LC 1926</a></td><td class="prob-name">Nearest Exit from Entrance in Maze</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Single-source BFS to nearest valid boundary cell</td><td>Exit = boundary cell that is NOT the entrance; first such cell dequeued = answer</td><td class="insight">BFS from entrance. First boundary cell reached that is NOT the entrance = answer step count. Level-order BFS gives exact step count directly. Must explicitly distinguish entrance from other boundary cells in the exit check</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Advanced Patterns</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-visit-a-cell-in-a-grid/" target="_blank">LC 2577</a></td><td class="prob-name">Minimum Time to Visit a Cell In a Grid</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">BFS with time-parity constraint and forced waiting</td><td>Multi-source BFS extended with parity oscillation for forced waiting</td><td class="insight">If arriving at (nr,nc) at time t but grid[nr][nc] &gt; t+1: must oscillate back-and-forth until time allows entry. Effective arrival time = grid[nr][nc] if parity matches, else grid[nr][nc]+1. Use Dijkstra-style min-heap with (time, r, c). Parity oscillation is the non-obvious insight</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-collect-all-apples-in-a-tree/" target="_blank">LC 1443</a></td><td class="prob-name">Minimum Time to Collect All Apples in a Tree</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Tree DFS with conditional subtree contribution</td><td>Postorder: include subtree cost only if subtree contains at least one apple</td><td class="insight">DFS each subtree: if subtree contains no apple → skip it (save 2 steps round-trip). If it does → add 2 + subtree's internal cost. This is "multi-target collection" — conceptually related to multi-source but solved via tree DFS not BFS</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/the-time-when-the-network-becomes-idle/" target="_blank">LC 2039</a></td><td class="prob-name">The Time When the Network Becomes Idle</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Single-source BFS + algebraic formula per server</td><td>BFS from master gives dist[i]; formula computes idle time for each server independently</td><td class="insight">BFS from master (node 0) → dist[i] for each server. Round-trip = 2·dist[i]. Resend count = ceil(2·dist[i] / patience[i]) − 1. Last message arrives at resend_count·patience[i] + 2·dist[i]. Answer = max over all servers + 1. BFS feeds a per-node formula — two distinct phases</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/rotting-oranges/" target="_blank">LC 994</a></td><td class="prob-name trap-name">⚠️ Rotting Oranges — Wrong Seeding Order</td><td><span class="diff-m">Med</span></td><td>Seeding rotten oranges inside the BFS loop instead of all upfront — later-seeded sources get wrong distances; first source dominates</td><td>Add ALL rotten cells to queue BEFORE starting BFS loop. Count fresh oranges BEFORE BFS starts, not during</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/01-matrix/" target="_blank">LC 542</a></td><td class="prob-name trap-name">⚠️ 01 Matrix — Wrong Source Type</td><td><span class="diff-m">Med</span></td><td>Seeding 1-cells instead of 0-cells — computes distances to nearest 1, not nearest 0. Source inversion is counter-intuitive but correct</td><td>Seed all 0-cells (the TARGET type). BFS outward fills each 1-cell with its distance to nearest 0</td></tr>
+                        <tr><td class="num-cell">T3</td><td><a class="lc-link" href="https://leetcode.com/problems/escape-the-spreading-fire/" target="_blank">LC 2258</a></td><td class="prob-name trap-name">⚠️ Escape Fire — Off-by-One</td><td><span class="diff-h">Hard</span></td><td>Person and fire at the same cell at the same timestep — boundary condition between "just made it" and "caught" is subtle and problem-statement specific</td><td>Check exact boundary condition: person must reach exit cell at time ≤ fire_dist[exit] (or strictly &lt; depending on problem); verify with edge cases at exit boundary</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Distance from nearest [X]" / "time until all [Y] are reached"</td><td class="trigger-variant">Stage 1 Multi-source BFS — seed all [X] at t=0</td><td class="trigger-breaks">Sources appear dynamically over time (not all present at t=0) — cannot pre-seed all</td></tr>
+                        <tr><td class="trigger-phrase">"Height/value of each cell = distance from nearest source cell"</td><td class="trigger-variant">Stage 2 BFS level-as-value pattern</td><td class="trigger-breaks">Value formula is more complex than just distance → need custom logic per cell</td></tr>
+                        <tr><td class="trigger-phrase">"Find cell FARTHEST from all sources" / "maximize minimum distance"</td><td class="trigger-variant">Stage 2 Multi-source BFS + track last dequeued cell</td><td class="trigger-breaks">Need farthest in a specific direction or with additional path constraints</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Is the answer "distance/time from nearest instance of type X"?</strong><br>→ Multi-source BFS, seed all X-type nodes at distance 0.<br><br>
+                    <strong>Q2: Are you finding distance to nearest TYPE-A but naively would query from TYPE-B?</strong><br>→ Source inversion: seed TYPE-A cells, BFS outward, fill TYPE-B cell distances. (01-Matrix pattern.)<br><br>
+                    <strong>Q3: Want to MAXIMIZE minimum distance from any source?</strong><br>→ Multi-source BFS + return maximum BFS level reached (last-dequeued cell).<br><br>
+                    <strong>Q4: Two types of spreading processes competing (fire + person, poison + hero)?</strong><br>→ Two separate multi-source BFS runs; compare dist arrays; binary search on answer parameter.<br><br>
+                    <strong>Q5: Implicit graph (non-grid) with multiple valid starting nodes?</strong><br>→ State-expanded multi-source BFS: seed all starting states at distance 0, state includes extra dimension.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Seeding sources INSIDE BFS loop instead of before it</td><td>Later-seeded sources get processed at wrong distances; earlier source dominates entire grid</td><td>Add ALL sources to queue BEFORE starting the while-loop</td></tr>
+                        <tr><td>2</td><td>Seeding wrong source type (e.g., 1s instead of 0s in 01-Matrix)</td><td>Distances computed from wrong nodes; incorrect answers throughout</td><td>Identify which type has distance 0 (the "origin type"); seed those, not the query type</td></tr>
+                        <tr><td>3</td><td>Not pre-counting non-source cells before BFS (rotting oranges)</td><td>Post-BFS freshCount check is wrong because count was modified during BFS</td><td>Count fresh oranges BEFORE BFS starts; decrement only during BFS processing</td></tr>
+                        <tr><td>4</td><td>Marking visited at dequeue instead of at enqueue</td><td>Same cell added to queue O(degree) times; TLE on dense graphs</td><td>Mark visited / set distance when ENQUEUING, not when dequeuing</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 994 · LC 542 · LC 1162 · LC 1765 · LC 934<br><br>
+                        <strong>High Frequency:</strong> LC 286 (Walls and Gates) · LC 2812 (Safest Path) · LC 2258 (Escape Fire)<br><br>
+                        <strong>Depth:</strong> LC 847 (Shortest Path Visiting All Nodes — state-expanded multi-source with bitmask)
+                    </div>
 `,
   },
   {
@@ -4276,13 +5274,94 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Bipartite Graph",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Bipartite Graph — 2-Coloring & Detection",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Graph Property",
+    summaryMeta: "14 problems · 2-coloring, conflict detection, odd-cycle theorem, matching · 4 stages",
     topbarMeta: "Graphs · Technique",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> A bipartite graph has nodes split into two independent sets U and V such that every edge crosses between U and V — no edge connects two nodes within the same set. This is equivalent to 2-colorability and the absence of odd-length cycles. In interviews it appears as: can you divide people into two non-conflicting groups? Can you 2-color a graph? Is a scheduling conflict resolvable? It is also the foundation for bipartite matching, which underlies assignment problems and network flow applications. Bipartite checking is O(V+E) and a frequent embedded sub-problem in harder graph questions.</div>
+                    <div class="core-box"><strong>Mental Model — 2-Coloring:</strong> Assign color 0 to a start node. All its neighbors get color 1. All their unvisited neighbors get color 0. If you ever find a neighbor that already has the SAME color as you — that creates an odd cycle — the graph is NOT bipartite. Think of it as two teams: you and your direct neighbors must be on opposite teams. If any two adjacent nodes end up on the same team, the graph is not bipartite. <strong>Critical</strong>: always run the check from EVERY unvisited node to handle disconnected graphs.</div>
+
+                    <div class="sec-title">Core Theorem &amp; Invariant</div>
+                    <div class="info-box"><strong>Theorem:</strong> A graph G is bipartite ⟺ G contains no odd-length cycle.<br><br>
+                    <strong>Proof sketch:</strong> (⇒) In a bipartite graph, any cycle must alternate between sets U and V, forcing even length. (⇐) If no odd cycle exists, 2-color greedily via BFS: assign color 0 to source, alternate colors as you expand. A conflict (same-color neighbor) would imply an odd cycle — contradicting the assumption. ∎<br><br>
+                    <strong>Implementation invariant:</strong> During BFS 2-coloring, if edge (u,v) has color[u] == color[v] → graph is NOT bipartite. Complete traversal of all components without conflict → bipartite.<br><br>
+                    <strong>Union-Find approach:</strong> For each edge (u,v): union u with v's "enemy node" (v+N) and v with u's "enemy node" (u+N). Graph is bipartite iff find(u) ≠ find(u+N) for all u. This works on 2N nodes where node x's "enemy" is x+N.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">BFS 2-Coloring Detection · Stage 1</span><span class="pill">DFS 2-Coloring Detection · Stage 1</span><span class="pill">Bipartite on Constructed Conflict Graph · Stage 2</span><span class="pill">Multi-Component Bipartite Check · Stage 2</span><span class="pill">Bipartite via Union-Find (2N nodes) · Stage 2</span><span class="pill">Tree = Always Bipartite (depth parity) · Stage 1</span><span class="pill">Greedy Bipartite Matching (sorted) · Stage 3</span><span class="pill">Maximum Matching via Augmenting Paths · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Operation</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+                        <tbody>
+                        <tr><td>Bipartite detection (BFS/DFS)</td><td>O(V+E)</td><td>O(V)</td><td>Color array + queue/stack; single pass</td></tr>
+                        <tr><td>Bipartite detection (Union-Find)</td><td>O(E·α(V))</td><td>O(V)</td><td>2N nodes: node x and "enemy" node x+N</td></tr>
+                        <tr><td>Greedy matching (sorted pairs)</td><td>O(N log N)</td><td>O(N)</td><td>Sort + two pointers; works when constraints allow greedy</td></tr>
+                        <tr><td>Max bipartite matching (augmenting path)</td><td>O(V·E)</td><td>O(V+E)</td><td>Hungarian algorithm; Hopcroft-Karp: O(E√V)</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Bipartite Detection</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/is-graph-bipartite/" target="_blank">LC 785</a></td><td class="prob-name">Is Graph Bipartite?</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS 2-coloring with conflict detection</td><td>Baseline: color array; alternate 0/1 for neighbors; conflict = not bipartite</td><td class="insight">BFS: assign color to start node, flip for all neighbors via queue. If neighbor already colored with SAME color → conflict → not bipartite. Must loop over ALL nodes for disconnected graphs — a single BFS from one node is insufficient</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/possible-bipartition/" target="_blank">LC 886</a></td><td class="prob-name">Possible Bipartition</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Bipartite on constructed conflict graph</td><td>Graph not given — build adjacency from dislikes[] pairs first, then 2-color</td><td class="insight">Build adjacency list from dislikes pairs: if A dislikes B, add edge A—B. Then identical BFS 2-coloring as A1. Key separation: construction step then traversal step. "Bipartition" framing = asking if the conflict graph is 2-colorable</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/divide-a-graph-into-two-groups-of-equal-size/" target="_blank">LC 2493</a></td><td class="prob-name">Divide Graph into Two Equal Groups</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Bipartite check + equal-size constraint per component</td><td>Equal halves required; odd-size component = impossible unless balanced across rest</td><td class="insight">Check bipartite first — if not bipartite → impossible. For each component: if even size → either color assignment valid; if odd size → must assign majority half to whichever total side has space. Greedily assign per-component to balance global counts</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/flower-planting-with-no-adjacent/" target="_blank">LC 1042</a></td><td class="prob-name">Flower Planting With No Adjacent</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Greedy graph coloring (4 colors, max degree ≤ 3)</td><td>4 colors available; max degree ≤ 3 guarantees greedy works</td><td class="insight">With 4 colors available and max degree ≤ 3, greedy coloring always works: for each node, assign any color not used by its neighbors. Not strict bipartite (2 colors) but uses the same "color neighbors differently" principle generalized to 4 colors</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Structural Applications</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l1">Foundation</span></td><td>1</td><td>General</td><td class="prob-name">Trees Are Always Bipartite</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">Even/odd depth parity = bipartition</td><td>Trees have no cycles → always bipartite; partition by depth (even/odd levels)</td><td class="insight">Any tree is bipartite: nodes at even depth form one set, nodes at odd depth form the other. This is the BFS 2-coloring of a tree — all edges connect even-depth and odd-depth nodes. Useful when solving "alternating" pattern problems on trees</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-employees-to-be-invited-to-a-meeting/" target="_blank">LC 2127</a></td><td class="prob-name">Maximum Employees to Be Invited to a Meeting</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Functional graph cycle analysis + 2-cycle extensions</td><td>2-cycles (mutual preference pairs) are bipartite subgraphs; chains extend them</td><td class="insight">Two cases: (1) single large cycle ≥3 → take whole cycle; (2) collection of 2-cycles → take each 2-cycle plus the longest incoming chain on each endpoint. 2-cycles are bipartite pairs. Use topological sort to compute max chain lengths into each 2-cycle endpoint</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/detonate-the-maximum-bombs/" target="_blank">LC 2101</a></td><td class="prob-name">Detonate the Maximum Bombs</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Directed reachability — find component with max cascade</td><td>Build directed graph: u→v if bomb u's radius covers bomb v's center</td><td class="insight">For each bomb as starting point, BFS/DFS to count how many bombs it can trigger via chain detonation. Answer = max count across all starting bombs. Graph is directed (u covers v ≠ v covers u). Not bipartite but uses graph construction + reachability</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Matching</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-matching-of-players-with-trainers/" target="_blank">LC 2410</a></td><td class="prob-name">Maximum Matching of Players With Trainers</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Greedy bipartite matching (sort + two pointers)</td><td>Sort both sets; greedily match weakest player to weakest valid trainer</td><td class="insight">Sort players and trainers. For each player (ascending), find the smallest trainer capacity ≥ player ability. Greedy works: matching weakest player to weakest valid trainer wastes no capacity for stronger players. Two-pointer / lower_bound gives O(N log N)</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/campus-bikes/" target="_blank">LC 1057</a></td><td class="prob-name">Campus Bikes</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Priority-based greedy matching (sort all pairs)</td><td>Sort all worker-bike pairs by Manhattan distance; greedily assign unmatched pairs</td><td class="insight">Enumerate all N·M pairs, sort by distance (with tie-breaking). Greedy: if worker unmatched AND bike unmatched → assign this pair. Continue until all workers matched. Greedy optimality: we always take the globally cheapest available assignment at each step</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-number-of-accepted-invitations/" target="_blank">LC 1820</a></td><td class="prob-name">Maximum Number of Accepted Invitations</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Max bipartite matching via augmenting path DFS</td><td>For each unmatched left node: DFS to find augmenting path; flip matching along path</td><td class="insight">match[right] = which left node is matched to this right node. For each left node: DFS augmenting path — try to match or push existing match to another right node. Each successful augmentation increases total matching by 1. Classic O(V·E) Hungarian augmenting path algorithm</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/is-graph-bipartite/" target="_blank">LC 785</a></td><td class="prob-name trap-name">⚠️ Is Bipartite — Disconnected Case</td><td><span class="diff-m">Med</span></td><td>Running BFS from only one node — misses disconnected components that may themselves be non-bipartite</td><td>Loop over ALL nodes; if unvisited, run BFS/DFS from it; return false on any component conflict</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/possible-bipartition/" target="_blank">LC 886</a></td><td class="prob-name trap-name">⚠️ Possible Bipartition — Missing Construction</td><td><span class="diff-m">Med</span></td><td>Attempting bipartite check without first building the adjacency list from dislikes[] — graph is not given explicitly</td><td>Build adjacency list from dislikes pairs FIRST; THEN run 2-coloring BFS/DFS. Always separate graph construction from graph traversal</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Odd Path vs Odd Cycle Confusion</td><td><span class="diff-m">Med</span></td><td>Confusing "odd-length path" with "odd-length cycle" — odd paths can exist in bipartite graphs; ONLY odd cycles make a graph non-bipartite</td><td>The 2-coloring check handles this automatically: a conflict occurs only when a cycle closes with same-color endpoints. Odd-length paths between nodes do not cause conflicts during BFS 2-coloring</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Can elements be split into two groups with no intra-group conflicts?</strong><br>→ Build conflict graph; check bipartite via BFS 2-coloring. Not bipartite = impossible split.<br><br>
+                    <strong>Q2: Does the problem involve "alternating" assignment (team A/B, red/blue, 0/1)?</strong><br>→ 2-coloring. Conflict on same-color neighbor = odd cycle = infeasible.<br><br>
+                    <strong>Q3: Is the graph a tree?</strong><br>→ Always bipartite. Partition by depth parity: even levels = set U, odd levels = set V.<br><br>
+                    <strong>Q4: Need maximum matching between two sets?</strong><br>→ Simple constraints → greedy (sort + two pointers). Complex → augmenting path DFS (Hungarian). As flow → add source/sink with unit-capacity edges, compute max flow.<br><br>
+                    <strong>Q5: Want Union-Find-based approach?</strong><br>→ 2N nodes: node x and enemy x+N. For edge (u,v): union(u, v+N) and union(v, u+N). If find(u)==find(u+N) for any u → not bipartite.
+                    </div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 785 · LC 886<br><br>
+                        <strong>High Frequency:</strong> LC 2493 · LC 1042 · LC 2410<br><br>
+                        <strong>Depth:</strong> LC 1820 (max bipartite matching via augmenting paths — implement Hungarian from scratch)
+                    </div>
 `,
   },
   {
@@ -4292,13 +5371,120 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Topological Sort",
     navTierDotColor: "#da7101",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Topological Sort",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "DAG Technique",
+    summaryMeta: "22 problems · Kahn's BFS, DFS postorder, DAG DP, derived DAGs · 5 stages",
     topbarMeta: "Graphs · Technique",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> Topological sort (topo sort) gives a linear ordering of nodes in a DAG (Directed Acyclic Graph) such that every edge u→v has u appearing before v. Every dependency / scheduling / ordering problem without cycles is a topo sort problem. It appears in course scheduling, build systems, task ordering, compiler dependency resolution, and as a critical subroutine in DAG DP. There are two equivalent algorithms — Kahn's BFS-based and DFS postorder-based — each with distinct advantages. If the graph has a cycle, no valid topo order exists, so cycle detection is built in.</div>
+                    <div class="core-box"><strong>Two Algorithms:</strong><br>
+                    <strong>Kahn's (BFS):</strong> (1) Compute in-degree for all nodes. (2) Enqueue all 0-in-degree nodes. (3) BFS: dequeue a node, add to result, decrement neighbor in-degrees; enqueue neighbors that reach 0. (4) If result.length &lt; V → cycle exists (some nodes never reached 0 in-degree). Advantage: natural cycle detection, processes in dependency order, easy to implement iteratively.<br><br>
+                    <strong>DFS Postorder:</strong> (1) 3-color DFS on all nodes. (2) Push each node to stack when it finishes (BLACK). (3) Reverse the stack = topo order. (4) GRAY neighbor during DFS = cycle. Advantage: integrates with DFS-based cycle detection, natural for "process after all dependencies" recursion.</div>
+
+                    <div class="sec-title">Core Invariant</div>
+                    <div class="info-box"><strong>Invariant:</strong> For any edge u→v in a DAG, u appears before v in the topological order.<br><br>
+                    <strong>Kahn's correctness:</strong> A node is added to the result only after ALL its predecessors have been processed (in-degree = 0). Since the graph is a DAG, this process terminates and processes all V nodes. Any cycle prevents at least one node from ever reaching in-degree 0 — these nodes are never enqueued, so result.length &lt; V signals a cycle.<br><br>
+                    <strong>DFS postorder correctness:</strong> A node is pushed (finished) only after ALL nodes it depends on are finished. Therefore, reversing the postorder gives dependencies before dependents. ∎<br><br>
+                    <strong>Uniqueness:</strong> Topo order is unique only when the DAG is a Hamiltonian path (each node has exactly one valid predecessor/successor). Otherwise, multiple valid orderings exist.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Kahn's BFS Topo Sort · Stage 1</span><span class="pill">DFS Postorder Topo Sort · Stage 1</span><span class="pill">Cycle Detection via Kahn's (remaining non-zero in-degree) · Stage 1</span><span class="pill">Topo Sort on Derived DAG · Stage 2</span><span class="pill">Unique Topo Order Check · Stage 2</span><span class="pill">DAG DP (longest/shortest path in DAG) · Stage 3</span><span class="pill">Two-Level Topo Sort (groups + items) · Stage 4</span><span class="pill">Topo Sort + Counting / Ordering Constraints · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+                        <tbody>
+                        <tr><td>Kahn's BFS topo sort</td><td>O(V+E)</td><td>O(V)</td><td>In-degree array + queue; built-in cycle check</td></tr>
+                        <tr><td>DFS postorder topo sort</td><td>O(V+E)</td><td>O(V)</td><td>3-color array + postorder stack; reversal O(V)</td></tr>
+                        <tr><td>DAG DP (e.g. longest path)</td><td>O(V+E)</td><td>O(V)</td><td>Process nodes in topo order; dp[v] updated from dp[u] for edge u→v</td></tr>
+                        <tr><td>Two-level topo sort</td><td>O(V+E)</td><td>O(V)</td><td>Run topo sort twice: once on groups, once on items within groups</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Basic Topo Sort</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule/" target="_blank">LC 207</a></td><td class="prob-name">Course Schedule</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cycle detection via Kahn's: if result.length &lt; V → cycle</td><td>Baseline Kahn's: in-degree array + queue; check if all nodes processed</td><td class="insight">If after Kahn's BFS result.length &lt; numCourses → a cycle exists (some courses have circular prerequisites; they never reach in-degree 0). This is the natural cycle detection built into Kahn's algorithm — no separate DFS needed</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule-ii/" target="_blank">LC 210</a></td><td class="prob-name">Course Schedule II</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Kahn's topo sort — collect and return valid ordering</td><td>Extends A1: collect nodes as they are dequeued = valid course order</td><td class="insight">Nodes dequeued in Kahn's order are in valid topological order (prerequisites before courses). Collect them into result array. Same cycle check: if result.size() &lt; numCourses → return empty array</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/sequence-reconstruction/" target="_blank">LC 444</a></td><td class="prob-name">Sequence Reconstruction</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Unique topo order check</td><td>Topo order is unique iff at every step exactly ONE node has in-degree 0</td><td class="insight">Run Kahn's. At each BFS step: if queue ever has &gt;1 node simultaneously → multiple valid orderings exist → not uniquely reconstructible. Unique ordering requires queue size = 1 at all times during BFS. Check this condition per dequeue step</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-height-trees/" target="_blank">LC 310</a></td><td class="prob-name">Minimum Height Trees</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Leaf-peeling BFS (undirected Kahn's variant)</td><td>Peel degree-1 nodes iteratively inward; last 1-2 nodes are the answer</td><td class="insight">Enqueue all degree-1 nodes (leaves). Remove them, decrement neighbor degrees; enqueue new degree-1 nodes. Last 1–2 remaining nodes = MHT roots. This is Kahn's algorithm adapted for undirected graphs — NOT a standard topo sort, but identical mechanics</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Derived DAGs</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/alien-dictionary/" target="_blank">LC 269</a></td><td class="prob-name">Alien Dictionary</td><td><span class="diff-h">Hard</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Topo sort on derived character-order DAG</td><td>Build DAG from adjacent word pairs; compare character by character for ordering constraints</td><td class="insight">For each adjacent pair of words: find first differing char position → edge (word1_char → word2_char). Then topo sort the character DAG. WHY hard: (1) "abcd" before "ab" is impossible — prefix invalid ordering; (2) cycle in char DAG = invalid; return "" in both cases</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/parallel-courses/" target="_blank">LC 1136</a></td><td class="prob-name">Parallel Courses</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Topo sort + level (semester) tracking</td><td>Kahn's BFS level = semester; max courses in any level = bottleneck</td><td class="insight">Run Kahn's BFS level by level (like BFS levels). Each level = one semester. All courses whose prerequisites are done can be taken simultaneously in the same semester. Number of levels = minimum semesters. If cycle → return -1</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/build-a-matrix-with-conditions/" target="_blank">LC 2392</a></td><td class="prob-name">Build a Matrix With Conditions</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Two independent topo sorts (row order + column order)</td><td>Two separate ordering constraints (rows and columns) solved independently</td><td class="insight">Run Kahn's independently for row constraints → row_order[]. Run Kahn's independently for column constraints → col_order[]. Build matrix: place k at (row_order[k], col_order[k]). If either has a cycle → return empty. Two independent topo sorts feeding a construction step</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/" target="_blank">LC 1203</a></td><td class="prob-name">Sort Items by Groups Respecting Dependencies</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Two-level topo sort (group topo + item topo within groups)</td><td>Outer topo sort on groups; inner topo sort on items within each group</td><td class="insight">Assign items without groups to unique singleton groups. Build two graphs: inter-group edges and intra-group edges. Topo sort groups externally; topo sort items within each group internally. Combine by processing groups in topo order, outputting each group's items in their internal topo order</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — DAG DP</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/longest-increasing-path-in-a-matrix/" target="_blank">LC 329</a></td><td class="prob-name">Longest Increasing Path in a Matrix</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DAG DP via memoized DFS (implicit topo order)</td><td>Strictly increasing constraint creates an implicit DAG; memoize DFS for LIP from each cell</td><td class="insight">Strictly increasing moves create a DAG (no cycles possible). dp[r][c] = LIP starting from (r,c). Memoized DFS computes this via postorder. Alternatively: explicit topo sort by cell value (sort cells by value; process in ascending order). O(R·C) either way</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/parallel-courses-ii/" target="_blank">LC 1494</a></td><td class="prob-name">Parallel Courses II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DAG DP with bitmask — minimum semesters with capacity k</td><td>Adds capacity constraint k per semester; bitmask DP over subsets of completed courses</td><td class="insight">dp[mask] = minimum semesters to complete courses in mask. For each mask, find all "available" courses (prerequisites all in mask); choose ≤k of them; transition to dp[mask | chosen]. Bitmask DP over all 2^N states. WHY hard: combining DAG DP with bitmask subset enumeration</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/count-ways-to-build-good-strings/" target="_blank">LC 2466</a></td><td class="prob-name">Count Ways to Build Good Strings</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DAG DP on implicit state transitions</td><td>dp[i] = ways to form string of length i; transitions from i-zero and i-one steps back</td><td class="insight">State = string length 0..high. Transition: dp[i] += dp[i-zero] + dp[i-one]. Sum dp[i] for low ≤ i ≤ high. Implicit DAG: edges from i-zero → i and i-one → i (processed in topo order = ascending i). Not an explicit graph but uses the topo-sort DP pattern</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/maximum-path-quality-of-a-graph/" target="_blank">LC 2065</a></td><td class="prob-name">Maximum Path Quality of a Graph</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DFS backtracking with time constraint (not strictly topo)</td><td>Explore all paths from node 0 within time limit; collect unique node values</td><td class="insight">DFS with backtracking: track current time and visited set. At each step: expand to neighbors if remaining time ≥ edge weight + return path. Collect value of newly visited nodes. WHY here: illustrates that not all "DAG-like" problems need explicit topo sort — DFS with constraints suffices</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/alien-dictionary/" target="_blank">LC 269</a></td><td class="prob-name trap-name">⚠️ Alien Dictionary — Edge Cases</td><td><span class="diff-h">Hard</span></td><td>Missing two failure cases: (1) word "abc" comes before "ab" in input — impossible since "ab" is a prefix of "abc"; (2) cycle in character ordering graph. Both must return ""</td><td>Check prefix violation: if word1[0..len(word2)] == word2 AND len(word1) &gt; len(word2) → return "". Also check cycle after topo sort</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/course-schedule-ii/" target="_blank">LC 210</a></td><td class="prob-name trap-name">⚠️ Course Schedule II — Edge Direction</td><td><span class="diff-m">Med</span></td><td>Building directed edges in wrong direction — [a,b] means "b must come before a" (b is prerequisite for a), so edge should be b→a not a→b</td><td>For each [a,b]: add edge b→a. In-degree of a increases. Build carefully from problem statement: "to take course a, must finish course b first"</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Using Topo Sort on Non-DAG</td><td><span class="diff-m">Med</span></td><td>Applying topo sort to an undirected graph or a directed graph with cycles — topo sort is only defined for DAGs; Kahn's will silently produce a partial result without indicating failure unless you check result.length</td><td>Always verify result.length == V after Kahn's on a graph that may have cycles. For undirected graphs: no topo sort; use DFS/BFS component traversal instead</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Valid ordering of tasks / courses" + "A must come before B"</td><td class="trigger-variant">Stage 1 Kahn's or DFS postorder topo sort</td><td class="trigger-breaks">Graph has undirected edges → no topo sort defined; need different technique</td></tr>
+                        <tr><td class="trigger-phrase">"Is it possible to complete all tasks" + dependency constraints</td><td class="trigger-variant">Stage 1 Cycle detection via Kahn's (result.length &lt; V)</td><td class="trigger-breaks">Graph is undirected → use simple DFS cycle check instead</td></tr>
+                        <tr><td class="trigger-phrase">"Determine order from comparison/difference of adjacent elements"</td><td class="trigger-variant">Stage 2 Derived DAG + topo sort</td><td class="trigger-breaks">Contradictory constraints create cycles → detect and return invalid</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum steps/levels to complete all tasks with unlimited parallelism"</td><td class="trigger-variant">Stage 3 Kahn's level-by-level (like BFS levels)</td><td class="trigger-breaks">Capacity constraint k on parallelism → bitmask DP instead</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Is there a dependency ordering problem with directed constraints and no cycles?</strong><br>→ Topo sort. Choose Kahn's (BFS) for natural cycle detection and iterative implementation. Choose DFS postorder for recursive implementation or when integrating with DFS-based processing.<br><br>
+                    <strong>Q2: Must detect whether a valid ordering exists (cycle check)?</strong><br>→ Kahn's: if result.length &lt; V → cycle. DFS: GRAY neighbor → cycle.<br><br>
+                    <strong>Q3: Must the topo order be UNIQUE?</strong><br>→ Kahn's with queue-size check: if queue ever has &gt;1 node → not unique.<br><br>
+                    <strong>Q4: Need to compute max/min/count along paths in the DAG?</strong><br>→ DAG DP: process nodes in topo order; dp[v] = f(dp[u]) for all edges u→v.<br><br>
+                    <strong>Q5: Is the DAG implicit (e.g., strict comparison creates ordering)?</strong><br>→ Memoized DFS = implicit topo order. Alternatively: sort nodes by key, process in order.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Edge direction reversed in graph construction</td><td>Prerequisites come after dependents; wrong ordering</td><td>For [a,b] meaning "b before a": edge b→a, in-degree[a]++</td></tr>
+                        <tr><td>2</td><td>Not checking result.length == V after Kahn's</td><td>Silently returns partial ordering when cycle exists</td><td>Always check result.size() == numNodes; return error/empty if less</td></tr>
+                        <tr><td>3</td><td>DFS topo sort: forgetting to reverse postorder stack</td><td>Output is reverse topological order (dependencies after dependents)</td><td>Reverse the postorder stack at end; or prepend to result list instead of append</td></tr>
+                        <tr><td>4</td><td>Not seeding ALL 0-in-degree nodes into Kahn's initial queue</td><td>Nodes with no prerequisites never processed if missed at initialization</td><td>Scan ALL nodes and enqueue those with in-degree == 0 before starting BFS</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 207 · LC 210 · LC 310<br><br>
+                        <strong>High Frequency:</strong> LC 269 (Alien Dictionary) · LC 1136 (Parallel Courses) · LC 2392 (Build Matrix) · LC 329 (LIP)<br><br>
+                        <strong>Depth:</strong> LC 1203 (Sort Items by Groups — two-level topo) · LC 1494 (Parallel Courses II — bitmask DP)
+                    </div>
 `,
   },
   {
@@ -4308,13 +5494,244 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Dijkstra's Algorithm",
     navTierDotColor: "#a13544",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
-    topbarMeta: "Graphs · Shortest Path",
+    title: "Dijkstra's Algorithm",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Shortest Path",
+    summaryMeta: "20 problems · SSSP, grid, state-expanded, min-max, count-paths · 4 sections",
+    topbarMeta: "Graphs · T2 Core",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why This Topic Matters:</strong> Dijkstra is the engine behind ~30% of Hard graph problems at Google, Meta, and Amazon. The textbook SSSP form is table stakes — what separates interview candidates is the <em>state-expanded</em> variant, where the node is (position, extra_state) and the graph must be built on-the-fly. Nearly every FAANG Hard graph problem reduces to "run Dijkstra where I augmented the node with extra context (K stops, fuel, discounts, obstacles)." Master the template and its five modification patterns; you will recognise any variant within 60 seconds.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Classic SSSP (directed/undirected)</span>
+                        <span class="pill">Modified: max-heap (max probability, max bandwidth)</span>
+                        <span class="pill">Modified: min-max (min of max edge)</span>
+                        <span class="pill">Count Shortest Paths (ways[] alongside dist[])</span>
+                        <span class="pill">0-1 BFS (deque — binary edge weights)</span>
+                        <span class="pill">Grid Dijkstra (effort, swim level)</span>
+                        <span class="pill">State-Expanded: (node, K_stops)</span>
+                        <span class="pill">State-Expanded: (node, resource_count)</span>
+                        <span class="pill">State-Expanded: (node, parity / time_mod)</span>
+                        <span class="pill">Dijkstra + DAG DP on shortest-path DAG</span>
+                        <span class="pill">3-Pass Dijkstra (meeting-point optimisation)</span>
+                        <span class="pill">Implicit Graph (coordinates → nodes)</span>
+                        <span class="pill">Second Minimum (2 dist values per node)</span>
+                        <span class="pill">Bidirectional Dijkstra</span>
+                    </div>
+
+                    <div class="info-box"><strong>Invariant:</strong> When node u is first popped from the min-heap with distance d, d = dist[u] = true shortest distance from source. All non-negative edge weights guarantee this — any alternative path must pass through an unprocessed node that is at least as costly.<br><br>
+                    <strong>Lazy Deletion template:</strong> dist = {src: 0}; heap = [(0, src)]. While heap: (d, u) = heappop. If d &gt; dist[u]: skip (stale). For (v, w) in adj[u]: nd = d + w; if nd &lt; dist.get(v, INF): dist[v] = nd; heappush(heap, (nd, v)).</div>
+
+                    <div class="sec-title">📌 Section A — Undirected Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th class="num-cell">#</th><th>Layer</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th class="variant-cell">Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>LC 1514</td><td><a class="lc-link" href="https://leetcode.com/problems/path-with-maximum-probability/" target="_blank"><span class="prob-name">Path with Maximum Probability</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Max-heap Dijkstra — max-product path</td><td class="insight">Flip to max-heap. Relaxation: prob[v] = max(prob[v], prob[u] × edge_prob). Algorithm identical to min-Dijkstra — only the heap direction and relaxation operator change. Correct because all probabilities ≤ 1, so "weights" are non-negative in log space.</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>🔧 Custom</td><td><span class="prob-name">Undirected SSSP Template Drill</span></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Pure Dijkstra template — undirected, positive weights</td><td class="insight">Full problem: n nodes, m undirected edges with positive integer weights, q queries (s, t) — return dist or -1. Build adjacency list in BOTH directions. This is the pure-template drill — write it from memory in under 5 minutes before attempting any variant. Key: undirected means each edge generates two directed adjacency entries.</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l3">Combination</span></td><td>LC 882</td><td><a class="lc-link" href="https://leetcode.com/problems/reachable-nodes-in-subdivided-graph/" target="_blank"><span class="prob-name">Reachable Nodes In Subdivided Graph</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Dijkstra + edge-budget counting on virtual nodes</td><td class="insight">For settled edge (u, v) with cnt sub-nodes: from_u = min(remaining_moves_at_u, cnt); from_v = min(remaining_moves_at_v, cnt). Reachable sub-nodes on this edge = min(from_u + from_v, cnt). Sum across all edges plus settled real nodes. <strong>Why Hard:</strong> combining Dijkstra's settled distances with a per-edge counting formula for virtual subdivided nodes requires bookkeeping that is non-obvious from the problem statement alone.</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l5">⚠️ Trap</span></td><td>LC 1334</td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance/" target="_blank"><span class="prob-name">Find the City With the Smallest Number of Neighbors at a Threshold Distance</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">All-pairs shortest path — n Dijkstra passes</td><td class="insight">⚠️ Dijkstra from each city works but misses the obvious shortcut: n ≤ 100 means Floyd-Warshall O(V³) = 10⁶ ops in 3 lines of code. The trap is reflexively applying Dijkstra when the graph is tiny and APSP is trivially fast. Always check n before choosing SSSP vs APSP.</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Directed Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th class="num-cell">#</th><th>Layer</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th class="variant-cell">Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l1">Foundation</span></td><td>LC 743</td><td><a class="lc-link" href="https://leetcode.com/problems/network-delay-time/" target="_blank"><span class="prob-name">Network Delay Time</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Directed SSSP — max of all min-distances</td><td class="insight">Canonical directed Dijkstra from node k; answer = max(dist[all nodes]). If any unreachable, return -1. Internalize this template completely. Key: adjacency list is ONE-directional. This is the reference template for all subsequent problems.</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l2">Variants</span></td><td>LC 1976</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-ways-to-arrive-at-destination/" target="_blank"><span class="prob-name">Number of Ways to Arrive at Destination</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Count shortest paths during Dijkstra</td><td class="insight">Maintain ways[v] alongside dist[v]. When popping (d, u): for each neighbor v — if d + w == dist[v]: ways[v] += ways[u] mod 1e9+7; if d + w &lt; dist[v]: dist[v] = d+w; ways[v] = ways[u]. Update ways only on pop, never on push — avoids double-counting through unsettled nodes.</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l3">Combination</span></td><td>LC 1786</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-restricted-paths-from-first-to-last-node/" target="_blank"><span class="prob-name">Number of Restricted Paths From First to Last Node</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dijkstra from sink → implicit DAG → count paths via DP</td><td class="insight">Two-pass: (1) Dijkstra from node n backward. (2) Restricted edge u→v exists iff dist[v] &lt; dist[u] — this defines a DAG. Count paths from 1 to n on this DAG using memo DFS or topo-order DP. Pattern: Dijkstra produces a DAG, then run DP on it.</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l4">Hard/Insight</span></td><td>LC 2203</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-weighted-subgraph-with-the-required-paths/" target="_blank"><span class="prob-name">Minimum Weighted Subgraph With the Required Paths</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">3-pass Dijkstra — meeting-point optimisation</td><td class="insight">Three Dijkstra runs: forward from src1, forward from src2, backward from dest (on reversed graph). For each candidate merge node m: cost = dist1[m] + dist2[m] + distR[m]. Answer = min over all m. <strong>Why Hard:</strong> recognising the "merge node" structure — that src1 and src2 paths must converge somewhere before dest — and that reverse Dijkstra from dest is required, is a non-obvious reduction not derivable from standard templates.</td></tr>
+                        <tr><td class="num-cell">B5</td><td><span class="l5">⚠️ Trap</span></td><td>🔧 Custom</td><td><span class="prob-name">SSSP With Negative Edges (No Negative Cycles)</span></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dijkstra applied to graph with negative edges — silent failure</td><td class="insight">⚠️ Full problem: directed graph, edge weights in [-10⁶, 10⁶], no negative cycles, find SSSP from node 0. Dijkstra returns WRONG answers silently — greedy settlement invariant breaks when a negative edge shortcircuits an already-settled node. Correct: Bellman-Ford (V-1 iterations). This is the #1 misuse of Dijkstra in interviews; a wrong-answer-producing bug that is easy to miss.</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Grid Graph</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th class="num-cell">#</th><th>Layer</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th class="variant-cell">Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l1">Foundation</span></td><td>LC 1631</td><td><a class="lc-link" href="https://leetcode.com/problems/path-with-minimum-effort/" target="_blank"><span class="prob-name">Path With Minimum Effort</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Grid Dijkstra — min-of-max edge weight</td><td class="insight">dist[r][c] = minimum possible max-height-diff to reach (r,c). Relaxation: effort = max(dist[r][c], abs(height_diff)); push if effort &lt; dist[nr][nc]. Dijkstra's "expand minimum" correctly solves minimax because max() is monotonic — expanding a cell with smaller current max never blocks a better path.</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l2">Variants</span></td><td>LC 778</td><td><a class="lc-link" href="https://leetcode.com/problems/swim-in-rising-water/" target="_blank"><span class="prob-name">Swim in Rising Water</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Grid minimax — min time = min over max cell value on path</td><td class="insight">Same structure as C1 but cost = max(grid values along path). Push (max(curr_max, grid[nr][nc]), nr, nc). <strong>Why Hard:</strong> the minimax objective differs from standard sum-minimisation — proving that Dijkstra's greedy expansion still correctly solves minimax (because max() preserves the heap's ordering invariant) requires explicit reasoning that most candidates skip.</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l2">Variants</span></td><td>LC 1368</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/" target="_blank"><span class="prob-name">Minimum Cost to Make at Least One Valid Path in a Grid</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">0-1 BFS — follow arrow (cost 0) or redirect (cost 1)</td><td class="insight">Use deque: follow existing arrow direction → push front (cost 0); redirect arrow → push back (cost 1). O(R×C) vs heap O(R×C log). <strong>Why Hard:</strong> recognising that only two edge weights (0 and 1) make a deque optimal over a heap — and that 0-1 BFS is a degenerate Dijkstra — requires knowing the technique name and when it applies.</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l3">Combination</span></td><td>LC 505</td><td><a class="lc-link" href="https://leetcode.com/problems/the-maze-ii/" target="_blank"><span class="prob-name">The Maze II</span></a></td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Implicit grid graph — ball rolls to wall stop positions</td><td class="insight">Nodes = all (stop_position) cells where ball hits a wall. Edge weight = steps rolled. Build this implicit graph by simulating 4-directional rolls from each stop position. Standard Dijkstra on implicit node set. Follow with LC 499 (Maze III ✅) for the lex-smallest-path variant.</td></tr>
+                        <tr><td class="num-cell">C5</td><td><span class="l4">Hard/Insight</span></td><td>LC 2577</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-time-to-visit-a-cell-in-a-grid/" target="_blank"><span class="prob-name">Minimum Time to Visit a Cell in a Grid</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Grid Dijkstra with time-parity waiting constraint</td><td class="insight">Can enter (nr,nc) at time t+1 only if grid[nr][nc] ≤ t+1. If grid[nr][nc] &gt; t+1: must wait by bouncing. Arrival = grid[nr][nc] if (grid[nr][nc] - (t+1)) % 2 == 0, else grid[nr][nc] + 1. <strong>Why Hard:</strong> the "wait by bouncing" trick and correct parity-adjusted arrival time are non-obvious; failing solutions set arrival to grid[nr][nc] without the parity correction, breaking on cells with large minimum times.</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section D — Implicit Graph (State-Expanded Dijkstra)</div>
+                    <div class="info-box"><strong>State-Expanded Dijkstra:</strong> Treat (node, extra_state) as the graph node. dist[node][state] = minimum cost. Graph is implicit — built on-the-fly during traversal. This is Google's #1 Hard graph pattern. Whenever a problem has "limited resources" (K stops, K eliminations, K discounts) alongside a shortest path, state-expand. Always verify state space is polynomial before using this approach.</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th class="num-cell">#</th><th>Layer</th><th>Source</th><th>Problem</th><th>Diff</th><th>P</th><th class="variant-cell">Sub-Variant</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">D1</td><td><span class="l1">Foundation</span></td><td>LC 787</td><td><a class="lc-link" href="https://leetcode.com/problems/cheapest-flights-within-k-stops/" target="_blank"><span class="prob-name">Cheapest Flights Within K Stops</span></a></td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">State-expanded: (city, stops_used) — resource constraint</td><td class="insight">Foundational template. dist[city][stops] = min cost. Push (cost, city, stops+1) only if stops+1 ≤ k+1. Standard Dijkstra on implicit 2D state space (n × (k+2)). Bellman-Ford is cleaner for this specific problem; state-expansion is the generalizable pattern — drill it here.</td></tr>
+                        <tr><td class="num-cell">D2</td><td><span class="l2">Variants</span></td><td>LC 2093</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-reach-city-with-discounts/" target="_blank"><span class="prob-name">Minimum Cost to Reach City With Discounts</span></a></td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">State-expanded: (city, discounts_used) — coupon/token resource</td><td class="insight">dist[city][k] = min cost using exactly k discounts so far. Each edge: take full cost (k unchanged) or half cost (k → k+1). Dijkstra on n × (max_discount+1) state space. "Resource token" expansion — the universal pattern for tolls, fuel, coupons, passes in shortest-path problems.</td></tr>
+                        <tr><td class="num-cell">D3</td><td><span class="l2">Variants</span></td><td>LC 1293</td><td><a class="lc-link" href="https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/" target="_blank"><span class="prob-name">Shortest Path in a Grid With Obstacles Elimination</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">State-expanded BFS: (row, col, eliminations_left)</td><td class="insight">All edges weight 1 → BFS (not Dijkstra), but expansion pattern is identical. dist[r][c][k] = min steps to (r,c) with k eliminations remaining. State space: m × n × (k+1) ≤ 40³ = 64k — tractable. <strong>Why Hard:</strong> computing that 3D state space fits in memory (mnk ≤ 64k entries) is non-obvious without back-of-envelope estimation; many candidates reject this approach assuming it's too large.</td></tr>
+                        <tr><td class="num-cell">D4</td><td><span class="l3">Combination</span></td><td>LC 2662</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-of-a-path-with-special-roads/" target="_blank"><span class="prob-name">Minimum Cost of a Path With Special Roads</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Implicit graph from coordinate space — Dijkstra on point set</td><td class="insight">Key nodes = {start, end, all special road endpoints}. Edge (u → v): cost = Manhattan distance. Take special road only if road_cost &lt; Manhattan cost. Build this O(n)-node explicit graph from coordinates; run standard Dijkstra. <strong>Why Hard:</strong> extracting the minimal relevant node set from a continuous 2D plane — only special road endpoints matter, not all integer coordinates — is the non-obvious reduction step.</td></tr>
+                        <tr><td class="num-cell">D5</td><td><span class="l4">Hard/Insight</span></td><td>LC 2045</td><td><a class="lc-link" href="https://leetcode.com/problems/second-minimum-time-to-reach-destination/" target="_blank"><span class="prob-name">Second Minimum Time to Reach Destination</span></a></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Modified BFS — 2 dist values per node, traffic-light parity</td><td class="insight">Keep dist1[v] (minimum time) and dist2[v] (strict second minimum). BFS since all edges weight 1. Traffic light: if current time falls on red, wait. Key observation: second minimum = dist1 + 1 or dist1 + 2 (detour is always 1 or 2 extra steps, never more). <strong>Why Hard:</strong> proving that the second minimum is always within 2 of the minimum (due to undirected connectivity) — eliminating the need for a full second-shortest-path algorithm — requires a non-obvious structural argument about the graph.</td></tr>
+                        <tr><td class="num-cell">D6</td><td><span class="l5">⚠️ Trap</span></td><td>🔧 Custom</td><td><span class="prob-name">Multi-Coupon Minimum Path (State Explosion)</span></td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">State-expanded — exponential vs polynomial state space</td><td class="insight">⚠️ Full problem: n cities (≤10⁴), m roads, k distinct single-use coupons (k ≤ 20) each applicable to one edge of your choice. Minimize total cost 0 → n-1. State = (city, coupon_bitmask) → n × 2^k = 10⁴ × 10⁶ = 10¹⁰ states — Dijkstra TLEs. Use bitmask DP (TSP-style) instead. The trap: reaching for state-expanded Dijkstra without verifying that the state space is polynomial. Always check: does k grow with n, or is it a small constant?</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th class="trigger-variant">Signal</th><th>Algorithm</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"minimum cost / time / distance" + positive weights + single source</td><td class="trigger-variant">Classic SSSP</td><td>Dijkstra template (B1)</td></tr>
+                        <tr><td class="trigger-phrase">"minimum cost" + "at most K stops / with K fuel / at most K discounts"</td><td class="trigger-variant">Resource-constrained path</td><td>State-expanded Dijkstra, dist[node][k] (D1/D2)</td></tr>
+                        <tr><td class="trigger-phrase">"minimum effort / minimum risk" = min of max edge on path</td><td class="trigger-variant">Minimax optimisation</td><td>Grid Dijkstra with max() relaxation (C1/C2)</td></tr>
+                        <tr><td class="trigger-phrase">"maximum probability / maximum bandwidth / maximum flow on path"</td><td class="trigger-variant">Max-product or max-min path</td><td>Max-heap Dijkstra (A1)</td></tr>
+                        <tr><td class="trigger-phrase">"count number of shortest paths / number of ways to arrive"</td><td class="trigger-variant">Count alongside SSSP</td><td>Dijkstra + ways[] array (B2)</td></tr>
+                        <tr><td class="trigger-phrase">"edges cost 0 or 1" / "move for free / modify costs 1"</td><td class="trigger-variant">Binary-weight graph</td><td>0-1 BFS with deque (C3)</td></tr>
+                        <tr><td class="trigger-phrase">"two sources both reach a destination" / "merge paths from src1 and src2"</td><td class="trigger-variant">Multi-source convergence</td><td>3-pass Dijkstra + meeting node (B4)</td></tr>
+                        <tr><td class="trigger-phrase">"teleport / special road / shortcut" in 2D coordinate space</td><td class="trigger-variant">Implicit graph from geometry</td><td>Dijkstra on extracted point set (D4)</td></tr>
+                        <tr><td class="trigger-phrase">"second minimum time / second shortest path"</td><td class="trigger-variant">K-th shortest variant</td><td>2-dist-per-node modified BFS/Dijkstra (D5)</td></tr>
+                        <tr><td class="trigger-phrase">"remove obstacles / use eliminations alongside grid traversal"</td><td class="trigger-variant">3D state space</td><td>State-expanded BFS (D3)</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="warn-box">
+                        <strong>1. Negative edge weights</strong> — Dijkstra silently returns wrong answers. Greedy settlement invariant breaks when a negative edge shortcircuits an already-settled node. Use Bellman-Ford or SPFA.<br><br>
+                        <strong>2. All edges equal weight</strong> — heap overhead is wasted; plain BFS runs in O(V+E). Any time edge weights are all 1 (or all equal), use BFS.<br><br>
+                        <strong>3. Only two edge weights (0 and 1)</strong> — use 0-1 BFS (deque) for O(V+E) vs Dijkstra's O(E log V). Dijkstra still correct but 3-5× slower on large inputs.<br><br>
+                        <strong>4. State-expanded with exponential state space</strong> — if extra state is a bitmask over k items with k &gt; 20, state space = n × 2^k overflows. Use bitmask DP (TSP-style) instead.<br><br>
+                        <strong>5. Need APSP on small graph (V ≤ 400)</strong> — running Dijkstra from each node is O(V × (E+V)logV); Floyd-Warshall O(V³) is cleaner in 3 lines of code.<br><br>
+                        <strong>6. Negative cycles present</strong> — Dijkstra may loop or produce incorrect results. Use Bellman-Ford (detects: V-th iteration still relaxes) or Floyd-Warshall (detects: dist[i][i] &lt; 0).<br><br>
+                        <strong>7. Extremely dense graph (E ≈ V²)</strong> — even O(E log V) is too slow for E = 10⁸+. Consider array-based O(V²) Dijkstra (no heap) for complete or near-complete graphs.
+                    </div>
+
+                    <div class="sec-title">3-Phase Mastery Plan</div>
+                    <div class="core-box">
+                        <strong>Phase 1 — Solve (build template, cover all variants · ~1 week):</strong><br>
+                        B1 → C1 → D1 → A1 → B2 → C3 → D2 → D3<br>
+                        Covers: directed SSSP, grid SSSP, K-stop expansion, max-heap, count paths, 0-1 BFS, coupon expansion, obstacle elimination. Stop after each problem and re-code it from scratch without looking.<br><br>
+                        <strong>Phase 2 — Drill (combination + hard · ~1 week):</strong><br>
+                        A3 → B3 → B4 → C2 → C4 → C5 → D4 → D5<br>
+                        Adds: edge-budget counting, DAG-DP on shortest-path DAG, 3-pass meeting point, minimax, ball-rolling implicit graph, time-parity, coordinate-implicit graph, second-minimum with parity.<br><br>
+                        <strong>Phase 3 — Validate (trap recognition + unseen · ongoing):</strong><br>
+                        Attempt A4, B5, D6 — identify BEFORE coding that Dijkstra is the wrong tool or needs modification.<br>
+                        Then: LeetCode contest Hard graph problems, Codeforces Div2 D/E with "shortest path" tag, Google Kickstart archived problems with "minimum cost + constraint."<br>
+                        Mastery bar: recognise variant and begin correct implementation within 3 minutes.
+                    </div>
+
+                    <div class="sec-title">Red Flags / Common Mistakes</div>
+                    <div class="warn-box">
+                        <strong>1. Missing lazy deletion check:</strong> Omitting <code>if d &gt; dist[u]: continue</code> processes stale heap entries; produces wrong answers when a node is reachable via multiple paths of different costs.<br><br>
+                        <strong>2. Dijkstra with negative edges:</strong> Returns wrong answers silently — no crash, no exception, just incorrect distances. The most dangerous mistake in interviews; always verify all edge weights are non-negative first.<br><br>
+                        <strong>3. Integer overflow:</strong> Using int32 with INF = 2^31 - 1; adding any positive value wraps to negative, which then "beats" all real distances. Use long/int64 with INF = 10^18 or LLONG_MAX/2.<br><br>
+                        <strong>4. State-expanded — 1D instead of 2D dist array:</strong> dist[node] instead of dist[node][state] collapses the state space; once a node is settled at any state, it is never updated for a different state. Must maintain dist[node][state] for every distinct (node, state) pair.<br><br>
+                        <strong>5. Counting paths — updating ways at enqueue instead of dequeue:</strong> If ways[v] += ways[u] happens when pushing (rather than when u is settled/popped), you count paths through nodes whose distances may still decrease — produces overcounting.<br><br>
+                        <strong>6. Min-max relaxation — using addition instead of max():</strong> For effort/swim problems, relaxation is new_cost = max(prev_cost, edge_cost), not new_cost = prev_cost + edge_cost. Mixing the objective functions is a silent bug — passes simple examples, fails complex ones.<br><br>
+                        <strong>7. Forgetting to reverse edges for backward Dijkstra:</strong> In the 3-pass meeting-point pattern (B4), the third Dijkstra runs on a reversed graph. Omitting the reversal gives incorrect "backward" distances.
+                    </div>
+ It is the go-to tool for any "minimum cost path" problem. In interviews it appears directly (network delay, cheapest flights) and embedded inside modified problems (state-expanded Dijkstra, 0-1 BFS generalization, grid path cost). The key advantage over BFS: correct for any non-negative weights. The key limitation: FAILS with negative edges (use Bellman-Ford). At competition level, Dijkstra on large sparse graphs (V≤10⁵, E≤3×10⁵) with O((V+E)log V) is required.</div>
+                    <div class="core-box"><strong>Mental Model — Greedy Settlement:</strong> Maintain a priority queue (min-heap) of (dist, node) pairs. Always process the node with the currently known minimum distance first. When a node is popped from the heap, its distance is FINAL — no shorter path exists (since all weights are non-negative). For each neighbor: if dist[u] + w(u,v) &lt; dist[v] → update dist[v] and push to heap. The invariant: <strong>when node u is first popped from the heap, dist[u] is the true shortest distance from the source.</strong></div>
+
+                    <div class="sec-title">Core Invariant &amp; Correctness</div>
+                    <div class="info-box"><strong>Invariant (Greedy Correctness):</strong> When a node u is popped from the min-heap with distance d, d = dist[u] = true shortest distance from source to u.<br><br>
+                    <strong>Proof sketch:</strong> Suppose there exists a shorter path P of length d' &lt; d. Then P contains some first edge (s, ..., x, y) that leaves the "settled" set. At the time x was settled, dist[x] was correct. The edge relaxation from x would have given dist[y] ≤ dist[x] + w(x,y) ≤ d' &lt; d. But we're popping u at d, meaning all settled nodes have distance ≤ d and y would have been settled earlier — contradiction. ∎<br><br>
+                    <strong>Why it fails with negative edges:</strong> A later-processed node might provide a shortcut via a negative edge to an already-settled node. The greedy invariant breaks.<br><br>
+                    <strong>Lazy deletion vs re-enqueue:</strong> Standard interviews use lazy deletion — when popping (d, u), if d &gt; dist[u] → skip (stale entry). Cleaner than maintaining a decrease-key heap.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Standard SSSP Dijkstra · Stage 1</span><span class="pill">Dijkstra with Lazy Deletion · Stage 1</span><span class="pill">Grid Dijkstra (cost per cell/edge) · Stage 2</span><span class="pill">State-Expanded Dijkstra (node, extra_state) · Stage 3</span><span class="pill">Modified Dijkstra (K stops, fuel, colors) · Stage 3</span><span class="pill">Dijkstra + Binary Search on Answer · Stage 4</span><span class="pill">0-1 BFS as Special Case of Dijkstra · Stage 2</span><span class="pill">Dijkstra on Implicit Graph · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Staircase</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Sub-Variant</th><th>Time</th><th>Space</th><th>What Changed</th></tr></thead>
+                        <tbody>
+                        <tr><td>Basic Dijkstra (min-heap)</td><td>O((V+E) log V)</td><td>O(V)</td><td>Baseline: min-heap + dist array; log V per heap op</td></tr>
+                        <tr><td>Dense graph (V² edges)</td><td>O(V²)</td><td>O(V)</td><td>Use array-based Dijkstra (no heap); better when E ≈ V²</td></tr>
+                        <tr><td>Grid Dijkstra R×C grid</td><td>O(R·C·log(R·C))</td><td>O(R·C)</td><td>V=R·C, E=4·R·C; same formula applied to grid</td></tr>
+                        <tr><td>State-expanded Dijkstra (node, k)</td><td>O(V·K·log(V·K))</td><td>O(V·K)</td><td>K = extra state dimension; dist[node][k] tracks state</td></tr>
+                        <tr><td>0-1 BFS (special case, 0/1 weights only)</td><td>O(V+E)</td><td>O(V)</td><td>Deque replaces heap; O(1) front/back push removes log factor</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Standard SSSP</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/network-delay-time/" target="_blank">LC 743</a></td><td class="prob-name">Network Delay Time</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Standard Dijkstra SSSP</td><td>Baseline: min-heap of (dist, node); lazy deletion; dist array initialized to ∞</td><td class="insight">Canonical Dijkstra template: push (0, source). While heap: pop (d,u); if d &gt; dist[u] skip (lazy deletion). For each neighbor v: if d + w &lt; dist[v]: update and push. Answer = max(dist[1..N]); if any is ∞ return -1</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/path-with-maximum-probability/" target="_blank">LC 1514</a></td><td class="prob-name">Path with Maximum Probability</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Maximum-probability Dijkstra (invert to minimization)</td><td>Maximize product of probabilities = minimize negative log probabilities; or use max-heap</td><td class="insight">Instead of min-heap on distance, use MAX-heap on probability (use negation for Python). Relaxation: prob[v] = max(prob[v], prob[u] * edge_prob). Dijkstra works: once a node is settled at max-prob, no higher-probability path exists since all probs ≤ 1 (non-negative analog)</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-weighted-subgraph-with-the-required-paths/" target="_blank">LC 2203</a></td><td class="prob-name">Minimum Weighted Subgraph with Required Paths</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Three Dijkstra runs + meeting point optimization</td><td>Run Dijkstra from src1, src2, and dst (on reversed graph); find optimal meeting point</td><td class="insight">dist1[v] = from src1. dist2[v] = from src2. dist3[v] = from dst in reversed graph. For each candidate meeting point v: total = dist1[v] + dist2[v] + dist3[v]. Answer = min over all v. Three Dijkstra runs enable O((V+E)log V) instead of brute-force</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Grid Dijkstra</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/path-with-minimum-effort/" target="_blank">LC 1631</a></td><td class="prob-name">Path With Minimum Effort</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dijkstra on grid (minimize max edge weight on path)</td><td>Cost = max abs difference along path; min-heap on current max cost</td><td class="insight">Dijkstra where dist[r][c] = minimum possible max-edge-cost to reach (r,c). Relaxation: new_cost = max(curr_cost, abs(height_diff)). Push if new_cost &lt; dist[r][c]. Alternatively: binary search on answer + BFS feasibility check (both approaches valid)</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/swim-in-rising-water/" target="_blank">LC 778</a></td><td class="prob-name">Swim in Rising Water</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Dijkstra minimax (minimize max cell value on path)</td><td>Cost = max grid value along path; identical to B1 but on cell values not edge weights</td><td class="insight">dist[r][c] = minimum possible max(cell values on any path) to reach (r,c). Relaxation: new_cost = max(curr_cost, grid[nr][nc]). Push if new_cost &lt; dist[nr][nc]. Same pattern as B1; the key: Dijkstra works here because max() preserves monotonicity</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/" target="_blank">LC 1368</a></td><td class="prob-name">Min Cost to Make at Least One Valid Path in Grid</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">0-1 BFS on grid (follow arrow = 0 cost, redirect = 1 cost)</td><td>Deque replaces heap: 0-cost edges push to front, 1-cost push to back</td><td class="insight">Following existing arrow = 0 cost → deque FRONT. Redirecting arrow = 1 cost → deque BACK. 0-1 BFS achieves O(R·C) vs Dijkstra's O(R·C log). WHY hard: recognizing this is 0-1 BFS (a degenerate Dijkstra) and not a general weighted graph problem</td></tr>
+                        <tr><td class="num-cell">B4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-obstacle-removal-to-reach-corner/" target="_blank">LC 2290</a></td><td class="prob-name">Minimum Obstacle Removal to Reach Corner</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">0-1 BFS on grid (obstacle = 1, empty = 0)</td><td>Moving through empty = 0 cost; removing obstacle = 1 cost; 0-1 BFS</td><td class="insight">Edge cost = grid[nr][nc] (0 for empty, 1 for obstacle). 0-1 BFS: push to front if cost 0, push to back if cost 1. dist[r][c] = minimum obstacles removed to reach (r,c). Simpler 0-1 BFS template than B3</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — State-Expanded Dijkstra</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l2">Variants</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/cheapest-flights-within-k-stops/" target="_blank">LC 787</a></td><td class="prob-name">Cheapest Flights Within K Stops</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">State = (node, stops_used); dist[node][stops] 2D array</td><td>Adds stops constraint as second state dimension</td><td class="insight">State = (cost, node, stops_remaining). dist[node][stops] = minimum cost to reach node using ≤stops stops. Relax: if cost + w &lt; dist[v][k-1] → update and push. Without the stops dimension, Dijkstra settles nodes greedily and can't re-enter at different stop counts</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-fuel-cost-to-report-to-the-capital/" target="_blank">LC 2477</a></td><td class="prob-name">Minimum Fuel Cost to Report to the Capital</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Tree DFS with greedy fuel calculation (not Dijkstra)</td><td>Tree structure: DFS computes people in each subtree; ceil(people/seats) = fuel cost per edge</td><td class="insight">Postorder DFS: count people in each subtree. Fuel for edge = ceil(subtree_people / seats). Sum all edge fuels = answer. WHY here: illustrates that "minimum cost" on a tree doesn't need Dijkstra — the tree structure makes greedy DFS optimal</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-reach-destination-in-time/" target="_blank">LC 1928</a></td><td class="prob-name">Minimum Cost to Reach Destination in Time</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">State = (node, time_used); 2D dist array</td><td>Adds time constraint; minimize cost subject to time ≤ maxTime</td><td class="insight">State = (cost, node, time). dist[node][t] = minimum cost to reach node in exactly t minutes. Relax: if cost + passing_fees[v] &lt; dist[v][t+time(u,v)] → update. Process in order of increasing time (Dijkstra by time). Answer = min(dist[dst][0..maxTime])</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-ways-to-arrive-at-destination/" target="_blank">LC 1976</a></td><td class="prob-name">Number of Ways to Arrive at Destination</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Dijkstra + count shortest paths</td><td>Alongside dist[], maintain ways[] = number of shortest paths to each node</td><td class="insight">Run Dijkstra normally but maintain ways[v]: if dist[u] + w == dist[v] → ways[v] += ways[u]. If dist[u] + w &lt; dist[v] → ways[v] = ways[u] (new shortest path found, reset count). Answer = ways[dst] mod 1e9+7</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/network-delay-time/" target="_blank">LC 743</a></td><td class="prob-name trap-name">⚠️ Network Delay — Using BFS</td><td><span class="diff-m">Med</span></td><td>Using BFS instead of Dijkstra on a weighted graph — BFS only gives correct distances when all edge weights are equal (= 1)</td><td>Dijkstra with min-heap for weighted graphs; BFS only for unit-weight or unweighted graphs</td></tr>
+                        <tr><td class="num-cell">T2</td><td><a class="lc-link" href="https://leetcode.com/problems/cheapest-flights-within-k-stops/" target="_blank">LC 787</a></td><td class="prob-name trap-name">⚠️ Cheapest Flights — Missing State Dimension</td><td><span class="diff-m">Med</span></td><td>Using 1D dist[node] without tracking stops — Dijkstra settles nodes greedily and cannot re-visit a node at a different stop count, missing valid K-stop paths</td><td>2D state: dist[node][stops]. When popping (cost, node, stops): relax neighbors with stops+1. Stops dimension allows same node to be re-visited at different stop counts</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Dijkstra with Negative Edges</td><td><span class="diff-h">Hard</span></td><td>Applying Dijkstra to a graph with any negative edge weight — the greedy invariant breaks; a settled node's distance can be improved later via a negative edge</td><td>Use Bellman-Ford for negative edges; or Johnson's algorithm for APSP with negatives</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Minimum cost/time/weight path" + non-negative edge weights</td><td class="trigger-variant">Stage 1 Standard Dijkstra</td><td class="trigger-breaks">Negative edges → use Bellman-Ford; negative cycles → undefined</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum cost" + "at most K stops/turns/color changes"</td><td class="trigger-variant">Stage 3 State-expanded Dijkstra — (node, K) state</td><td class="trigger-breaks">K is very large (K≈V) → standard Dijkstra or DP may be simpler</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum obstacles/redirects" on a grid (0 or 1 cost per move)</td><td class="trigger-variant">Stage 2 0-1 BFS (deque)</td><td class="trigger-breaks">More than 2 cost levels → need full Dijkstra with heap</td></tr>
+                        <tr><td class="trigger-phrase">"Minimize maximum edge/cell value along the path"</td><td class="trigger-variant">Stage 2 Dijkstra with max() relaxation</td><td class="trigger-breaks">Also solvable via binary search + BFS/DSU feasibility — both valid</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Are all edge weights non-negative?</strong><br>→ Yes: Dijkstra. No: Bellman-Ford (or SPFA for sparse graphs).<br><br>
+                    <strong>Q2: Are all edge weights 0 or 1?</strong><br>→ 0-1 BFS (deque): O(V+E). Faster constant than Dijkstra's O((V+E)log V).<br><br>
+                    <strong>Q3: All edge weights equal (= 1 or any constant)?</strong><br>→ Standard BFS: O(V+E). Even faster.<br><br>
+                    <strong>Q4: Additional constraint on the path (≤K stops, fuel limit, color alternation)?</strong><br>→ State-expanded Dijkstra: state = (node, constraint_value). 2D dist array.<br><br>
+                    <strong>Q5: Need to minimize the MAX value along any path (bottleneck)?</strong><br>→ Dijkstra with max() in relaxation: dist[v] = min over all paths of max edge weight on path.<br><br>
+                    <strong>Q6: Count number of shortest paths alongside finding distance?</strong><br>→ Dijkstra + parallel ways[] array. Update ways[v] when dist[v] improves or equals.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Missing lazy deletion check</td><td>Stale heap entries re-processed; wrong distances or TLE</td><td>After popping (d, u): if d &gt; dist[u] → continue (skip stale entry)</td></tr>
+                        <tr><td>2</td><td>Using BFS on weighted graph</td><td>BFS gives wrong shortest distances when edge weights ≠ 1</td><td>Use Dijkstra (min-heap) for any non-uniform edge weights</td></tr>
+                        <tr><td>3</td><td>Not initializing dist[] to infinity</td><td>Relaxation condition always true; heap bloats with unnecessary entries</td><td>Initialize dist[all] = ∞; dist[source] = 0</td></tr>
+                        <tr><td>4</td><td>Directed graph treated as undirected</td><td>Edges traversed in wrong direction; incorrect distances</td><td>Build adjacency list respecting edge direction from input</td></tr>
+                        <tr><td>5</td><td>State-expanded: missing stops/state dimension in dist array</td><td>Same node settled at wrong stop count; valid K-stop paths missed</td><td>dist[node][k] = min cost at node with k stops remaining; 2D array</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 743 · LC 1631 · LC 787<br><br>
+                        <strong>High Frequency:</strong> LC 1514 · LC 778 · LC 1368 · LC 2290 · LC 1976<br><br>
+                        <strong>Depth:</strong> LC 2203 · LC 1928 · LC 2203 (three-Dijkstra meeting point)
+                    </div>
 `,
   },
   {
@@ -4324,13 +5741,98 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Floyd Warshall",
     navTierDotColor: "#a13544",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Floyd-Warshall Algorithm",
+    tier: { code: "T3", label: "Advanced" },
+    typeLabel: "All-Pairs Shortest Path",
+    summaryMeta: "12 problems · APSP, transitive closure, reachability matrix, negative cycles · 3 stages",
     topbarMeta: "Graphs · Shortest Path",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> Floyd-Warshall computes all-pairs shortest paths (APSP) in O(V³) time and O(V²) space. It is the right tool when V ≤ 300–400 and you need distances between ALL pairs of nodes. Unlike Dijkstra (single source, non-negative weights) and Bellman-Ford (single source, handles negatives), Floyd-Warshall handles both negative edges AND all sources in a single DP sweep. It also naturally computes transitive closure (reachability) and detects negative cycles (diagonal dist[i][i] &lt; 0 after running). In interviews it appears directly on small graphs and embedded in problems requiring "distance between any two nodes quickly."</div>
+                    <div class="core-box"><strong>Core Recurrence:</strong> dist[i][j] = minimum distance from i to j using only nodes {0..k} as intermediate nodes.<br><br>
+                    <code>for k in 0..V-1:</code><br>
+                    <code>&nbsp;&nbsp;for i in 0..V-1:</code><br>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;for j in 0..V-1:</code><br>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])</code><br><br>
+                    <strong>Initialization:</strong> dist[i][i] = 0; dist[i][j] = edge weight if direct edge exists; dist[i][j] = ∞ otherwise.<br>
+                    <strong>After running:</strong> dist[i][j] = shortest path from i to j through any intermediate nodes. If dist[i][i] &lt; 0 for any i → negative cycle detected.</div>
+
+                    <div class="sec-title">Core Invariant &amp; Correctness</div>
+                    <div class="info-box"><strong>DP Invariant:</strong> After processing intermediate node k, dist[i][j] = shortest path from i to j using only nodes {0, 1, ..., k} as intermediates.<br><br>
+                    <strong>Correctness (induction on k):</strong> Base (k = -1): dist[i][j] = direct edge weight or ∞ (no intermediate nodes). Step: adding node k as potential intermediate: either k is on the optimal i→j path (dist[i][k] + dist[k][j]) or it is not (dist[i][j] unchanged). Take the minimum. ∎<br><br>
+                    <strong>Negative cycle detection:</strong> If the shortest "path" from i to i is negative (dist[i][i] &lt; 0), then a negative cycle passes through i. Any path using that cycle has undefined (−∞) shortest path.<br><br>
+                    <strong>Space optimization:</strong> The DP can be done in-place on a 2D matrix (no need for 3D) because dist[i][k] and dist[k][j] used in the k-th iteration are already correct for paths using {0..k-1} intermediates (k is added as the new possible intermediate).</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">APSP Floyd-Warshall · Stage 1</span><span class="pill">Transitive Closure (reachability matrix) · Stage 1</span><span class="pill">Negative Cycle Detection via Diagonal · Stage 2</span><span class="pill">Count Nodes Within Distance K · Stage 2</span><span class="pill">Floyd-Warshall on Implicit/Small Graph · Stage 2</span><span class="pill">Path Reconstruction via next[][] matrix · Stage 3</span>
+                    </div>
+
+                    <div class="sec-title">Complexity &amp; When to Use</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Scenario</th><th>Time</th><th>Space</th><th>Use Floyd-Warshall When</th></tr></thead>
+                        <tbody>
+                        <tr><td>APSP, V ≤ 400</td><td>O(V³)</td><td>O(V²)</td><td>Need all-pairs distances; V small enough for V³</td></tr>
+                        <tr><td>APSP, V ≤ 10⁵</td><td>Too slow</td><td>Too large</td><td>Run V Dijkstra runs: O(V·(V+E)log V) — much faster</td></tr>
+                        <tr><td>Transitive closure, V ≤ 400</td><td>O(V³)</td><td>O(V²)</td><td>Same recurrence with boolean OR instead of min()</td></tr>
+                        <tr><td>Negative edges present (any V)</td><td>N/A (too slow for large V)</td><td>—</td><td>For small V with negatives: Floyd-Warshall. For large V: Bellman-Ford or Johnson's</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Direct APSP Applications</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance/" target="_blank">LC 1334</a></td><td class="prob-name">Find City With Smallest Number of Neighbors at Threshold Distance</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Standard APSP then count reachable nodes per city</td><td>Baseline Floyd-Warshall on city graph; count neighbors within threshold per city</td><td class="insight">Run Floyd-Warshall to get all-pairs distances. For each city, count how many others are within threshold distance. Find city with minimum count (tie-break: largest index). V ≤ 100 makes V³ = 10⁶ perfectly feasible</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-score-of-a-path-between-two-cities/" target="_blank">LC 2492</a></td><td class="prob-name">Minimum Score of Path Between Two Cities</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Component membership check then min-edge scan</td><td>Floyd-Warshall reachability: check if 1 and n are in same component; then find min edge in that component</td><td class="insight">If dist[1][n] &lt; ∞ (connected via Floyd-Warshall or BFS), any edge in the connected component could lie on some path between them. Answer = minimum edge weight in that component. Floyd-Warshall gives the transitive closure; then scan edges in the component</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-good-paths/" target="_blank">LC 2421</a></td><td class="prob-name">Number of Good Paths</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Union-Find + sorted edge processing (not Floyd-Warshall, but APSP contrast)</td><td>Shows when APSP is overkill vs targeted connectivity via Union-Find</td><td class="insight">Naive: APSP + count valid pairs = O(V³) + O(V²) — works but slow for V=3×10⁴. Optimal: sort edges by max endpoint value; Union-Find to track same-value reachable groups. WHY here: understand when APSP is inappropriate and targeted DSU is better</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Transitive Closure &amp; Reachability</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/find-center-of-star-graph/" target="_blank">LC 1791</a></td><td class="prob-name">Find Center of Star Graph</td><td><span class="diff-e">Easy</span></td><td></td><td class="variant-cell">Direct degree check (simpler than APSP)</td><td>Degree-based: center node appears in every edge</td><td class="insight">Center node = node in common between first two edges. No APSP needed. WHY here: shows that graph structure sometimes gives O(1) solutions; default to simpler approach before reaching for Floyd-Warshall</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/count-pairs-of-nodes/" target="_blank">LC 1782</a></td><td class="prob-name">Count Pairs of Nodes</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">APSP via Floyd-Warshall then count pairs satisfying threshold</td><td>All-pairs reachability or distance query after APSP</td><td class="insight">Need dist[i][j] for all pairs to answer queries. Floyd-Warshall on the node graph (adjacency via shared edges). For each query threshold: count pairs (i,j) where incident_edges(i,j) &gt; query. APSP enables O(1) per pair query after O(V³) precompute</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/evaluate-division/" target="_blank">LC 399</a></td><td class="prob-name">Evaluate Division</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Floyd-Warshall with multiplication instead of addition</td><td>Edge weight = ratio; path product = chain of ratios; APSP with × instead of +</td><td class="insight">dist[i][j] = product of ratios along path from i to j. Recurrence: dist[i][j] = max(dist[i][j], dist[i][k] * dist[k][j]) — use max because higher product = better ratio path. Alternatively: DFS per query. Floyd-Warshall precomputes all queries in O(V³)</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Negative Cycles &amp; Advanced</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/strange-printer-ii/" target="_blank">LC 1591</a></td><td class="prob-name">Strange Printer II</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Topological feasibility via reachability (Floyd-Warshall or DFS)</td><td>Color dependency graph: if color A must overprint B AND B must overprint A → impossible</td><td class="insight">For each color, find its bounding box. If two colors A and B have overlapping rectangles AND A appears inside B's box AND B appears inside A's box → cycle in printing order → impossible. Build dependency DAG; check for cycles via topo sort or DFS. Floyd-Warshall gives transitive closure for full cycle check</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-convert-string-i/" target="_blank">LC 2976</a></td><td class="prob-name">Minimum Cost to Convert String I</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">APSP on 26-node character transformation graph</td><td>Characters 'a'-'z' = 26 nodes; transformation costs = edge weights; APSP gives cheapest char-to-char conversion</td><td class="insight">Build weighted directed graph: 26 character nodes. For each (original[i], changed[i], cost[i]): add edge original→changed with given cost. Run Floyd-Warshall on 26×26 matrix. For each position in source: if source[i] ≠ target[i], look up dist[source[i]-'a'][target[i]-'a']. V=26 makes 26³ = 17,576 trivial</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td>General</td><td class="prob-name trap-name">⚠️ Using Floyd-Warshall on V &gt; 500</td><td><span class="diff-m">Med</span></td><td>O(V³) is 1.25×10⁸ operations for V=500 — borderline TLE; for V=1000 it's 10⁹ — guaranteed TLE in 1-second time limits</td><td>For large V: run V separate Dijkstra runs (O(V·(V+E)log V)) or Bellman-Ford. Floyd-Warshall only for V ≤ 300–400</td></tr>
+                        <tr><td class="num-cell">T2</td><td>General</td><td class="prob-name trap-name">⚠️ Negative Cycle Not Detected</td><td><span class="diff-m">Med</span></td><td>After Floyd-Warshall, not checking dist[i][i] &lt; 0 for any i — if a negative cycle exists, dist values are meaningless (can be made arbitrarily negative)</td><td>After running: check all dist[i][i]. If any dist[i][i] &lt; 0 → negative cycle exists → report accordingly</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Integer Overflow on dist[i][k] + dist[k][j]</td><td><span class="diff-m">Med</span></td><td>When dist[i][k] or dist[k][j] = ∞ (integer max), their sum overflows to negative — causing incorrect relaxations</td><td>Check for infinity before adding: if dist[i][k] == INF or dist[k][j] == INF → skip. Or use a safe infinity value like 1e18 where 2×1e18 doesn't overflow long</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Need distances between ALL pairs of nodes?</strong><br>→ V ≤ 400: Floyd-Warshall (O(V³)). V &gt; 400: V separate Dijkstra runs.<br><br>
+                    <strong>Q2: Graph has negative edges?</strong><br>→ Floyd-Warshall handles negatives for APSP. Single source with negatives → Bellman-Ford.<br><br>
+                    <strong>Q3: Need reachability (can i reach j?) not actual distances?</strong><br>→ Transitive closure variant: same triple loop but dist[i][j] |= (dist[i][k] &amp;&amp; dist[k][j]) with boolean OR.<br><br>
+                    <strong>Q4: Graph is very small (e.g., 26 character nodes, 10 cities)?</strong><br>→ Floyd-Warshall is ideal — V³ for V=26 is &lt;18k operations.<br><br>
+                    <strong>Q5: Need path reconstruction?</strong><br>→ Maintain next[i][j] = first intermediate node on optimal i→j path. Update when dist[i][j] improves.
+                    </div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 1334 · LC 2976 (character graph APSP)<br><br>
+                        <strong>High Frequency:</strong> LC 399 (division ratios via FW) · understand transitive closure variant<br><br>
+                        <strong>Depth:</strong> Negative cycle detection · path reconstruction via next[][] · Johnson's algorithm concept (for APSP with negatives at scale)
+                    </div>
 `,
   },
   {
@@ -4340,13 +5842,94 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Bellman Ford",
     navTierDotColor: "#a13544",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Bellman-Ford Algorithm",
+    tier: { code: "T3", label: "Advanced" },
+    typeLabel: "Shortest Path",
+    summaryMeta: "13 problems · negative edge SSSP, negative cycle detection, SPFA, k-edge constraint · 4 stages",
     topbarMeta: "Graphs · Shortest Path",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> Bellman-Ford is the only correct SSSP algorithm for graphs with negative edge weights. It runs in O(V·E) — slower than Dijkstra's O((V+E)log V) — but handles negatives. Critically, it also detects negative cycles: if the V-th iteration still relaxes an edge, a negative cycle exists. In interviews it appears for: currency arbitrage (negative cycle = profit loop), network delay with penalties, and as a building block for Johnson's algorithm (APSP with negatives via Bellman-Ford reweighting + Dijkstra). The SPFA (Shortest Path Faster Algorithm) queue-based optimization is Bellman-Ford in practice but doesn't change worst-case O(V·E).</div>
+                    <div class="core-box"><strong>Algorithm:</strong> Relax ALL edges V-1 times. For each edge (u,v,w): if dist[u] + w &lt; dist[v] → dist[v] = dist[u] + w. After V-1 iterations, all shortest paths with ≤V-1 edges are settled (any simple path in a V-node graph has ≤V-1 edges). <strong>Negative cycle detection:</strong> Run one more (V-th) iteration — if any edge still relaxes, a negative cycle reachable from the source exists.<br><br>
+                    <strong>SPFA optimization:</strong> Only relax edges from nodes whose dist was recently updated. Use a queue of "updated nodes." In practice O(kE) where k is small; worst case O(V·E).</div>
+
+                    <div class="sec-title">Core Invariant &amp; Correctness</div>
+                    <div class="info-box"><strong>Invariant:</strong> After k iterations, dist[v] = shortest path from source to v using AT MOST k edges.<br><br>
+                    <strong>Proof (induction on k):</strong> Base (k=0): dist[source]=0, all others ∞. Correct for 0-edge paths. Step: assume after k iterations, dist[v] = optimal k-edge path. Iteration k+1: for each edge (u,v,w), we try extending the optimal k-edge path to u by one more edge. After V-1 iterations: k=V-1 covers all simple paths (simple paths have ≤V-1 edges in a V-node graph). ∎<br><br>
+                    <strong>Why negative edges are fine:</strong> Unlike Dijkstra, Bellman-Ford does not commit to a distance being final until all V-1 iterations complete. Each iteration can improve distances via negative edges regardless of current distance ordering.<br><br>
+                    <strong>Why negative cycles break it:</strong> A negative cycle allows infinite improvement — each traversal of the cycle decreases the "distance." The V-th iteration detecting relaxation signals this infinite improvement.</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Standard Bellman-Ford SSSP · Stage 1</span><span class="pill">Negative Cycle Detection (V-th iteration) · Stage 2</span><span class="pill">SPFA — Queue-Based Optimization · Stage 2</span><span class="pill">K-Edge Constraint (DP on edges) · Stage 2</span><span class="pill">Bellman-Ford on Modified Graph · Stage 3</span><span class="pill">Currency Arbitrage via Negative Cycle · Stage 3</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Comparison</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Algorithm</th><th>Time</th><th>Negative Edges</th><th>Negative Cycles</th><th>Use When</th></tr></thead>
+                        <tbody>
+                        <tr><td>BFS</td><td>O(V+E)</td><td>No (unit weights only)</td><td>No</td><td>Unweighted / unit-weight graphs</td></tr>
+                        <tr><td>Dijkstra</td><td>O((V+E)log V)</td><td>No</td><td>No</td><td>Non-negative weights, single source</td></tr>
+                        <tr><td>Bellman-Ford</td><td>O(V·E)</td><td>Yes</td><td>Detects</td><td>Negative edges, negative cycle detection, K-edge constraint</td></tr>
+                        <tr><td>SPFA</td><td>O(kE) avg, O(VE) worst</td><td>Yes</td><td>Detects</td><td>Practical Bellman-Ford optimization for sparse graphs</td></tr>
+                        <tr><td>Floyd-Warshall</td><td>O(V³)</td><td>Yes</td><td>Detects (diagonal)</td><td>All-pairs, V ≤ 400</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Standard SSSP with Negatives</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/network-delay-time/" target="_blank">LC 743</a></td><td class="prob-name">Network Delay Time</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Bellman-Ford SSSP (can also use Dijkstra here — positive weights)</td><td>Baseline template: V-1 iterations over all edges; dist[] initialized to ∞</td><td class="insight">Apply Bellman-Ford as a template exercise. Relax all E edges V-1 times. Answer = max(dist[]); if any ∞ remains → -1. Note: this problem has positive weights so Dijkstra is faster — but Bellman-Ford works too; use it to practice the template</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/cheapest-flights-within-k-stops/" target="_blank">LC 787</a></td><td class="prob-name">Cheapest Flights Within K Stops</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">K-edge Bellman-Ford (exactly K+1 relaxation iterations)</td><td>Limit to K+1 edge relaxations = shortest path using ≤K+1 edges</td><td class="insight">Run exactly K+1 iterations of Bellman-Ford (not V-1). After iteration i, dist[v] = cheapest path using ≤i edges. Crucial: use a COPY of dist[] each iteration to prevent multi-hop updates in one pass — otherwise a single iteration may extend the path by more than one edge</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-reach-destination-in-time/" target="_blank">LC 1928</a></td><td class="prob-name">Minimum Cost to Reach Destination in Time</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DP on time steps (Bellman-Ford-like layer DP)</td><td>dp[t][v] = minimum cost to reach v in exactly t minutes</td><td class="insight">Process time steps 0..maxTime in order. dp[t][v] = min over edges (u,v,time) of dp[t-time][u] + passing_fees[v]. This is Bellman-Ford DP with time as the "edge count" dimension. Passing fees at nodes not edges requires careful accounting</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Negative Cycle Detection</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/find-negative-cycle-in-graph/" target="_blank">LC 3189</a></td><td class="prob-name">Find Negative Cycle in Graph</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">V-th iteration relaxation = negative cycle exists</td><td>Run V iterations; if V-th still relaxes → negative cycle</td><td class="insight">Standard Bellman-Ford + V-th check: if any dist[v] = dist[u] + w &lt; dist[v] in the V-th iteration, a negative cycle exists. To find WHICH nodes are on/reachable from negative cycles: from any node that relaxed in the V-th iteration, BFS/DFS in the graph to mark all reachable nodes as "affected"</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l3">Combo</span></td><td>3</td><td>Classic</td><td class="prob-name">Currency Arbitrage Detection</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Negative cycle in log-transformed graph = arbitrage opportunity</td><td>Transform: take negative log of exchange rates; negative cycle = profit cycle</td><td class="insight">Log(a×b×c) = log(a)+log(b)+log(c). Arbitrage exists if product of rates &gt; 1, i.e., sum of logs &lt; 0 (negative cycle in log-transformed graph). Apply Bellman-Ford with edge weights = -log(rate). Any relaxation in V-th iteration = arbitrage opportunity exists</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-reach-city-with-discounts/" target="_blank">LC 2093</a></td><td class="prob-name">Minimum Cost to Reach City With Discounts</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">State-expanded SSSP: (node, discounts_used)</td><td>Discount coupon = can halve one edge weight; state tracks coupons used so far</td><td class="insight">State = (cost, node, discounts_used). dist[node][k] = min cost to reach node using k discounts. Transition: normal edge cost or halved edge cost (consuming one discount). Use Dijkstra or Bellman-Ford on this extended state space. State expansion handles the constraint without negative edges</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — SPFA &amp; Advanced</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/second-minimum-time-to-reach-destination/" target="_blank">LC 2045</a></td><td class="prob-name">Second Minimum Time to Reach Destination</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">BFS for first and second minimum distances</td><td>Track dist1[] and dist2[] per node; second minimum path may revisit edges</td><td class="insight">Run BFS tracking both shortest and second-shortest arrival time at each node. Second minimum may involve going one extra edge back and returning. The parity of (second_min − first_min) determines if waiting at a red light is needed. Not Bellman-Ford but uses the "layer" concept of tracking paths by edge count</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/minimum-cost-to-connect-all-points/" target="_blank">LC 1584</a></td><td class="prob-name">Minimum Cost to Connect All Points (Prim's)</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">MST via Prim's (Dijkstra-like for MST) or Kruskal's</td><td>Array-based O(V²) Prim beats heap-based O(E log V) when E = O(V²)</td><td class="insight">Dense graph: all V² point pairs are edges. Prim's array-based O(V²) is better than heap O(V² log V). key[v] = minimum distance from v to current MST. Greedily add node with minimum key. Conceptually Dijkstra-for-MST: key replaces dist, edge weight replaces path weight</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/cheapest-flights-within-k-stops/" target="_blank">LC 787</a></td><td class="prob-name trap-name">⚠️ Cheapest Flights — Multi-hop in One Pass</td><td><span class="diff-m">Med</span></td><td>Not using a copy of dist[] each iteration — a single iteration can chain multiple hops (A→B then B→C in same pass), violating the "at most K+1 edges" constraint</td><td>Use a COPY (prev_dist) of dist[] at the START of each iteration. Only read from prev_dist, only write to dist[]. This ensures each iteration extends paths by exactly one edge</td></tr>
+                        <tr><td class="num-cell">T2</td><td>General</td><td class="prob-name trap-name">⚠️ Applying Dijkstra to Negative-Edge Graph</td><td><span class="diff-m">Med</span></td><td>Using Dijkstra when any edge weight is negative — Dijkstra's greedy invariant breaks; settled nodes can have incorrect distances</td><td>Use Bellman-Ford for any graph with negative edge weights. Check problem constraints: if any weight &lt; 0, Dijkstra is invalid</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Overflow in dist[u] + w When dist[u] = ∞</td><td><span class="diff-m">Med</span></td><td>dist[u] is ∞ (INT_MAX) and adding w overflows to negative, causing false relaxations of unreachable nodes</td><td>Check dist[u] != INF before relaxing. Or use a safe infinity value (e.g. 1e18 in long) where adding any reasonable weight still stays positive</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Are there negative edge weights?</strong><br>→ Yes: Bellman-Ford (SSSP) or Floyd-Warshall (APSP). No: prefer Dijkstra (faster).<br><br>
+                    <strong>Q2: Need to detect a negative cycle?</strong><br>→ Run V iterations of Bellman-Ford; if V-th iteration still relaxes → negative cycle exists.<br><br>
+                    <strong>Q3: Path is constrained to exactly/at most K edges?</strong><br>→ K-iteration Bellman-Ford DP: run exactly K iterations; use a copy of dist[] each iteration to avoid multi-hop in one pass.<br><br>
+                    <strong>Q4: Is the graph sparse (E ≪ V²)?</strong><br>→ SPFA (queue-based Bellman-Ford) is fast in practice: only process nodes whose distance was recently updated.<br><br>
+                    <strong>Q5: Need APSP with negative edges?</strong><br>→ Floyd-Warshall (V ≤ 400) or Johnson's algorithm (V Dijkstra runs after Bellman-Ford reweighting, for V ≤ 10⁴).
+                    </div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 743 (template practice) · LC 787 (K-edge constraint with copy trick)<br><br>
+                        <strong>High Frequency:</strong> Currency arbitrage (negative cycle via log transform) · negative cycle detection in general<br><br>
+                        <strong>Depth:</strong> Johnson's algorithm concept · SPFA implementation · LC 1928 (time-constraint DP layer)
+                    </div>
 `,
   },
   {
@@ -4356,13 +5939,126 @@ else                                        expandFrontier(frontierB, frontierA)
     navSection: "Graphs",
     navLabel: "Union Find",
     navTierDotColor: "#a13544",
-    title: "",
-    tier: { code: "T1", label: "" },
-    typeLabel: "",
-    summaryMeta: "",
+    title: "Union Find (Disjoint Set Union)",
+    tier: { code: "T2", label: "Core" },
+    typeLabel: "Data Structure",
+    summaryMeta: "22 problems · connectivity, cycle detection, Kruskal's MST, weighted DSU · 5 stages",
     topbarMeta: "Graphs · Structure",
     bodyHtml: String.raw`
 
+                    <div class="info-box"><strong>Why It Matters:</strong> Union-Find (Disjoint Set Union, DSU) is the data structure for dynamic connectivity — answering "are nodes A and B in the same component?" in near-O(1) time after O(α(N)) per union/find operation (where α is the inverse Ackermann function, effectively constant). It powers Kruskal's MST, redundant connection detection, accounts merging, bipartite detection, and offline connectivity queries. In interviews it appears when you need to merge groups, detect cycles in undirected graphs, or check if adding an edge creates a cycle. The two critical optimizations — path compression and union by rank/size — must be internalized.</div>
+                    <div class="core-box"><strong>Core Implementation:</strong><br>
+                    <strong>find(x):</strong> Follow parent[] chain to the root. With path compression: parent[x] = find(parent[x]) — flattens the tree to near-constant depth.<br>
+                    <strong>union(x, y):</strong> Find roots of x and y. If same root → already connected (cycle if adding an edge!). Else: attach smaller-rank tree under larger-rank tree (union by rank). If ranks equal: attach either, increment rank of new root.<br><br>
+                    <code>def find(x): if parent[x] != x: parent[x] = find(parent[x]); return parent[x]</code><br>
+                    <code>def union(x, y): rx,ry = find(x),find(y); if rx==ry: return False; (attach by rank); return True</code></div>
+
+                    <div class="sec-title">Core Invariant &amp; Complexity</div>
+                    <div class="info-box"><strong>Invariant:</strong> find(x) returns the canonical root of x's component. Two nodes are in the same component iff find(a) == find(b).<br><br>
+                    <strong>Complexity:</strong> With both path compression AND union by rank: O(α(N)) amortized per operation, where α(N) ≤ 4 for all practical N. Effectively O(1). Without either optimization: O(N) worst case (degenerate chain).<br><br>
+                    <strong>Cycle detection in undirected graphs:</strong> For edge (u, v): if find(u) == find(v) before union → adding this edge creates a cycle (u and v are already connected). This is O(E·α(V)) total, faster than DFS O(V+E) for sparse cycle detection queries.<br><br>
+                    <strong>Path compression variants:</strong><br>
+                    • Full path compression (recursive): parent[x] = find(parent[x]) — makes every node on the path point directly to root<br>
+                    • Path halving (iterative): parent[x] = parent[parent[x]] — every other node points to its grandparent; simpler to implement iteratively</div>
+
+                    <div class="sec-title">Sub-Variants to Master</div>
+                    <div class="pill-grid">
+                        <span class="pill">Basic DSU with Path Compression + Rank · Stage 1</span><span class="pill">Cycle Detection in Undirected Graph · Stage 1</span><span class="pill">Component Count Tracking · Stage 1</span><span class="pill">Component Size Tracking · Stage 2</span><span class="pill">Kruskal's MST (sort edges + DSU) · Stage 2</span><span class="pill">Bipartite Detection via DSU (2N nodes) · Stage 3</span><span class="pill">Weighted DSU (edge weight ratios) · Stage 3</span><span class="pill">Offline Connectivity (process queries after all edges) · Stage 4</span>
+                    </div>
+
+                    <div class="sec-title">Complexity</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Operation</th><th>Time (with both optimizations)</th><th>Notes</th></tr></thead>
+                        <tbody>
+                        <tr><td>find(x)</td><td>O(α(N)) ≈ O(1)</td><td>Path compression flattens tree</td></tr>
+                        <tr><td>union(x, y)</td><td>O(α(N)) ≈ O(1)</td><td>Union by rank keeps tree shallow</td></tr>
+                        <tr><td>N operations total</td><td>O(N·α(N)) ≈ O(N)</td><td>Amortized near-linear for any sequence</td></tr>
+                        <tr><td>Kruskal's MST</td><td>O(E log E + E·α(V))</td><td>Sorting dominates; DSU for cycle check</td></tr>
+                        <tr><td>Without path compression</td><td>O(log N) per op</td><td>Union by rank only</td></tr>
+                        <tr><td>Without any optimization</td><td>O(N) worst per op</td><td>Degenerate chain</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section A — Basic Connectivity</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">A1</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-provinces/" target="_blank">LC 547</a></td><td class="prob-name">Number of Provinces</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DSU component count</td><td>Baseline: union all edges; count distinct roots = number of provinces</td><td class="insight">Initialize N components. For each edge: union the two nodes (components − 1 if they were separate). Final component count = N − (number of successful unions). Alternatively: iterate all find()s and count distinct roots</td></tr>
+                        <tr><td class="num-cell">A2</td><td><span class="l1">Foundation</span></td><td>1</td><td><a class="lc-link" href="https://leetcode.com/problems/redundant-connection/" target="_blank">LC 684</a></td><td class="prob-name">Redundant Connection</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Cycle detection — first edge creating a cycle</td><td>Process edges in order; first edge where find(u)==find(v) before union = redundant</td><td class="insight">For each edge (u,v): if find(u)==find(v) → this edge creates a cycle → it is the answer. Else union(u,v). Since input is guaranteed to have exactly one redundant edge, the first detected cycle is the answer</td></tr>
+                        <tr><td class="num-cell">A3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/graph-valid-tree/" target="_blank">LC 261</a></td><td class="prob-name">Graph Valid Tree</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Tree = connected + acyclic; check both conditions</td><td>Valid tree: exactly N-1 edges AND no cycles (DSU detects cycle)</td><td class="insight">Two conditions: (1) exactly N-1 edges — if not, immediately false; (2) no cycle — if any edge finds(u)==find(v) before union → false. DSU handles condition 2. Both must hold.</td></tr>
+                        <tr><td class="num-cell">A4</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/" target="_blank">LC 323</a></td><td class="prob-name">Number of Connected Components</td><td><span class="diff-m">Med</span></td><td><span class="prem">✅</span></td><td class="variant-cell">Component count via DSU</td><td>Start with N components; decrement on each successful union</td><td class="insight">Maintain a count variable. Initialize count = N. For each edge: if union succeeds (find(u)≠find(v)) → count−−. Final count = number of connected components</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section B — Kruskal's MST &amp; Graph Construction</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">B1</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/min-cost-to-connect-all-points/" target="_blank">LC 1584</a></td><td class="prob-name">Min Cost to Connect All Points</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Kruskal's MST — sort all edges, greedily add non-cycle edges</td><td>Sort N² edges by Manhattan distance; add with DSU cycle check until V-1 edges added</td><td class="insight">Kruskal's: generate all N(N-1)/2 edges, sort by weight. Greedily add cheapest edge if it doesn't create a cycle (DSU check). Stop when N-1 edges added = MST. For dense graphs (N≤1000) this is O(N²log N) — acceptable</td></tr>
+                        <tr><td class="num-cell">B2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/" target="_blank">LC 1489</a></td><td class="prob-name">Find Critical and Pseudo-Critical MST Edges</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">Kruskal's + edge removal/forced inclusion test</td><td>Critical: MST weight increases when edge excluded. Pseudo-critical: appears in SOME but not all MSTs</td><td class="insight">For each edge e: (1) Critical: run Kruskal excluding e — if MST cost increases or graph disconnects → e is critical; (2) Pseudo-critical: run Kruskal with e forced-included — if resulting MST cost == original MST cost → e is pseudo-critical. O(E²) total</td></tr>
+                        <tr><td class="num-cell">B3</td><td><span class="l2">Variants</span></td><td>2</td><td><a class="lc-link" href="https://leetcode.com/problems/number-of-operations-to-make-network-connected/" target="_blank">LC 1319</a></td><td class="prob-name">Number of Operations to Make Network Connected</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Count spare edges and disconnected components</td><td>Spare edges = total − (N−1) existing tree edges; need (components−1) spare edges to connect</td><td class="insight">Count components (C) and spare edges (S) using DSU. Need exactly C−1 connections. If S &lt; C−1 → impossible. Else → answer is C−1. DSU naturally tracks both: each union failure (find(u)==find(v)) = one spare edge</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">📌 Section C — Advanced DSU</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Layer</th><th>Stage</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>New Idea Added</th><th>Key Insight</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">C1</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/accounts-merge/" target="_blank">LC 721</a></td><td class="prob-name">Accounts Merge</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DSU on emails; reconstruct merged groups</td><td>Emails as DSU nodes; emails in same account → union; collect by root</td><td class="insight">Map each email to an integer. For each account: union all its emails together (they share an owner). After all unions: group emails by their root. For each group: find the owner name (any account containing an email in that group). Sort emails per group. O(N·α(N))</td></tr>
+                        <tr><td class="num-cell">C2</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/evaluate-division/" target="_blank">LC 399</a></td><td class="prob-name">Evaluate Division</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">Weighted DSU — path weights accumulate during find()</td><td>DSU with weight[x] = ratio from x to its root; path compression updates weights</td><td class="insight">weight[x] = ratio from x to root. find(x) returns (root, accumulated_ratio). During path compression: weight[x] *= weight[parent[x]]. For query a/b: if different components → -1. Else: find(a).ratio / find(b).ratio. Weighted DSU tracks accumulated product along path to root</td></tr>
+                        <tr><td class="num-cell">C3</td><td><span class="l3">Combo</span></td><td>3</td><td><a class="lc-link" href="https://leetcode.com/problems/similar-string-groups/" target="_blank">LC 839</a></td><td class="prob-name">Similar String Groups</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DSU on string similarity — O(N²·L) construction</td><td>Check all N² pairs; if similar → union; count components</td><td class="insight">Two strings are similar if they differ in 0 or exactly 2 positions (swapped characters). For each pair (s1,s2): check similarity in O(L). Union if similar. Count distinct roots = groups. O(N²·L) construction is unavoidable — must check all pairs</td></tr>
+                        <tr><td class="num-cell">C4</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/smallest-string-with-swaps/" target="_blank">LC 1202</a></td><td class="prob-name">Smallest String With Swaps</td><td><span class="diff-m">Med</span></td><td></td><td class="variant-cell">DSU components → sort each component independently</td><td>Swap-connected characters can be freely rearranged; sort within each component</td><td class="insight">Build DSU from swap pairs — all indices connected via swaps can be freely rearranged. Group indices by root (component). Sort the characters at those indices; place in sorted order back at sorted positions. Connected indices via transitive swaps form a "free rearrangement" group</td></tr>
+                        <tr><td class="num-cell">C5</td><td><span class="l4">Hard</span></td><td>4</td><td><a class="lc-link" href="https://leetcode.com/problems/making-a-large-island/" target="_blank">LC 827</a></td><td class="prob-name">Making A Large Island</td><td><span class="diff-h">Hard</span></td><td></td><td class="variant-cell">DSU for island components + flip-query optimization</td><td>DSU stores component sizes; flip a 0-cell and query neighbor component sizes in O(1)</td><td class="insight">Run DSU flood-fill to assign each '1' cell to a component and track component sizes. For each 0-cell: collect set of distinct neighbor component roots; answer = 1 + sum of their sizes. DSU makes both "component membership" and "component size" O(α) per query</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">⚠️ Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Link</th><th>Problem</th><th>Diff</th><th>Why It's a Trap</th><th>Correct Approach</th></tr></thead>
+                        <tbody>
+                        <tr><td class="num-cell">T1</td><td><a class="lc-link" href="https://leetcode.com/problems/redundant-connection-ii/" target="_blank">LC 685</a></td><td class="prob-name trap-name">⚠️ Redundant Connection II (Directed)</td><td><span class="diff-h">Hard</span></td><td>Directed graph: each node has at most one parent. Two cases to handle: (1) a node with two parents; (2) a cycle. These require different treatments and may overlap — must try removing candidate edges and check validity</td><td>Find node with two parents (two incoming edges). Try removing each candidate edge and verify valid directed tree (DSU cycle check on remaining edges). If no double-parent node, the redundant edge is the one that creates the cycle</td></tr>
+                        <tr><td class="num-cell">T2</td><td>General</td><td class="prob-name trap-name">⚠️ DSU Without Path Compression</td><td><span class="diff-m">Med</span></td><td>Implementing DSU without path compression — O(N) worst case per find() on degenerate chains; TLEs on large inputs</td><td>Always implement path compression: parent[x] = find(parent[x]) in the recursive case, or the iterative path-halving variant. Both are required alongside union by rank for O(α) guarantee</td></tr>
+                        <tr><td class="num-cell">T3</td><td>General</td><td class="prob-name trap-name">⚠️ Using DSU on Directed Graphs for Cycle Detection</td><td><span class="diff-m">Med</span></td><td>DSU cycle detection only works for UNDIRECTED graphs. In directed graphs, A→B and B→C does not mean A and C are in the same "undirected component." DSU merges bidirectionally</td><td>For directed cycle detection: use 3-color DFS. For undirected: DSU is faster and simpler</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>Trigger Phrase</th><th>Sub-Variant</th><th>When It BREAKS</th></tr></thead>
+                        <tbody>
+                        <tr><td class="trigger-phrase">"Are A and B connected?" / "same group/component?" repeatedly</td><td class="trigger-variant">Stage 1 DSU for O(α) per query</td><td class="trigger-breaks">Directed connectivity → DFS/BFS; edges are added and removed (dynamic) → Link-Cut Tree</td></tr>
+                        <tr><td class="trigger-phrase">"Redundant edge" / "first edge that creates a cycle" in undirected graph</td><td class="trigger-variant">Stage 1 DSU cycle detection</td><td class="trigger-breaks">Directed graph → use DFS 3-color; DSU merges bidirectionally and gives wrong answer</td></tr>
+                        <tr><td class="trigger-phrase">"Minimum spanning tree" / "connect all nodes with minimum cost"</td><td class="trigger-variant">Stage 2 Kruskal's MST = sort edges + DSU</td><td class="trigger-breaks">Dense graph (V large, E≈V²) → Prim's O(V²) array-based is better than Kruskal's O(V² log V)</td></tr>
+                        <tr><td class="trigger-phrase">"Merge groups" / "accounts with same email" / "transitively connected entities"</td><td class="trigger-variant">Stage 3 DSU on entity nodes</td><td class="trigger-breaks">Need to track group history or undo merges → Rollback DSU (without path compression)</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Decision Framework</div>
+                    <div class="info-box">
+                    <strong>Q1: Need to merge groups and query connectivity dynamically?</strong><br>→ DSU. O(α) per operation with path compression + union by rank.<br><br>
+                    <strong>Q2: Detect cycle in UNDIRECTED graph?</strong><br>→ DSU: if find(u)==find(v) before union → cycle. Faster than DFS for many sparse queries.<br><br>
+                    <strong>Q3: Minimum spanning tree?</strong><br>→ Sparse graph: Kruskal's (sort edges + DSU). Dense graph: Prim's (array-based O(V²)).<br><br>
+                    <strong>Q4: Need to merge elements AND track accumulated values (ratios, distances)?</strong><br>→ Weighted DSU: weight[x] = accumulated value from x to its root. Update during path compression.<br><br>
+                    <strong>Q5: Need to undo union operations (offline queries, bracket style)?</strong><br>→ Rollback DSU: use union by rank only (no path compression), store stack of (root_changed, old_parent, old_rank) for undo.
+                    </div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <thead><tr><th>#</th><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                        <tr><td>1</td><td>Not implementing path compression in find()</td><td>O(N) per find() on chain inputs; TLE on large datasets</td><td>Add parent[x] = find(parent[x]) in recursive find(), or path-halving in iterative find()</td></tr>
+                        <tr><td>2</td><td>Not using union by rank/size</td><td>Degenerate chain builds up; path compression alone gives O(log N) not O(α)</td><td>Track rank[] or size[] per root; always attach smaller tree under larger tree</td></tr>
+                        <tr><td>3</td><td>Using DSU for directed cycle detection</td><td>Edges merged bidirectionally give false "connected" results in directed graph</td><td>Use 3-color DFS for directed cycle detection; DSU only for undirected</td></tr>
+                        <tr><td>4</td><td>Forgetting to initialize parent[i] = i for all nodes</td><td>find() loops infinitely or returns wrong roots</td><td>Initialize parent[i] = i and rank[i] = 0 for all i from 0 to N-1</td></tr>
+                        </tbody>
+                    </table></div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 684 · LC 547 · LC 1584 (Kruskal's MST)<br><br>
+                        <strong>High Frequency:</strong> LC 261 · LC 1319 · LC 721 · LC 1202<br><br>
+                        <strong>Depth:</strong> LC 399 (weighted DSU with ratios) · LC 1489 (critical/pseudo-critical MST edges) · LC 685 (directed redundant connection)
+                    </div>
 `,
   },
   {
@@ -4374,12 +6070,236 @@ else                                        expandFrontier(frontierB, frontierA)
     navTierDotColor: "#a13544",
     title: "Advanced Graph Algorithms",
     tier: { code: "T4", label: "Advanced" },
-    typeLabel: "Overview",
-    summaryMeta: "Network flows, SCC, bridges, articulation points, MST variations",
-    topbarMeta: "Graphs · Advanced Overview",
+    typeLabel: "Mixed",
+    summaryMeta: "28 problems · bridges, SCC, Euler path, Prim MST, network flow · 4 domains",
+    topbarMeta: "Graphs · T4 Advanced",
     bodyHtml: String.raw`
 
-                    <div class="info-box"><strong>Advanced Topics:</strong> Max Flow (Ford-Fulkerson, Edmonds-Karp, Dinic's), Strongly Connected Components (Kosaraju's, Tarjan's), Bridges &amp; Articulation Points (Tarjan's), Minimum Spanning Tree variations (Kruskal, Prim), and other network flow applications.</div>
+                    <div class="info-box"><strong>Why It Matters:</strong> Advanced graph algorithms unlock the hardest graph problems: structural weak points (bridges, articulation points), directed decomposition (SCC), edge-exhaustive traversal (Euler paths), and flow maximization. These appear in Hard-tier graph problems and are frequent FAANG deep-cut targets — LC 1192, LC 332, LC 802, and flow-based bipartite matching all demand this toolkit.</div>
+
+                    <div class="core-box">
+                        <strong>Domain Overviews</strong><br><br>
+                        <strong>Bridges / APs — Tarjan Low-Link:</strong><br>
+                        disc[v] = DFS entry time (global timer++). low[v] = earliest disc reachable from subtree(v) via tree edges + at most one back edge.<br>
+                        Tree edge u→v: recurse, then low[u] = min(low[u], low[v]). Back edge u→w (w ≠ parent): low[u] = min(low[u], disc[w]).<br>
+                        Bridge: low[v] &gt; disc[u] for edge u-v. AP: root with ≥ 2 children, OR non-root u with low[v] ≥ disc[u] for some child v.<br><br>
+                        <strong>Tarjan SCC:</strong> Low-link + explicit stack. Push node on entry. Seal SCC when low[v] == disc[v] (v is component root) — pop stack until v is popped. O(V+E).<br><br>
+                        <strong>Kosaraju SCC:</strong> (1) DFS on G, push to finish-order stack. (2) Build G-transpose. (3) DFS on G^T in reverse finish order — each DFS tree = one SCC. O(V+E).<br><br>
+                        <strong>Hierholzer (Euler):</strong> DFS consuming edges greedily. Push node to result AFTER all adjacent edges are exhausted. Reverse = Euler path. O(E).<br>
+                        Conditions — directed circuit: in[v] == out[v] for all v; directed path: one node with out-in = 1 (start), one with in-out = 1 (end).<br><br>
+                        <strong>Prim MST (dense graphs):</strong> Maintain key[v] = min edge weight from v to current MST. Greedily pick non-MST node with smallest key, add to MST, update neighbors. O(V²) array; O(E log V) heap. Prefer for dense/complete graphs over Kruskal.<br><br>
+                        <strong>Dinic Max Flow:</strong> BFS builds level graph (distance layers from source). DFS finds blocking flow using levels + pointer array (skip dead ends). Repeat until sink unreachable in level graph. O(V²E); O(E√V) for unit-capacity bipartite matching.
+                    </div>
+
+                    <div class="sec-title">Sub-Variants</div>
+                    <div class="pill-grid">
+                        <span class="pill">Tarjan Bridges</span>
+                        <span class="pill">Articulation Points</span>
+                        <span class="pill">Tarjan SCC</span>
+                        <span class="pill">Kosaraju SCC</span>
+                        <span class="pill">Condensation DAG</span>
+                        <span class="pill">Hierholzer Euler Circuit</span>
+                        <span class="pill">Directed Euler Path</span>
+                        <span class="pill">Prim MST (dense)</span>
+                        <span class="pill">Dinic Max Flow</span>
+                        <span class="pill">Bipartite Max Matching</span>
+                        <span class="pill">König Theorem</span>
+                        <span class="pill">de Bruijn Graph</span>
+                    </div>
+
+                    <div class="sec-title">Complexity Reference</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th>Algorithm</th><th>Time</th><th>Space</th><th>When to Use</th></tr>
+                        <tr><td>Tarjan Bridges / AP</td><td>O(V+E)</td><td>O(V)</td><td>Structural vulnerabilities in undirected graph</td></tr>
+                        <tr><td>Tarjan SCC</td><td>O(V+E)</td><td>O(V)</td><td>Directed decomposition, single pass</td></tr>
+                        <tr><td>Kosaraju SCC</td><td>O(V+E)</td><td>O(V+E)</td><td>Simpler to reason about; needs transpose graph</td></tr>
+                        <tr><td>Hierholzer Euler</td><td>O(E)</td><td>O(E)</td><td>Visit every edge exactly once</td></tr>
+                        <tr><td>Prim MST (array)</td><td>O(V²)</td><td>O(V)</td><td>Dense / complete graphs (V ≤ 1000)</td></tr>
+                        <tr><td>Dinic Max Flow</td><td>O(V²E)</td><td>O(V+E)</td><td>Max flow; O(E√V) for unit bipartite matching</td></tr>
+                    </table></div>
+
+                    <div class="sec-title">Section A — Bridges &amp; Articulation Points</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="num-cell">#</th><th>Problem</th><th>Insight</th></tr>
+                        <tr>
+                            <td class="num-cell l2">A1</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/critical-connections-in-a-network/" target="_blank"><span class="prob-name">Critical Connections in a Network</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> The low-link invariant is subtle — tree edges propagate low[child] upward while back edges use disc[neighbor] directly; confusion here produces wrong results. Additionally, parent must be tracked by edge-index not node-id for correctness on multigraphs. Tarjan bridges: low[v] &gt; disc[u] → bridge. Sort result for deterministic output.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">A2</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-days-to-disconnect-island/" target="_blank"><span class="prob-name">Minimum Number of Days to Disconnect Island</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> Two non-obvious observations are both needed: (1) the answer is always ≤ 2 (provable by construction — any land cell on the island's edge can eventually be peeled off in ≤ 2 removals to isolate a single cell), and (2) answer = 1 iff an AP exists (requires Tarjan on the grid). Check island count (&gt; 1 or 0 → 0). AP exists → 1. Otherwise 2.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">A3</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/minimize-malware-spread-ii/" target="_blank"><span class="prob-name">Minimize Malware Spread II</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> The critical non-obvious observation is that removing an infected node only helps if it is the SOLE gateway to some clean component — if two infected nodes share a component's gateway, removing either one does not save that component. Build graph excluding all infected nodes; BFS from each infected node separately to find exclusively owned components. Remove the infected node owning the most exclusive nodes.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">A4</td>
+                            <td>🔧 <span class="prob-name">Find All Articulation Points</span> <span class="diff-m">Med</span></td>
+                            <td>No direct LeetCode problem tests AP detection in isolation — this fills the gap. Given undirected graph (n ≤ 10⁵, m ≤ 2×10⁵, may have multi-edges), return sorted list of all articulation points. Root AP: ≥ 2 DFS tree children. Non-root AP: low[child] ≥ disc[u] for any child. Use edge-index parent tracking for multi-edges.</td>
+                        </tr>
+                    </table></div>
+                    <div class="info-box"><strong>Coverage note — Section A:</strong> Direct bridge/AP problems on LeetCode are sparse (only LC 1192 tests bridges explicitly; LC 1568 and LC 928 use the concept implicitly). The 🔧 custom problem above fills the standalone AP gap. Additional coverage exists in competitive programming (Codeforces 193E, 231E).</div>
+                    <div class="warn-box"><strong>Bridge in Multigraph:</strong> Do NOT track parent as node-id — two edges between u-v would both be blocked. Pass edge_id as parent; skip only when edge_id == parent_edge_id. This lets the second u-v edge correctly register as a back-edge (not a bridge).</div>
+
+                    <div class="sec-title">Section B — Strongly Connected Components</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="num-cell">#</th><th>Problem</th><th>Insight</th></tr>
+                        <tr>
+                            <td class="num-cell l2">B1</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank"><span class="prob-name">Find Eventual Safe States</span></a> <span class="diff-m">Med</span></td>
+                            <td>Safe node = not in cycle, not leading to cycle. Three approaches: (1) Reverse graph + Kahn's from terminals — dequeued nodes are safe. (2) 3-color DFS — GRAY = in current path; reaching GRAY = cycle. (3) Tarjan SCC — unsafe = any SCC of size &gt; 1 or node with edge into unsafe SCC.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">B2</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/minimum-number-of-vertices-to-reach-all-nodes/" target="_blank"><span class="prob-name">Minimum Number of Vertices to Reach All Nodes</span></a> <span class="diff-m">Med</span></td>
+                            <td>⚠️ Misclassified: this is fundamentally a topological sort / in-degree problem — no SCC algorithm is needed. Included here because it demonstrates the condensation DAG source concept. In a DAG, minimum source set = all nodes with in-degree 0. One-pass count. Do not overthink.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">B3</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/longest-cycle-in-a-graph/" target="_blank"><span class="prob-name">Longest Cycle in a Graph</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> The insight that a functional graph (out-degree ≤ 1) has at most one cycle per weakly connected component — enabling O(V) total work via per-run timestamps — requires careful reasoning; most candidates apply generic DFS cycle detection that overcounts or misses the length. DFS with per-run entry times: back edge to node in THIS run → cycle_len = current_time - entry_time[node]. Mark all nodes globally visited after each run to skip in future calls.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">B4</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/count-visited-nodes-in-a-directed-graph/" target="_blank"><span class="prob-name">Count Visited Nodes in a Directed Graph</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> Must correctly detect the exact boundary where a tail enters a cycle (not just detect a cycle exists), handle tails that converge to the same cycle from different entry points, and memoize so each tail node is processed once rather than re-walking. Functional graph two-phase: (1) Find all cycles, tag cycle nodes with cycle_len. (2) Walk each tail toward its cycle, memoize tail_distance + cycle_len. Cycle node answer = cycle_len; tail node answer = cached result.</td>
+                        </tr>
+                    </table></div>
+                    <div class="info-box"><strong>Condensation DAG Pattern:</strong> After SCC decomposition, build a DAG where each SCC is a supernode. Sources (in-degree 0) = mandatory start; sinks (out-degree 0) = mandatory end. Both Tarjan and Kosaraju emit SCCs in REVERSE topological order — reverse for forward order. If condensation has exactly one source, there is a single universal starting SCC.</div>
+
+                    <div class="sec-title">Section C — Euler Path &amp; Circuit (Hierholzer's)</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="num-cell">#</th><th>Problem</th><th>Insight</th></tr>
+                        <tr>
+                            <td class="num-cell l2">C1</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/reconstruct-itinerary/" target="_blank"><span class="prob-name">Reconstruct Itinerary</span></a> <span class="diff-m">Med</span></td>
+                            <td>Directed Euler path guaranteed. Lex-smallest path: sort adjacency lists so smallest destination is explored first. Hierholzer's iterative: push node to result ONLY after all outgoing edges consumed. Reverse at end. Naive DFS backtracking gets TLE — must use push-after-exhaust.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">C2</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/valid-arrangement-of-pairs/" target="_blank"><span class="prob-name">Valid Arrangement of Pairs</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> Most candidates attempt to construct a chain greedily without recognizing the Euler path reduction — the non-obvious leap is modeling each pair as a directed edge and identifying that the "chain" requirement equals using every edge exactly once. Find start: node with out - in = 1 (or any node for circuit). Hierholzer's; extract consecutive node pairs from path.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">C3</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/cracking-the-safe/" target="_blank"><span class="prob-name">Cracking the Safe</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> The de Bruijn graph abstraction is entirely non-obvious — you must realize that overlapping (k-1)-length prefixes/suffixes form nodes and appending one character forms an edge, converting a combinatorial covering problem into an Euler circuit. de Bruijn: node = (k-1)-digit suffix; edge = append digit (= k-digit string label). Every k-digit combo = exactly one edge. Hierholzer's from "00...0" gives minimum superstring.</td>
+                        </tr>
+                    </table></div>
+                    <div class="core-box">
+                        <strong>Hierholzer's Template (Directed):</strong><br>
+                        Find start = node with out - in = 1, or any node with out &gt; 0 for circuit.<br>
+                        Sort adj[u] for lex order; pop from the end for O(1) removal.<br>
+                        stack = [start]; path = []<br>
+                        while stack not empty:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;u = stack[-1]<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;if adj[u] not empty: stack.append(adj[u].pop())<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;else: path.append(stack.pop())<br>
+                        result = reversed(path)
+                    </div>
+
+                    <div class="sec-title">Section D — Prim's MST &amp; Network Flow</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="num-cell">#</th><th>Problem</th><th>Insight</th></tr>
+                        <tr>
+                            <td class="num-cell l2">D1</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/min-cost-to-connect-all-points/" target="_blank"><span class="prob-name">Min Cost to Connect All Points</span></a> <span class="diff-m">Med</span></td>
+                            <td>Dense complete graph (n = 1000 → ~500k edges). Prim's O(V²) array beats Kruskal's O(E log E). Maintain dist[v] = min Manhattan distance from v to any current MST node. Each step: pick min-dist unvisited node, add to MST, update all unvisited neighbors. No explicit edge list needed.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">D2</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/maximum-students-taking-exam/" target="_blank"><span class="prob-name">Maximum Students Taking Exam</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> Requires knowing König's theorem (max independent set in bipartite = V − max matching = V − max flow), constructing the correct flow network with proper edge directions and capacities, and either implementing Dinic's or recognizing that small row width enables bitmask DP. Max independent set = V − max_flow (König). Flow: source → odd-col seats → even-col seats → sink (all cap 1), conflict edges. Bitmask DP per row (width ≤ 8) is the practical path.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l2">D3</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/optimize-water-distribution-in-a-village/" target="_blank"><span class="prob-name">Optimize Water Distribution in a Village</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> ✅ Premium. The reduction from "dig well OR connect houses" to MST requires the non-obvious virtual-node trick — direct DP/greedy approaches are O(n²) and fail to see that well costs become virtual edges. Add virtual node 0 with edge to house i of weight = well_cost[i]. Standard MST on (n+1) nodes solves it. Generalizes to any "open a resource OR connect to existing" problem.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell l3">D4</td>
+                            <td><a class="lc-link" href="https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/" target="_blank"><span class="prob-name">Critical and Pseudo-Critical MST Edges</span></a> <span class="diff-h">Hard</span></td>
+                            <td><strong>Why Hard:</strong> Requires two separate MST recomputations per edge (remove it AND force it) to distinguish critical from pseudo-critical, plus careful handling of equal-weight edges (same weight can produce different valid MSTs, making naive comparison wrong). Critical: remove edge, recompute MST — higher weight → critical. Pseudo-critical: force edge in first, fill remaining — same weight as original MST → pseudo-critical. O(E² α(V)) total.</td>
+                        </tr>
+                    </table></div>
+                    <div class="info-box"><strong>Max Flow → Bipartite Matching (Dinic's):</strong> Build unit-capacity flow: super-source → left nodes (cap 1) → right nodes (cap 1) → super-sink (cap 1). Max flow = max matching. Dinic's runs in O(E√V) for unit-capacity bipartite — handles n = 1000 easily. By König's theorem: max matching = min vertex cover; max independent set = V - max matching. These equalities convert combinatorial graph problems into flow computations.</div>
+
+                    <div class="sec-title">Trap Problems</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="num-cell">#</th><th>Trap</th><th class="variant-cell">Symptom</th><th>Fix</th></tr>
+                        <tr>
+                            <td class="num-cell">T1</td>
+                            <td><span class="trap-name">Multigraph bridge — parent node vs edge ID</span></td>
+                            <td class="variant-cell">Two edges u-v: using parent=v blocks both; back edge from v not counted; bridge missed or falsely detected</td>
+                            <td>Pass parent_edge_id (index in edge list). Skip only when edge_id == parent_edge_id, not when neighbor == parent.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell">T2</td>
+                            <td><span class="trap-name">Euler path — skipping connectivity check</span></td>
+                            <td class="variant-cell">Degree conditions met but graph has isolated nodes; Hierholzer finds partial path; unused edges remain in other components</td>
+                            <td>Check weak connectivity (ignoring edge direction) before running Hierholzer. Euler path exists iff degree conditions AND all edges in one weakly connected component. Verify len(path) == total_edges + 1.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell">T3</td>
+                            <td><span class="trap-name">Tarjan SCC output is reverse topological</span></td>
+                            <td class="variant-cell">Using Tarjan SCC list directly as forward topological order of condensation — wrong direction</td>
+                            <td>Both Tarjan and Kosaraju emit SCCs in reverse topological order. Reverse the list for sources-first (forward) order.</td>
+                        </tr>
+                        <tr>
+                            <td class="num-cell">T4</td>
+                            <td><span class="trap-name">Tarjan SCC: visited vs on_stack</span></td>
+                            <td class="variant-cell">Back edge to already-sealed node updates low[] — merges two distinct SCCs into one</td>
+                            <td>Maintain on_stack[] separate from visited[]. Update low[u] = min(low[u], disc[v]) ONLY when on_stack[v] is true. Never propagate low through finalized SCC nodes.</td>
+                        </tr>
+                    </table></div>
+
+                    <div class="sec-title">Pattern Recognition Triggers</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th>Trigger Phrase</th><th class="trigger-variant">Signal</th><th>Algorithm</th></tr>
+                        <tr><td class="trigger-phrase">critical connections / essential edges</td><td class="trigger-variant">Remove edge → disconnects graph</td><td>Tarjan Bridges</td></tr>
+                        <tr><td class="trigger-phrase">critical nodes / removal disconnects</td><td class="trigger-variant">Remove node → disconnects</td><td>Tarjan Articulation Points</td></tr>
+                        <tr><td class="trigger-phrase">strongly connected / reachable both directions</td><td class="trigger-variant">Directed cyclic reachability</td><td>Tarjan / Kosaraju SCC</td></tr>
+                        <tr><td class="trigger-phrase">eventually safe / terminal / no cycle reachable</td><td class="trigger-variant">Avoid directed cycles</td><td>Reverse Kahn's or Tarjan SCC</td></tr>
+                        <tr><td class="trigger-phrase">visit every edge exactly once</td><td class="trigger-variant">Edge exhaustion problem</td><td>Hierholzer Euler Path</td></tr>
+                        <tr><td class="trigger-phrase">reconstruct itinerary using all tickets</td><td class="trigger-variant">Directed edge chain, use all</td><td>Hierholzer on directed graph</td></tr>
+                        <tr><td class="trigger-phrase">arrange pairs end-to-end (end = start of next)</td><td class="trigger-variant">Pair chain = directed Euler path</td><td>Hierholzer + degree-check for start</td></tr>
+                        <tr><td class="trigger-phrase">connect n points min total distance (dense)</td><td class="trigger-variant">MST on complete graph</td><td>Prim's O(V²) array</td></tr>
+                        <tr><td class="trigger-phrase">maximum matching / maximum assignment in bipartite</td><td class="trigger-variant">Bipartite pairing</td><td>Dinic's O(E√V) unit bipartite</td></tr>
+                        <tr><td class="trigger-phrase">minimum cut / isolate source from sink</td><td class="trigger-variant">Max-flow = min-cut duality</td><td>Dinic's + BFS on residual graph</td></tr>
+                        <tr><td class="trigger-phrase">longest cycle / cycle length in functional graph</td><td class="trigger-variant">Each node has exactly one outgoing edge</td><td>DFS with per-run entry timestamps</td></tr>
+                    </table></div>
+
+                    <div class="sec-title">When This Technique BREAKS</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th class="trigger-breaks">Symptom</th><th>Avoid</th><th>Use Instead</th></tr>
+                        <tr><td class="trigger-breaks">Undirected graph, check if fully connected</td><td>SCC algorithm</td><td>Union-Find or BFS/DFS — O(V+E), simpler</td></tr>
+                        <tr><td class="trigger-breaks">Directed graph, just detect any cycle</td><td>Full Tarjan SCC</td><td>3-color DFS — same O(V+E), simpler</td></tr>
+                        <tr><td class="trigger-breaks">Sparse graph (E ≈ V), need MST</td><td>Prim's O(V²) array</td><td>Kruskal's O(E log E) + Union-Find</td></tr>
+                        <tr><td class="trigger-breaks">Non-negative weights, single-source shortest path</td><td>Bellman-Ford or flow</td><td>Dijkstra's — always for non-negative SSSP</td></tr>
+                        <tr><td class="trigger-breaks">Small graph (V &lt; 15), all-pairs reachability</td><td>Dinic's for reachability</td><td>Floyd-Warshall transitive closure O(V³)</td></tr>
+                        <tr><td class="trigger-breaks">Bipartite problem, small n (n ≤ 20)</td><td>Dinic's max flow</td><td>Bitmask DP — simpler and exact for small n</td></tr>
+                    </table></div>
+
+                    <div class="sec-title">Implementation Pitfalls</div>
+                    <div class="tbl-wrap"><table>
+                        <tr><th>Pitfall</th><th>Consequence</th><th>Prevention</th></tr>
+                        <tr><td>Tarjan AP/Bridge: parent as node-id in multigraph</td><td>False bridges missed; multi-edges block back-edge propagation</td><td>Use edge index as parent; skip edge_id == parent_edge_id, not neighbor == parent</td></tr>
+                        <tr><td>Hierholzer: appending node before exhausting edges</td><td>Partial path — stranded edges left over in graph</td><td>Push to result only when adj[u] is empty; DFS stack defers the append naturally</td></tr>
+                        <tr><td>Dinic's: missing reverse edges in residual graph</td><td>Flow cannot be rerouted; incorrect max-flow value</td><td>Add forward edge at index i, backward (cap=0) at index i XOR 1. Update: fwd.cap -= f; bwd.cap += f</td></tr>
+                        <tr><td>Tarjan SCC: updating low[] from already-sealed node</td><td>Two distinct SCCs merged into one</td><td>Update low[u] = min(low[u], disc[v]) ONLY when on_stack[v] == true</td></tr>
+                        <tr><td>Prim's: processing already-MST node from heap</td><td>Wrong MST weight; stale entries reprocessed</td><td>Track in_mst[] array; skip node when popped if in_mst[u] is true (lazy deletion)</td></tr>
+                    </table></div>
+
+                    <div class="sec-title">Coverage Set (Minimum Mastery)</div>
+                    <div class="coverage-box">
+                        <strong>Non-Negotiable:</strong> LC 1192 (Tarjan bridges) · LC 332 (Hierholzer Euler path) · LC 802 (eventual safe states) · LC 2360 (longest cycle)<br><br>
+                        <strong>High Frequency:</strong> LC 2097 (valid arrangement of pairs) · LC 1568 (disconnect island / AP) · LC 1557 (min vertices to reach all) · LC 1584 (Prim MST)<br><br>
+                        <strong>Depth:</strong> LC 753 (cracking the safe / de Bruijn) · LC 2876 (count visited nodes) · LC 1349 (max students / König's) · LC 928 (minimize malware II) · LC 1489 (critical MST edges)
+                    </div>
 `,
   },
   {
