@@ -6,7 +6,12 @@
       "Bash(awk 'NR>=1 && NR<=40')",
       "Bash(npm run *)",
       "Bash(cmd *)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "PowerShell($env:PATH = $env:PATH + \";C:\\\\Program Files\\\\nodejs\"; cd \"E:\\\\PracticeProjec\\\\dsalgofrog\"; node --version)",
+      "Bash(awk -F':' '$1 >= 7259 && $1 <= 7730')",
+      "Bash(awk 'NR>=7259 && NR<=7730 && /num-cell/' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
+      "Bash(awk -F: '$1 > 7259 && $1 < 7730')",
+      "Bash(grep -n \"1039\\\\|1130\\\\|1547\\\\|1388\\\\|1312\\\\| 72 \\\\| 72$\\\\| 72,\\\\|Edit.Distance\\\\|freedom.trail\\\\|Triangulation\" \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")"
     ]
   }
 }
