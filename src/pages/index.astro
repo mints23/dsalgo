@@ -9,21 +9,31 @@ const topicMetas = Object.fromEntries(topics.map((t) => [t.id, t.topbarMeta]));
 ---
 <!DOCTYPE html>
 <html lang="en">
-  <script is:inline>
-    // Apply theme before paint: saved pref → OS pref → light
-    (function () {
-      try {
-        var saved = localStorage.getItem('theme');
-        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-      } catch (e) {
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-    })();
-  </script>
   <head>
     <meta charset="UTF-8" />
+    <script is:inline>
+      // Apply theme before paint: saved pref → OS pref → light
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSA Mastery Guide</title>
+    <meta name="description" content="Comprehensive DSA interview preparation guide with 650+ problems across 43 topics — Two Pointers, Binary Search, DP, Graphs, and more." />
+    <meta property="og:title" content="DSA Mastery Guide — algofrog.in" />
+    <meta property="og:description" content="Comprehensive DSA interview preparation guide with 650+ problems across 43 topics." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://algofrog.in" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="DSA Mastery Guide — algofrog.in" />
+    <meta name="twitter:description" content="650+ problems across 43 DSA topics for interview prep." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Google tag (gtag.js) -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-RKMP4BG1N2"></script>
     <script is:inline>
@@ -32,7 +42,6 @@ const topicMetas = Object.fromEntries(topics.map((t) => [t.id, t.topbarMeta]));
       gtag('js', new Date());
       gtag('config', 'G-RKMP4BG1N2');
     </script>
-    <title>DSA Mastery Guide</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -101,7 +110,7 @@ const topicMetas = Object.fromEntries(topics.map((t) => [t.id, t.topbarMeta]));
         }
 
         // Update topbar
-        const topicTitle = clickedItem.innerText.replace(/^\\d+\\s*/, '');
+        const topicTitle = clickedItem.innerText.replace(/^\d+\s*/, '');
         topbarTitle.textContent = topicTitle;
         topbarMeta.textContent = topicMetas[topicNum] || '';
 
@@ -122,11 +131,20 @@ const topicMetas = Object.fromEntries(topics.map((t) => [t.id, t.topbarMeta]));
         const filter = searchInput.value.trim().toLowerCase();
 
         if (!filter) {
-          // Reset: hide all cards except the currently active one, show every row.
+          // Reset: restore single-topic view — show only the active card, show every row.
+          const activeNav = document.querySelector('.nav-item.active');
           topicCards.forEach((card) => {
+            card.classList.remove('active');
             card.style.display = '';
             card.querySelectorAll('tr').forEach((tr) => (tr.style.display = ''));
           });
+          if (activeNav) {
+            const activeId = parseInt(activeNav.getAttribute('data-topic-id'));
+            const activeCard = document.getElementById(`tp${activeId}`);
+            if (activeCard) activeCard.classList.add('active');
+            topbarTitle.textContent = activeNav.innerText.replace(/^\d+\s*/, '');
+            topbarMeta.textContent = topicMetas[activeId] || '';
+          }
           return;
         }
 
