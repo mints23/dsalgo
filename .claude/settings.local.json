@@ -14,7 +14,9 @@
       "Bash(grep -n \"1039\\\\|1130\\\\|1547\\\\|1388\\\\|1312\\\\| 72 \\\\| 72$\\\\| 72,\\\\|Edit.Distance\\\\|freedom.trail\\\\|Triangulation\" \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
       "Bash(awk '/<span class=\"l1\">Foundation<|<span class=\"l2\">Variants<|<span class=\"l3\">Combo<|<span class=\"l4\">Hard<|<span class=\"l5\">⚠️Trap</ {print NR\": \"$0}' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
       "PowerShell(Get-ChildItem *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(awk 'NR>=10357 && NR<=10680' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
+      "Bash(awk 'NR>=10345 && NR<=10525' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")"
     ]
   }
 }
