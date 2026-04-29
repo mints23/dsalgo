@@ -24,3 +24,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Raw topic data (content lives in Supabase, not in repo)
+src/data/topics.ts
