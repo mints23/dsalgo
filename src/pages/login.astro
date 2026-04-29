@@ -1,0 +1,389 @@
+---
+import '../styles/global.css';
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In — DSA Mastery Guide</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .login-page {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 400px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2.5rem 2rem 2rem;
+      }
+      .login-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 2rem;
+        justify-content: center;
+      }
+      .login-logo-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .login-logo-sub {
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+      .login-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--divider);
+        margin-bottom: 1.5rem;
+      }
+      .login-tab {
+        flex: 1;
+        padding: 0.6rem 0;
+        text-align: center;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+      }
+      .login-tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+      .login-tab:hover {
+        color: var(--text);
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        background: var(--bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .form-group input:focus {
+        border-color: var(--primary);
+      }
+      .login-btn {
+        width: 100%;
+        padding: 0.65rem;
+        border-radius: 0.4rem;
+        background: var(--primary);
+        color: var(--inv);
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin-top: 0.5rem;
+      }
+      .login-btn:hover {
+        background: var(--primary-h);
+      }
+      .login-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .divider-row {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 1.25rem 0;
+        color: var(--faint);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .divider-row::before,
+      .divider-row::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--divider);
+      }
+      .oauth-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        background: var(--surface2);
+        color: var(--text);
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        margin-bottom: 0.6rem;
+      }
+      .oauth-btn:hover {
+        background: var(--offset);
+        border-color: var(--primary);
+      }
+      .oauth-btn svg {
+        flex-shrink: 0;
+      }
+      .login-msg {
+        font-size: 0.78rem;
+        padding: 0.55rem 0.75rem;
+        border-radius: 0.4rem;
+        margin-bottom: 1rem;
+        display: none;
+      }
+      .login-msg.error {
+        display: block;
+        background: color-mix(in oklab, var(--error) 12%, var(--bg));
+        color: var(--error);
+        border: 1px solid color-mix(in oklab, var(--error) 25%, var(--border));
+      }
+      .login-msg.success {
+        display: block;
+        background: color-mix(in oklab, var(--primary) 12%, var(--bg));
+        color: var(--primary);
+        border: 1px solid color-mix(in oklab, var(--primary) 25%, var(--border));
+      }
+      .theme-toggle-login {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem;
+        border-radius: 0.4rem;
+        color: var(--muted);
+        transition: color 0.15s;
+      }
+      .theme-toggle-login:hover {
+        color: var(--text);
+      }
+      #signup-form { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="login-page">
+      <button class="theme-toggle-login" id="theme-toggle-login" aria-label="Toggle theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+      </button>
+
+      <div class="login-card">
+        <div class="login-logo">
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="46" stroke="var(--primary)" stroke-width="5" />
+            <text x="50" y="62" text-anchor="middle" font-size="38" font-weight="700" fill="var(--primary)" font-family="Inter, sans-serif">af</text>
+          </svg>
+          <div>
+            <div class="login-logo-text">algofrog.in</div>
+            <div class="login-logo-sub">DSA Mastery Guide</div>
+          </div>
+        </div>
+
+        <div class="login-tabs">
+          <button class="login-tab active" id="tab-signin">Sign In</button>
+          <button class="login-tab" id="tab-signup">Sign Up</button>
+        </div>
+
+        <div id="login-msg" class="login-msg"></div>
+
+        <!-- Sign In Form -->
+        <form id="signin-form" autocomplete="on">
+          <div class="form-group">
+            <label for="signin-email">Email</label>
+            <input type="email" id="signin-email" name="email" required autocomplete="email" placeholder="you@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="signin-password">Password</label>
+            <input type="password" id="signin-password" name="password" required autocomplete="current-password" placeholder="Your password" />
+          </div>
+          <button type="submit" class="login-btn" id="signin-btn">Sign In</button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signup-form" autocomplete="on">
+          <div class="form-group">
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" name="email" required autocomplete="email" placeholder="you@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" name="password" required autocomplete="new-password" placeholder="Min 6 characters" minlength="6" />
+          </div>
+          <button type="submit" class="login-btn" id="signup-btn">Create Account</button>
+        </form>
+
+        <div class="divider-row">or continue with</div>
+
+        <button class="oauth-btn" id="google-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 1 12c0 1.93.46 3.77 1.18 5.43l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </button>
+
+        <button class="oauth-btn" id="github-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text)"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+
+    <script>
+      import { supabase } from '../lib/supabase';
+
+      // If already logged in, redirect to home
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = '/';
+      }
+
+      // Tab switching
+      const tabSignin = document.getElementById('tab-signin')!;
+      const tabSignup = document.getElementById('tab-signup')!;
+      const signinForm = document.getElementById('signin-form') as HTMLFormElement;
+      const signupForm = document.getElementById('signup-form') as HTMLFormElement;
+      const msgEl = document.getElementById('login-msg')!;
+
+      function showMsg(text: string, type: 'error' | 'success') {
+        msgEl.textContent = text;
+        msgEl.className = `login-msg ${type}`;
+      }
+      function clearMsg() {
+        msgEl.className = 'login-msg';
+        msgEl.textContent = '';
+      }
+
+      tabSignin.addEventListener('click', () => {
+        tabSignin.classList.add('active');
+        tabSignup.classList.remove('active');
+        signinForm.style.display = '';
+        signupForm.style.display = 'none';
+        clearMsg();
+      });
+      tabSignup.addEventListener('click', () => {
+        tabSignup.classList.add('active');
+        tabSignin.classList.remove('active');
+        signupForm.style.display = '';
+        signinForm.style.display = 'none';
+        clearMsg();
+      });
+
+      // Sign In
+      signinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg();
+        const btn = document.getElementById('signin-btn') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Signing in…';
+
+        const email = (document.getElementById('signin-email') as HTMLInputElement).value;
+        const password = (document.getElementById('signin-password') as HTMLInputElement).value;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          showMsg(error.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+        } else {
+          window.location.href = '/';
+        }
+      });
+
+      // Sign Up
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg();
+        const btn = document.getElementById('signup-btn') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Creating account…';
+
+        const email = (document.getElementById('signup-email') as HTMLInputElement).value;
+        const password = (document.getElementById('signup-password') as HTMLInputElement).value;
+
+        const { error } = await supabase.auth.signUp({ email, password });
+
+        if (error) {
+          showMsg(error.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        } else {
+          showMsg('Check your email for a confirmation link!', 'success');
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        }
+      });
+
+      // Google OAuth
+      document.getElementById('google-btn')!.addEventListener('click', async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + '/' },
+        });
+      });
+
+      // GitHub OAuth
+      document.getElementById('github-btn')!.addEventListener('click', async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: { redirectTo: window.location.origin + '/' },
+        });
+      });
+
+      // Theme toggle
+      document.getElementById('theme-toggle-login')!.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      });
+    </script>
+  </body>
+</html>

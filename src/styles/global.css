@@ -635,3 +635,50 @@ table tbody tr:hover {
   }
 }
 
+/* ── PROGRESS TRACKING ── */
+.progress-cb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.progress-cb:hover {
+  border-color: var(--primary);
+}
+.progress-cb:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.progress-cb:checked::after {
+  content: '';
+  position: absolute;
+  left: 3.5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--inv);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.progress-cb:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+tr.row-done {
+  opacity: 0.55;
+}
+tr.row-done .prob-name,
+tr.row-done .insight {
+  text-decoration: line-through;
+  text-decoration-color: var(--faint);
+}
+

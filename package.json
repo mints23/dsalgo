@@ -11,9 +11,11 @@
     "deploy": "gh-pages -d dist --dotfiles"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "astro": "^6.1.7"
   },
   "devDependencies": {
+    "dotenv": "^17.4.2",
     "gh-pages": "^6.1.1"
   }
 }
