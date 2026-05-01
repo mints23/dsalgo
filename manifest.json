@@ -1,0 +1,17 @@
+{
+  "name": "DSA Mastery Guide",
+  "short_name": "DSA Mastery",
+  "description": "Master Data Structures & Algorithms with 43 topics and 1150+ curated problems",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#01696f",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
