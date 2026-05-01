@@ -170,7 +170,7 @@ import '../styles/global.css';
         userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--warning, #e6a817);font-weight:600;margin-left:0.3rem;">Trial: ${daysLeft}d left</span>`;
         // Show upgrade button
         const upgradeBtn = document.createElement('button');
-        upgradeBtn.textContent = 'Upgrade ₹11/mo';
+        upgradeBtn.textContent = 'Upgrade ₹199/mo';
         upgradeBtn.style.cssText = 'font-size:0.68rem;padding:0.25rem 0.6rem;border-radius:0.3rem;background:var(--primary);color:var(--inv);border:none;cursor:pointer;font-weight:600;margin-left:0.4rem;';
         upgradeBtn.addEventListener('click', () => openRazorpay());
         userNameEl.parentElement!.insertBefore(upgradeBtn, userNameEl.nextSibling);
@@ -185,7 +185,7 @@ import '../styles/global.css';
       function openRazorpay() {
         const options = {
           key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
-          amount: 1100, // ₹11 in paise
+          amount: 19900, // ₹199 in paise
           currency: 'INR',
           name: 'algofrog.in',
           description: 'DSA Mastery Guide — Monthly Subscription',
