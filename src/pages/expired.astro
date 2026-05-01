@@ -1,0 +1,245 @@
+---
+import '../styles/global.css';
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trial Expired — DSA Mastery Guide</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+      .expired-page {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .expired-card {
+        width: 100%;
+        max-width: 440px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2.5rem 2rem;
+        text-align: center;
+      }
+      .expired-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .expired-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+      }
+      .expired-text {
+        font-size: 0.88rem;
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+      .expired-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+      }
+      .expired-price-sub {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+      }
+      .expired-btn {
+        display: inline-block;
+        padding: 0.7rem 2rem;
+        border-radius: 0.4rem;
+        background: var(--primary);
+        color: var(--inv);
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin-bottom: 0.75rem;
+      }
+      .expired-btn:hover {
+        background: var(--primary-h);
+      }
+      .expired-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .expired-logout {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        color: var(--muted);
+        cursor: pointer;
+        background: none;
+        border: none;
+        text-decoration: underline;
+      }
+      .expired-logout:hover {
+        color: var(--text);
+      }
+      .expired-features {
+        text-align: left;
+        margin: 1.25rem 0;
+        padding: 0;
+        list-style: none;
+      }
+      .expired-features li {
+        font-size: 0.82rem;
+        color: var(--text);
+        padding: 0.35rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .expired-features li::before {
+        content: '\2713';
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .payment-methods {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .payment-methods span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="expired-page">
+      <div class="expired-card">
+        <div class="expired-icon">&#9200;</div>
+        <div class="expired-title">Your Free Trial Has Ended</div>
+        <div class="expired-text">
+          Your 7-day free trial has expired. Subscribe to continue accessing all 43 topics and 650+ DSA problems.
+        </div>
+
+        <div class="expired-price">&#8377;11<span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/month</span></div>
+        <div class="expired-price-sub">Cancel anytime</div>
+
+        <ul class="expired-features">
+          <li>Access to all 43 DSA topics</li>
+          <li>650+ curated problems with solutions</li>
+          <li>Progress tracking across devices</li>
+          <li>New content added regularly</li>
+        </ul>
+
+        <button class="expired-btn" id="subscribe-btn">Subscribe Now</button>
+
+        <div class="payment-methods">
+          <span>UPI</span>
+          <span>&#8226;</span>
+          <span>Cards</span>
+          <span>&#8226;</span>
+          <span>Net Banking</span>
+          <span>&#8226;</span>
+          <span>Wallets</span>
+        </div>
+
+        <button class="expired-logout" id="logout-btn">Sign out</button>
+      </div>
+    </div>
+
+    <script>
+      import { supabase } from '../lib/supabase';
+
+      // If not logged in, go to login
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/login';
+        throw new Error('redirect');
+      }
+
+      // If trial is still active or paid, go to home
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status, trial_ends_at, paid_until')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const now = new Date();
+      const isTrialActive = sub?.status === 'trial' && new Date(sub.trial_ends_at) > now;
+      const isPaid = sub?.status === 'active' && sub.paid_until && new Date(sub.paid_until) > now;
+      if (isTrialActive || isPaid) {
+        window.location.href = '/';
+        throw new Error('redirect');
+      }
+
+      // Subscribe button — Razorpay checkout
+      document.getElementById('subscribe-btn')!.addEventListener('click', () => {
+        const options = {
+          key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
+          amount: 1100,
+          currency: 'INR',
+          name: 'algofrog.in',
+          description: 'DSA Mastery Guide — Monthly Subscription',
+          prefill: {
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name || '',
+          },
+          theme: { color: '#01696f' },
+          handler: async (response: any) => {
+            const btn = document.getElementById('subscribe-btn') as HTMLButtonElement;
+            btn.disabled = true;
+            btn.textContent = 'Activating...';
+
+            const { data, error } = await supabase.rpc('activate_subscription', {
+              payment_id: response.razorpay_payment_id,
+            });
+
+            if (error) {
+              alert('Payment recorded but activation failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+              console.error(error);
+              btn.disabled = false;
+              btn.textContent = 'Subscribe Now';
+            } else {
+              alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
+              window.location.href = '/';
+            }
+          },
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      });
+
+      // Logout
+      document.getElementById('logout-btn')!.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+      });
+    </script>
+  </body>
+</html>

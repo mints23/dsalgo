@@ -102,3 +102,25 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ── Activate subscription after payment ──
+create or replace function public.activate_subscription(payment_id text)
+returns json as $$
+declare
+  result json;
+begin
+  update public.subscriptions
+  set status = 'active',
+      paid_until = now() + interval '30 days',
+      razorpay_payment_id = payment_id,
+      updated_at = now()
+  where user_id = auth.uid();
+
+  select json_build_object(
+    'success', true,
+    'paid_until', (select paid_until from public.subscriptions where user_id = auth.uid())
+  ) into result;
+
+  return result;
+end;
+$$ language plpgsql security definer;

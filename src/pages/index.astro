@@ -42,6 +42,7 @@ import '../styles/global.css';
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
       rel="stylesheet"
     />
+    <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
     <!-- Shell only — NO topic data in the HTML. Content fetched from Supabase after auth. -->
@@ -149,8 +150,47 @@ import '../styles/global.css';
       if (isTrialActive) {
         const daysLeft = Math.ceil((new Date(sub!.trial_ends_at).getTime() - now.getTime()) / 86400000);
         userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--warning, #e6a817);font-weight:600;margin-left:0.3rem;">Trial: ${daysLeft}d left</span>`;
+        // Show upgrade button
+        const upgradeBtn = document.createElement('button');
+        upgradeBtn.textContent = 'Upgrade ₹11/mo';
+        upgradeBtn.style.cssText = 'font-size:0.68rem;padding:0.25rem 0.6rem;border-radius:0.3rem;background:var(--primary);color:var(--inv);border:none;cursor:pointer;font-weight:600;margin-left:0.4rem;';
+        upgradeBtn.addEventListener('click', () => openRazorpay());
+        userNameEl.parentElement!.insertBefore(upgradeBtn, userNameEl.nextSibling);
+      } else if (isPaid) {
+        const paidDaysLeft = Math.ceil((new Date(sub!.paid_until!).getTime() - now.getTime()) / 86400000);
+        userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--primary);font-weight:600;margin-left:0.3rem;">Pro: ${paidDaysLeft}d left</span>`;
       } else {
         userNameEl.textContent = userName;
+      }
+
+      // ── Razorpay Checkout ──
+      function openRazorpay() {
+        const options = {
+          key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
+          amount: 1100, // ₹11 in paise
+          currency: 'INR',
+          name: 'algofrog.in',
+          description: 'DSA Mastery Guide — Monthly Subscription',
+          prefill: {
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name || '',
+          },
+          theme: { color: '#01696f' },
+          handler: async (response: any) => {
+            const { data, error } = await supabase.rpc('activate_subscription', {
+              payment_id: response.razorpay_payment_id,
+            });
+            if (error) {
+              alert('Payment recorded but activation failed. Please contact support.');
+              console.error(error);
+            } else {
+              alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
+              window.location.reload();
+            }
+          },
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       }
 
       document.getElementById('logout-btn')!.addEventListener('click', async () => {
