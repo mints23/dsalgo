@@ -27,3 +27,6 @@ Thumbs.db
 
 # Raw topic data (content lives in Supabase, not in repo)
 src/data/topics.ts
+
+# Markdown docs (local reference only)
+*.md

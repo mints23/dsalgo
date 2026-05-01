@@ -258,37 +258,39 @@ import '../styles/global.css';
       }
       document.getElementById('content')!.innerHTML = cardsHtml;
 
-      // ── Progress Tracking ──
+      // ── Progress Tracking (Pro only) ──
       const userId = session.user.id;
-      const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
-      const completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
-      document.querySelectorAll('.topic-card').forEach((card) => {
-        const topicId = parseInt(card.id.replace('tp', ''));
-        card.querySelectorAll('tbody tr').forEach((row) => {
-          const numCell = row.querySelector('.num-cell');
-          if (!numCell) return;
-          const probNum = parseInt(numCell.textContent?.trim() || '0');
-          if (!probNum) return;
-          const key = `${topicId}-${probNum}`;
-          const isComplete = completedSet.has(key);
-          const cb = document.createElement('input');
-          cb.type = 'checkbox'; cb.checked = isComplete; cb.className = 'progress-cb';
-          cb.title = isComplete ? 'Mark incomplete' : 'Mark complete';
-          if (isComplete) row.classList.add('row-done');
-          numCell.insertBefore(cb, numCell.firstChild);
-          cb.addEventListener('change', async () => {
-            cb.disabled = true;
-            if (cb.checked) {
-              const { error } = await supabase.from('user_progress').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
-              if (error) { cb.checked = false; } else { row.classList.add('row-done'); completedSet.add(key); }
-            } else {
-              const { error } = await supabase.from('user_progress').delete().eq('user_id', userId).eq('topic_id', topicId).eq('problem_num', probNum);
-              if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); }
-            }
-            cb.disabled = false; cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
+      if (isPaid) {
+        const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
+        const completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
+        document.querySelectorAll('.topic-card').forEach((card) => {
+          const topicId = parseInt(card.id.replace('tp', ''));
+          card.querySelectorAll('tbody tr').forEach((row) => {
+            const numCell = row.querySelector('.num-cell');
+            if (!numCell) return;
+            const probNum = parseInt(numCell.textContent?.trim() || '0');
+            if (!probNum) return;
+            const key = `${topicId}-${probNum}`;
+            const isComplete = completedSet.has(key);
+            const cb = document.createElement('input');
+            cb.type = 'checkbox'; cb.checked = isComplete; cb.className = 'progress-cb';
+            cb.title = isComplete ? 'Mark incomplete' : 'Mark complete';
+            if (isComplete) row.classList.add('row-done');
+            numCell.insertBefore(cb, numCell.firstChild);
+            cb.addEventListener('change', async () => {
+              cb.disabled = true;
+              if (cb.checked) {
+                const { error } = await supabase.from('user_progress').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
+                if (error) { cb.checked = false; } else { row.classList.add('row-done'); completedSet.add(key); }
+              } else {
+                const { error } = await supabase.from('user_progress').delete().eq('user_id', userId).eq('topic_id', topicId).eq('problem_num', probNum);
+                if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); }
+              }
+              cb.disabled = false; cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
+            });
           });
         });
-      });
+      }
 
       // ── Sidebar Progress Indicators ──
       function updateSidebarProgress() {
@@ -341,13 +343,24 @@ import '../styles/global.css';
         text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
       }
 
-      updateSidebarProgress();
-      updateOverallProgress();
-
-      // Update sidebar dots + overall bar when checkboxes change
-      document.querySelectorAll('.progress-cb').forEach((cb) => {
-        cb.addEventListener('change', () => setTimeout(() => { updateSidebarProgress(); updateOverallProgress(); }, 100));
-      });
+      if (isPaid) {
+        updateSidebarProgress();
+        updateOverallProgress();
+        document.querySelectorAll('.progress-cb').forEach((cb) => {
+          cb.addEventListener('change', () => setTimeout(() => { updateSidebarProgress(); updateOverallProgress(); }, 100));
+        });
+      } else {
+        const op = document.getElementById('overall-progress')!;
+        op.innerHTML = '<div class="overall-progress-bar" style="opacity:0.3"><div class="overall-progress-fill" style="width:35%"></div></div><span style="font-size:0.65rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:0.3rem;margin-top:0.2rem;cursor:pointer;" id="pro-progress-cta">&#128274; Pro: Track progress</span>';
+        document.getElementById('pro-progress-cta')!.addEventListener('click', () => openRazorpay());
+        // Lock sidebar bars for non-pro
+        document.querySelectorAll('.nav-item .tier-dot').forEach((dot) => {
+          const el = dot as HTMLElement;
+          el.style.opacity = '0.25';
+          el.title = 'Upgrade to Pro to track progress';
+          el.innerHTML = '<svg width="10" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>';
+        });
+      }
 
       // ── Show page ──
       document.querySelector('.app')!.removeAttribute('style');
