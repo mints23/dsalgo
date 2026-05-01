@@ -92,7 +92,7 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.subscriptions (user_id, status, trial_ends_at)
-  values (new.id, 'trial', now() + interval '7 days');
+  values (new.id, 'trial', now() + interval '1 day');
   return new;
 end;
 $$ language plpgsql security definer;
@@ -124,3 +124,93 @@ begin
   return result;
 end;
 $$ language plpgsql security definer;
+
+-- ── Free-topic flag (controls access after trial expires) ──
+-- Run this block after the initial schema above.
+alter table topics
+  add column if not exists is_free boolean not null default false;
+
+-- Mark the first 2 topics as permanently free (always accessible after trial ends).
+-- Change this list any time — no code deploys needed.
+update topics set is_free = true where id in (1, 2);
+
+-- ── Structured content table (separate from topics for easy rollback) ──
+-- To roll back: DROP TABLE problems; DROP TABLE topic_content;
+-- The topics table (with body_html) is left completely untouched.
+
+create table if not exists topic_content (
+  topic_id          int primary key references topics(id) on delete cascade,
+  body_html         text not null default '',
+  why_it_matters    text not null default '',
+  core_idea         text not null default '',
+  sub_variants      jsonb not null default '[]',
+  pattern_triggers  jsonb not null default '[]',
+  coverage_problems jsonb not null default '[]',
+  red_flags         jsonb not null default '[]'
+);
+
+alter table topic_content enable row level security;
+
+-- topic_content is accessible when:
+--   • the topic is marked free (is_free = true), OR
+--   • the user has an active trial, OR
+--   • the user has an active paid subscription
+drop policy if exists "Authenticated users can read topic_content" on topic_content;
+
+create policy "Topic content access by subscription"
+  on topic_content for select
+  using (
+    exists (select 1 from public.topics t where t.id = topic_id and t.is_free = true)
+    or exists (
+      select 1 from public.subscriptions s
+      where s.user_id = auth.uid()
+        and (
+          (s.status = 'trial'  and s.trial_ends_at > now())
+          or
+          (s.status = 'active' and s.paid_until    > now())
+        )
+    )
+  );
+
+-- One row per LeetCode problem per topic
+create table if not exists problems (
+  id          bigserial primary key,
+  topic_id    int     not null references topics(id) on delete cascade,
+  order_num   int     not null,
+  layer       text    not null,   -- Foundation | Variants | Combo | Hard | Trap
+  lc_number   text,               -- e.g. '167'
+  lc_url      text,
+  title       text    not null,
+  difficulty  text,               -- Easy | Med | Hard
+  is_premium  boolean not null default false,
+  sub_variant text,
+  key_insight text,
+  unique (topic_id, order_num)
+);
+
+alter table problems enable row level security;
+
+-- Same access rule for problems rows
+drop policy if exists "Authenticated users can read problems" on problems;
+
+create policy "Problems access by subscription"
+  on problems for select
+  using (
+    exists (select 1 from public.topics t where t.id = topic_id and t.is_free = true)
+    or exists (
+      select 1 from public.subscriptions s
+      where s.user_id = auth.uid()
+        and (
+          (s.status = 'trial'  and s.trial_ends_at > now())
+          or
+          (s.status = 'active' and s.paid_until    > now())
+        )
+    )
+  );
+
+create index if not exists idx_problems_topic on problems (topic_id, order_num);
+
+-- After verifying migration data looks correct you can optionally remove body_html:
+-- alter table topics drop column body_html;
+-- Or to fully roll back the refactor:
+-- DROP TABLE problems; DROP TABLE topic_content;

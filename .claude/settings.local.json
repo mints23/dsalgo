@@ -16,7 +16,14 @@
       "PowerShell(Get-ChildItem *)",
       "Bash(grep *)",
       "Bash(awk 'NR>=10357 && NR<=10680' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
-      "Bash(awk 'NR>=10345 && NR<=10525' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")"
+      "Bash(awk 'NR>=10345 && NR<=10525' \"E:/PracticeProjec/dsalgofrog/src/data/topics.ts\")",
+      "Bash(Get-ChildItem -Path \"E:\\\\PracticeProjec\\\\dsalgofrog\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(ConvertTo-Json)",
+      "Bash(Get-ChildItem -Path \"E:\\\\PracticeProjec\\\\dsalgofrog\\\\src\" -Recurse -File)",
+      "Bash(Select-Object Name, FullName)",
+      "PowerShell(Get-ChildItem -Path \"E:\\\\PracticeProjec\\\\dsalgofrog\\\\src\" -Recurse -File | Select-Object Name, @{Name=\"RelativePath\";Expression={$_.FullName -replace [regex]::Escape\\(\"E:\\\\PracticeProjec\\\\dsalgofrog\\\\\"\\), \"\"}} | Sort-Object RelativePath | Format-Table -AutoSize)"
     ]
   }
 }
