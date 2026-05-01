@@ -160,12 +160,21 @@ button {
   color: var(--primary);
 }
 .nav-item .tier-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
   flex-shrink: 0;
   margin-left: auto;
 }
+.nav-item .tier-dot .bar {
+  width: 3px;
+  height: 10px;
+  border-radius: 1.5px;
+  background: var(--divider);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.nav-item .tier-dot .bar:nth-child(2) { height: 14px; }
+.nav-item .tier-dot .bar:nth-child(3) { height: 18px; }
 .sidebar-footer {
   margin-top: auto;
   padding: 0.8rem;
@@ -682,3 +691,52 @@ tr.row-done .insight {
   text-decoration-color: var(--faint);
 }
 
+.overall-progress {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+.overall-progress-bar {
+  height: 6px;
+  background: var(--divider);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.overall-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #f59e0b, #22c55e);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.overall-progress-text {
+  display: block;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  font-weight: 600;
+}
+
+mark.search-hl {
+  background: #ffe066;
+  color: #28251d;
+  padding: 0.05em 0.15em;
+  border-radius: 2px;
+  font-weight: 600;
+}
+[data-theme='dark'] mark.search-hl {
+  background: #b8860b;
+  color: #fff;
+}
+
+/* ── Windows 98 Mode ── */
+.w98-mode .topic-body > * { display: none !important; }
+.w98-mode .topic-body > table,
+.w98-mode .topic-body > div > table { display: table !important; width: 100%; }
+.w98-mode .topic-body > h2,
+.w98-mode .topic-body > h3 { display: block !important; }
+.w98-mode .topic-body > div:has(> table) { display: block !important; }
+.w98-mode .topic-card {
+  border: 2px solid var(--border);
+  box-shadow: none;
+}

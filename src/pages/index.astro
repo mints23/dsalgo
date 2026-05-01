@@ -18,15 +18,19 @@ import '../styles/global.css';
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#01696f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>DSA Mastery Guide</title>
-    <meta name="description" content="Comprehensive DSA interview preparation guide with 650+ problems across 43 topics — Two Pointers, Binary Search, DP, Graphs, and more." />
+    <meta name="description" content="Comprehensive DSA interview preparation guide with 1150+ problems across 43 topics — Two Pointers, Binary Search, DP, Graphs, and more." />
     <meta property="og:title" content="DSA Mastery Guide — algofrog.in" />
-    <meta property="og:description" content="Comprehensive DSA interview preparation guide with 650+ problems across 43 topics." />
+    <meta property="og:description" content="Comprehensive DSA interview preparation guide with 1150+ problems across 43 topics." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://algofrog.in" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="DSA Mastery Guide — algofrog.in" />
-    <meta name="twitter:description" content="650+ problems across 43 DSA topics for interview prep." />
+    <meta name="twitter:description" content="1150+ problems across 43 DSA topics for interview prep." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Google tag (gtag.js) -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-RKMP4BG1N2"></script>
@@ -76,6 +80,10 @@ import '../styles/global.css';
             <div class="topbar-title" id="topbar-title"></div>
             <div class="topbar-meta" id="topbar-meta"></div>
           </div>
+          <div class="overall-progress" id="overall-progress" title="Overall progress" style="min-width:120px;max-width:180px;">
+            <div class="overall-progress-bar"><div class="overall-progress-fill" id="overall-fill"></div></div>
+            <span class="overall-progress-text" id="overall-text">0/0</span>
+          </div>
           <div class="search-box">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
@@ -85,6 +93,13 @@ import '../styles/global.css';
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem;">
             <span id="user-name" style="font-size:0.78rem;color:var(--muted);font-weight:500;margin-right:0.3rem;"></span>
+            <button class="theme-btn-top" id="w98-toggle" aria-label="Windows 98 Mode" title="Windows 98 Mode — Questions only">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </button>
             <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5" />
@@ -110,6 +125,9 @@ import '../styles/global.css';
           <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
       </button>
+    </div>
+    <div style="text-align:center;padding:0.6rem;font-size:0.72rem;color:var(--muted);">
+      Need help? <a href="mailto:algofrog07@gmail.com" style="color:var(--primary);text-decoration:none;font-weight:600;">algofrog07@gmail.com</a>
     </div>
     <script>
       import { supabase } from '../lib/supabase';
@@ -158,7 +176,7 @@ import '../styles/global.css';
         userNameEl.parentElement!.insertBefore(upgradeBtn, userNameEl.nextSibling);
       } else if (isPaid) {
         const paidDaysLeft = Math.ceil((new Date(sub!.paid_until!).getTime() - now.getTime()) / 86400000);
-        userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--primary);font-weight:600;margin-left:0.3rem;">Pro: ${paidDaysLeft}d left</span>`;
+        userNameEl.innerHTML = `${userName} <span style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.68rem;font-weight:700;margin-left:0.4rem;padding:0.15rem 0.5rem;border-radius:1rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;box-shadow:0 1px 4px rgba(1,105,111,0.3);letter-spacing:0.02em;">&#9733; PRO &middot; ${paidDaysLeft}d</span>`;
       } else {
         userNameEl.textContent = userName;
       }
@@ -227,7 +245,7 @@ import '../styles/global.css';
       for (const section of sections) {
         navHtml += `<div class="nav-section">${section}</div>`;
         for (const t of grouped.get(section)!) {
-          navHtml += `<button class="nav-item" data-topic-id="${t.id}"><span class="num">${t.display_number}</span>${t.nav_label}<span class="tier-dot" style="background:${t.nav_tier_dot_color}"></span></button>`;
+          navHtml += `<button class="nav-item" data-topic-id="${t.id}"><span class="num">${t.display_number}</span>${t.nav_label}<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span></button>`;
         }
       }
       document.getElementById('nav-list')!.innerHTML = navHtml;
@@ -272,6 +290,65 @@ import '../styles/global.css';
         });
       });
 
+      // ── Sidebar Progress Indicators ──
+      function updateSidebarProgress() {
+        document.querySelectorAll('.nav-item').forEach((navItem) => {
+          const topicId = parseInt(navItem.getAttribute('data-topic-id')!);
+          const card = document.getElementById(`tp${topicId}`);
+          if (!card) return;
+          const totalRows = card.querySelectorAll('tbody tr .num-cell').length;
+          if (!totalRows) return;
+          let doneCount = 0;
+          card.querySelectorAll('tbody tr').forEach((row) => {
+            if (row.classList.contains('row-done')) doneCount++;
+          });
+          const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
+          if (!indicator) return;
+          const bars = indicator.querySelectorAll('.bar') as NodeListOf<HTMLElement>;
+          const ratio = doneCount / totalRows;
+          let color: string;
+          let glow: string;
+          let label: string;
+          if (doneCount === 0) {
+            color = 'var(--divider)'; glow = 'none'; label = 'Not started';
+          } else if (doneCount === totalRows) {
+            color = '#22c55e'; glow = '0 0 4px rgba(34,197,94,0.5)'; label = `Completed (${doneCount}/${totalRows})`;
+          } else {
+            color = '#f59e0b'; glow = '0 0 4px rgba(245,158,11,0.4)'; label = `In progress (${doneCount}/${totalRows})`;
+          }
+          // Light up bars based on progress ratio
+          const litBars = doneCount === 0 ? 0 : doneCount === totalRows ? 3 : ratio > 0.5 ? 2 : 1;
+          bars.forEach((bar, i) => {
+            if (i < litBars) {
+              bar.style.background = color;
+              bar.style.boxShadow = glow;
+            } else {
+              bar.style.background = 'var(--divider)';
+              bar.style.boxShadow = 'none';
+            }
+          });
+          indicator.title = label;
+        });
+      }
+      // ── Overall Progress Bar ──
+      function updateOverallProgress() {
+        const allRows = document.querySelectorAll('tbody tr .num-cell').length;
+        const doneRows = document.querySelectorAll('tbody tr.row-done').length;
+        const pct = allRows ? Math.round((doneRows / allRows) * 100) : 0;
+        const fill = document.getElementById('overall-fill') as HTMLElement;
+        const text = document.getElementById('overall-text')!;
+        fill.style.width = `${pct}%`;
+        text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
+      }
+
+      updateSidebarProgress();
+      updateOverallProgress();
+
+      // Update sidebar dots + overall bar when checkboxes change
+      document.querySelectorAll('.progress-cb').forEach((cb) => {
+        cb.addEventListener('change', () => setTimeout(() => { updateSidebarProgress(); updateOverallProgress(); }, 100));
+      });
+
       // ── Show page ──
       document.querySelector('.app')!.removeAttribute('style');
 
@@ -285,6 +362,41 @@ import '../styles/global.css';
       document.querySelectorAll('.theme-btn, #theme-toggle-top').forEach((btn) => {
         btn.addEventListener('click', toggleTheme);
       });
+
+      // ── Windows 98 Mode ──
+      let w98Active = localStorage.getItem('w98mode') === 'true';
+      function applyW98() {
+        document.documentElement.classList.toggle('w98-mode', w98Active);
+        const btn = document.getElementById('w98-toggle')!;
+        btn.style.color = w98Active ? 'var(--primary)' : '';
+        btn.title = w98Active ? 'Exit Windows 98 Mode' : 'Windows 98 Mode — Questions only';
+        // JS-based: hide/show non-table content in topic body
+        document.querySelectorAll('.topic-body').forEach((body) => {
+          Array.from(body.children).forEach((child) => {
+            const el = child as HTMLElement;
+            const isTable = el.tagName === 'TABLE' || el.querySelector('table');
+            const isHeading = /^H[1-6]$/.test(el.tagName) && /problem\s*set/i.test(el.textContent || '');
+            if (w98Active) {
+              el.style.display = (isTable || isHeading) ? '' : 'none';
+            } else {
+              el.style.display = '';
+            }
+          });
+        });
+        try { localStorage.setItem('w98mode', String(w98Active)); } catch (e) {}
+      }
+      if (isPaid) {
+        applyW98();
+        document.getElementById('w98-toggle')!.addEventListener('click', () => {
+          w98Active = !w98Active;
+          applyW98();
+        });
+      } else {
+        const w98Btn = document.getElementById('w98-toggle')!;
+        w98Btn.style.opacity = '0.4';
+        w98Btn.title = 'Windows 98 Mode — Pro feature';
+        w98Btn.addEventListener('click', () => openRazorpay());
+      }
 
       // ── Topic Switching ──
       const navItems = document.querySelectorAll('.nav-item');
@@ -302,6 +414,7 @@ import '../styles/global.css';
         topbarMeta.textContent = topicMetas[topicNum] || '';
         const sb = document.getElementById('sidebar')!;
         if (sb.classList.contains('open')) sb.classList.remove('open');
+        try { localStorage.setItem('lastTopic', String(topicNum)); } catch (e) {}
       }
 
       navItems.forEach((item) => {
@@ -310,10 +423,50 @@ import '../styles/global.css';
         });
       });
 
+      // ── Remember Last Topic ──
+      const lastTopic = localStorage.getItem('lastTopic');
+      if (lastTopic) {
+        const lastNav = document.querySelector(`.nav-item[data-topic-id="${lastTopic}"]`);
+        if (lastNav) show(parseInt(lastTopic), lastNav);
+      }
+
       // ── Search / Filter ──
       const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+
+      function clearHighlights() {
+        document.querySelectorAll('mark.search-hl').forEach((m) => {
+          const parent = m.parentNode!;
+          parent.replaceChild(document.createTextNode(m.textContent || ''), m);
+          parent.normalize();
+        });
+      }
+
+      function highlightText(el: Element, term: string) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        const matches: { node: Text; index: number }[] = [];
+        while (walker.nextNode()) {
+          const node = walker.currentNode as Text;
+          const idx = node.textContent!.toLowerCase().indexOf(term);
+          if (idx >= 0) matches.push({ node, index: idx });
+        }
+        for (const { node, index } of matches) {
+          const text = node.textContent!;
+          const before = text.substring(0, index);
+          const matched = text.substring(index, index + term.length);
+          const after = text.substring(index + term.length);
+          const mark = document.createElement('mark');
+          mark.className = 'search-hl';
+          mark.textContent = matched;
+          const parent = node.parentNode!;
+          if (after) parent.insertBefore(document.createTextNode(after), node.nextSibling);
+          parent.insertBefore(mark, node.nextSibling);
+          node.textContent = before;
+        }
+      }
+
       searchInput.addEventListener('input', () => {
         const filter = searchInput.value.trim().toLowerCase();
+        clearHighlights();
         if (!filter) {
           const activeNav = document.querySelector('.nav-item.active');
           topicCards.forEach((card) => {
@@ -338,7 +491,7 @@ import '../styles/global.css';
           for (let i = 1; i < rows.length; i++) {
             const match = rows[i].innerText.toLowerCase().includes(filter);
             (rows[i] as HTMLElement).style.display = match ? '' : 'none';
-            if (match) hasMatch = true;
+            if (match) { hasMatch = true; highlightText(rows[i], filter); }
           }
           if (hasMatch) {
             card.classList.add('active'); (card as HTMLElement).style.display = '';
