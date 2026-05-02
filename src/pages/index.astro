@@ -102,6 +102,70 @@ import '../styles/global.css';
             </button>
           </div>
         </div>
+        <div class="pro-benefits-strip" id="pro-benefits-strip" hidden>
+          <div class="pro-benefits-strip-layout">
+            <details class="pro-benefits-details" title="What you get with Pro">
+              <summary class="pro-benefits-summary">
+                <span class="pro-benefits-badge">Pro</span>
+                <span class="pro-benefits-summary-line">
+                  <span class="pro-benefits-kw">Progress</span><span class="pro-benefits-sep">·</span><span class="pro-benefits-kw">Focus</span><span class="pro-benefits-sep">·</span><span class="pro-benefits-kw">Animated insights</span>
+                  <span class="pro-benefits-summary-hint">details</span>
+                </span>
+                <span class="pro-benefits-chevron" aria-hidden="true">▾</span>
+              </summary>
+            <div class="pro-benefits-body">
+              <p class="pro-benefits-lead">
+                Pro is for people grinding the list: you keep <strong>state</strong> (what you solved), <strong>access</strong> (every topic after trial), and <strong>animated insight walkthroughs</strong> (step-by-step playback with pacing and speed) — not just read-only pages.
+              </p>
+              <div class="pro-benefit-grid" role="list">
+                <div class="pro-benefit-point" role="listitem">
+                  <span class="pro-benefit-icon pro-benefit-icon--a" aria-hidden="true">1</span>
+                  <div class="pro-benefit-copy">
+                    <span class="pro-benefit-title">Clear picture of progress</span>
+                    <p class="pro-benefit-desc">Tick problems as you go; the nav dots and top bar show how deep you are in each topic. Everything syncs to your login — switch laptop or phone without starting from zero.</p>
+                  </div>
+                </div>
+                <div class="pro-benefit-point" role="listitem">
+                  <span class="pro-benefit-icon pro-benefit-icon--b" aria-hidden="true">2</span>
+                  <div class="pro-benefit-copy">
+                    <span class="pro-benefit-title">Strip noise, keep signal</span>
+                    <p class="pro-benefit-desc"><strong>Problems only</strong> hides long explanations when you just want the table. <strong>Core set</strong> narrows each topic to minimum-coverage rows. Both follow your account so your next session matches this one.</p>
+                  </div>
+                </div>
+                <div class="pro-benefit-point" role="listitem">
+                  <span class="pro-benefit-icon pro-benefit-icon--c" aria-hidden="true">3</span>
+                  <div class="pro-benefit-copy">
+                    <span class="pro-benefit-title">The whole 43-topic path stays open</span>
+                    <p class="pro-benefit-desc">Trial ends or access lapses — without Pro you drop to free chapters only. Pro keeps the full structured guide (tables, layers, and every problem row) so your prep isn’t fragmented.</p>
+                  </div>
+                </div>
+                <div class="pro-benefit-point" role="listitem">
+                  <span class="pro-benefit-icon pro-benefit-icon--d" aria-hidden="true">4</span>
+                  <div class="pro-benefit-copy">
+                    <span class="pro-benefit-title">Animated key-insight playback</span>
+                    <p class="pro-benefit-desc">Click any <strong>Key insight</strong> cell for the full overlay: curated steps, typewriter-style code replay, auto-advance, speed control, and visual frames where we ship them. It’s included with Pro so you can rehearse each problem’s story end to end.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="pro-benefits-actions">
+                <button type="button" class="pro-benefits-upgrade" id="pro-benefits-upgrade">
+                  Go Pro — ₹149/mo
+                </button>
+                <span class="pro-benefits-footnote">₹299 / 3 mo also available at checkout</span>
+              </div>
+            </div>
+            </details>
+            <button
+              type="button"
+              class="pro-benefits-dismiss"
+              id="pro-benefits-dismiss"
+              aria-label="Hide Pro banner until next visit"
+              title="Hide until next visit"
+            >
+              ×
+            </button>
+          </div>
+        </div>
         <div class="content" id="content"></div>
       </div>
 
@@ -190,12 +254,41 @@ import '../styles/global.css';
       </div>
     </div>
 
+    <!-- Pro gate: walkthrough included with Pro -->
+    <div
+      id="insight-pro-gate"
+      class="insight-overlay"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="insight-pro-gate-heading"
+      aria-hidden="true"
+    >
+      <div class="insight-modal insight-pro-gate-modal">
+        <div class="insight-modal-accent" aria-hidden="true"></div>
+        <div class="insight-pro-gate-head">
+          <div class="insight-pro-gate-head-text">
+            <p class="insight-pro-gate-lc"></p>
+            <h2 id="insight-pro-gate-heading" class="insight-pro-gate-title"></h2>
+          </div>
+          <button type="button" class="insight-close insight-pro-gate-close" aria-label="Close">✕</button>
+        </div>
+        <div class="insight-pro-gate-body">
+          <p class="insight-pro-gate-copy">
+            Go Pro to open the full key-insight walkthrough: curated steps, visuals where we ship them, and playback you can run at your own pace.
+          </p>
+          <button type="button" class="pro-benefits-upgrade" id="insight-pro-gate-upgrade">Go Pro — ₹149/mo</button>
+          <p class="insight-pro-gate-foot">₹299 / 3 mo also available at checkout</p>
+        </div>
+      </div>
+    </div>
+
     <div style="text-align:center;padding:0.6rem;font-size:0.72rem;color:var(--muted);">
       Need help? <a href="mailto:algofrog07@gmail.com" style="color:var(--primary);text-decoration:none;font-weight:600;">algofrog07@gmail.com</a>
     </div>
     <script>
       import { supabase } from '../lib/supabase';
       import { getStepExplain, stepHasProseAside } from '../data/step-explain';
+      import { resolvePlaybackComplexity } from '../data/playback-complexity';
 
       // ── Auth Gate ──
       const { data: { session } } = await supabase.auth.getSession();
@@ -301,6 +394,54 @@ import '../styles/global.css';
         rzp.open();
       }
 
+      const insightProGate = document.getElementById('insight-pro-gate')!;
+      const insightProGateLc = insightProGate.querySelector<HTMLElement>('.insight-pro-gate-lc')!;
+      const insightProGateTitle = insightProGate.querySelector<HTMLElement>('.insight-pro-gate-title')!;
+      function openInsightProGate(lcNum: string, title: string) {
+        insightProGateLc.textContent = lcNum ? `LC ${lcNum}` : '';
+        insightProGateTitle.textContent = title || 'Key insight walkthrough';
+        insightProGate.classList.add('active');
+        insightProGate.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeInsightProGate() {
+        insightProGate.classList.remove('active');
+        insightProGate.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      insightProGate.addEventListener('click', (e) => {
+        if (e.target === insightProGate) closeInsightProGate();
+      });
+      insightProGate.querySelector('.insight-pro-gate-close')!.addEventListener('click', closeInsightProGate);
+      document.getElementById('insight-pro-gate-upgrade')!.addEventListener('click', () => {
+        closeInsightProGate();
+        openRazorpay('monthly');
+      });
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key !== 'Escape') return;
+          if (!insightProGate.classList.contains('active')) return;
+          closeInsightProGate();
+        },
+        true
+      );
+
+      const PRO_STRIP_DISMISS_KEY = 'pro_benefits_strip_dismiss';
+      const proBenefitsStrip = document.getElementById('pro-benefits-strip');
+      if (!isPaid && proBenefitsStrip && sessionStorage.getItem(PRO_STRIP_DISMISS_KEY) !== '1') {
+        proBenefitsStrip.hidden = false;
+        proBenefitsStrip.classList.toggle('pro-benefits-strip--trial', isTrialActive);
+        document.getElementById('pro-benefits-upgrade')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          openRazorpay('monthly');
+        });
+        document.getElementById('pro-benefits-dismiss')?.addEventListener('click', () => {
+          sessionStorage.setItem(PRO_STRIP_DISMISS_KEY, '1');
+          proBenefitsStrip.hidden = true;
+        });
+      }
+
       document.getElementById('logout-btn')!.addEventListener('click', async () => {
         await supabase.auth.signOut(); window.location.href = '/login';
       });
@@ -313,7 +454,7 @@ import '../styles/global.css';
         .from('topics')
         // Explicitly exclude body_html from topics — content lives in topic_content now.
         // RLS on topic_content and problems restricts what expired users receive.
-        .select('id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta, topic_content(why_it_matters, core_idea, sub_variants, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)')
+        .select('id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)')
         .order('id');
       if (error || !topics?.length) {
         document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
@@ -457,13 +598,6 @@ import '../styles/global.css';
           h += `<div class="core-box"><strong>Core Idea:</strong> ${esc(tc.core_idea)}</div>`;
         }
 
-        const svs: string[] = tc.sub_variants || [];
-        if (svs.length) {
-          h += `<div class="sec-title">Sub-Variants</div><div class="pill-grid">`;
-          svs.forEach((sv: string) => { h += `<span class="pill">${esc(sv)}</span>`; });
-          h += `</div>`;
-        }
-
         if (problems.length) {
           h += `<div class="sec-title">Problem Set</div><div class="tbl-wrap"><table>`;
           h += `<thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead><tbody>`;
@@ -545,9 +679,18 @@ import '../styles/global.css';
             </div>
           </div>`;
         } else {
-          bodyHtml = (t.problems?.length || t.topic_content?.why_it_matters || t.topic_content?.sub_variants?.length)
-            ? buildBody(t)
-            : (t.body_html || '');
+          {
+            const tc0 = t.topic_content || {};
+            bodyHtml =
+              t.problems?.length ||
+              tc0.why_it_matters ||
+              tc0.core_idea ||
+              tc0.pattern_triggers?.length ||
+              tc0.coverage_problems?.length ||
+              tc0.red_flags?.length
+                ? buildBody(t)
+                : t.body_html || '';
+          }
         }
 
         cardsHtml += `<div class="topic-card${isLocked ? ' topic-locked' : ''}" id="tp${t.id}"><div class="topic-header"><div class="topic-num">${t.display_number}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><div class="topic-title">${t.title}</div><span class="tier-badge tier-${t.tier_code}">${t.tier_label}</span><span class="topic-type">${t.type_label}</span></div><div class="topic-meta">${t.summary_meta}</div></div></div><div class="topic-body">${bodyHtml}</div></div>`;
@@ -583,10 +726,15 @@ import '../styles/global.css';
         );
         const insightIdx = headers.findIndex((h) => h.includes('insight'));
         if (insightIdx < 0) return;
+        const thInsight = thr.children[insightIdx];
+        if (thInsight && thInsight.tagName === 'TH') {
+          thInsight.classList.add('th-insight-walkthrough');
+        }
         table.querySelectorAll('tbody tr').forEach((tr) => {
           const td = tr.children[insightIdx];
           if (td && td.tagName === 'TD') {
-            td.classList.add('insight', 'insight-clickable');
+            td.classList.add('insight');
+            if ((td.textContent || '').trim()) td.classList.add('insight-clickable');
           }
         });
       });
@@ -718,25 +866,38 @@ import '../styles/global.css';
         appendProblemsOnlyToggle(titleRow);
       });
 
-      // ── Progress Tracking (Pro only) ──
+      // ── Progress Tracking (checkboxes always visible; Pro syncs to server) ──
       const userId = session.user.id;
+      let completedSet = new Set<string>();
       if (isPaid) {
         const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
-        const completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
-        document.querySelectorAll('.topic-card').forEach((card) => {
-          const topicId = parseInt(card.id.replace('tp', ''));
-          card.querySelectorAll('tbody tr').forEach((row) => {
-            const numCell = row.querySelector('.num-cell');
-            if (!numCell) return;
-            const probNum = parseInt(numCell.textContent?.trim() || '0');
-            if (!probNum) return;
-            const key = `${topicId}-${probNum}`;
-            const isComplete = completedSet.has(key);
-            const cb = document.createElement('input');
-            cb.type = 'checkbox'; cb.checked = isComplete; cb.className = 'progress-cb';
+        completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
+      }
+      document.querySelectorAll('.topic-card').forEach((card) => {
+        const topicId = parseInt(card.id.replace('tp', ''));
+        card.querySelectorAll('tbody tr').forEach((row) => {
+          const numCell = row.querySelector('.num-cell');
+          if (!numCell) return;
+          const probNum = parseInt(numCell.textContent?.trim() || '0');
+          if (!probNum) return;
+          const key = `${topicId}-${probNum}`;
+          const isComplete = isPaid && completedSet.has(key);
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = isComplete;
+          cb.className = 'progress-cb' + (isPaid ? '' : ' progress-cb--locked');
+          cb.disabled = !isPaid;
+          if (isPaid) {
             cb.title = isComplete ? 'Mark incomplete' : 'Mark complete';
-            if (isComplete) row.classList.add('row-done');
-            numCell.insertBefore(cb, numCell.firstChild);
+            cb.setAttribute('aria-label', cb.title);
+          } else {
+            const lockedHint = 'Pro only — upgrade to mark problems solved and sync progress.';
+            cb.title = lockedHint;
+            cb.setAttribute('aria-label', lockedHint);
+          }
+          if (isComplete) row.classList.add('row-done');
+          numCell.insertBefore(cb, numCell.firstChild);
+          if (isPaid) {
             cb.addEventListener('change', async () => {
               cb.disabled = true;
               if (cb.checked) {
@@ -746,11 +907,13 @@ import '../styles/global.css';
                 const { error } = await supabase.from('user_progress').delete().eq('user_id', userId).eq('topic_id', topicId).eq('problem_num', probNum);
                 if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); }
               }
-              cb.disabled = false; cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
+              cb.disabled = false;
+              cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
+              cb.setAttribute('aria-label', cb.title);
             });
-          });
+          }
         });
-      }
+      });
 
       // ── Sidebar Progress Indicators ──
       function updateSidebarProgress() {
@@ -794,19 +957,20 @@ import '../styles/global.css';
       }
       // ── Overall Progress Bar ──
       function updateOverallProgress() {
+        const fill = document.getElementById('overall-fill') as HTMLElement | null;
+        const text = document.getElementById('overall-text');
+        if (!fill || !text) return;
         const allRows = document.querySelectorAll('tbody tr .num-cell').length;
         const doneRows = document.querySelectorAll('tbody tr.row-done').length;
         const pct = allRows ? Math.round((doneRows / allRows) * 100) : 0;
-        const fill = document.getElementById('overall-fill') as HTMLElement;
-        const text = document.getElementById('overall-text')!;
         fill.style.width = `${pct}%`;
         text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
       }
 
+      updateSidebarProgress();
       if (isPaid) {
-        updateSidebarProgress();
         updateOverallProgress();
-        document.querySelectorAll('.progress-cb').forEach((cb) => {
+        document.querySelectorAll('.progress-cb:not(:disabled)').forEach((cb) => {
           cb.addEventListener('change', () => setTimeout(() => { updateSidebarProgress(); updateOverallProgress(); }, 100));
         });
       } else {
@@ -1043,6 +1207,21 @@ import '../styles/global.css';
           insightChipSpace.textContent = space || '—';
         }
 
+        /** Merge LC / keyword / prose fallbacks into chips (and sol when present). */
+        function applyResolvedComplexity(
+          lc: string,
+          tit: string,
+          ins: string,
+          s: { time?: string; space?: string } | null
+        ) {
+          const cx = resolvePlaybackComplexity(lc, tit, ins, s);
+          if (s && typeof s === 'object') {
+            s.time = cx.time;
+            s.space = cx.space;
+          }
+          setInsightChips(cx.time, cx.space);
+        }
+
         function stopAll() { clearInterval(twTimer); clearTimeout(advTimer); }
 
         function syncControls() {
@@ -1069,8 +1248,9 @@ import '../styles/global.css';
           vars: Array<{ k: string; v: string | number; hi?: boolean }>
         ): string {
           if (!cells.length) return '';
-          const cellsHtml = cells.map((c) =>
-            `<div class="viz-cell viz-${c.s || 'n'}">${escHtml(String(c.v))}</div>`
+          const cellsHtml = cells.map(
+            (c, i) =>
+              `<div class="viz-cell viz-${c.s || 'n'}" style="animation-delay:${i * 0.052}s">${escHtml(String(c.v))}</div>`
           ).join('');
           const labelsHtml = cells.map((c) =>
             `<div class="viz-ptr">${c.p ? `<span class="viz-arrow">↑</span><span>${escHtml(c.p.replace(/↑\s*/g, ''))}</span>` : ''}</div>`
@@ -1587,7 +1767,7 @@ import '../styles/global.css';
             insightPanel.classList.add('insight-panel--example-split');
             fallback.style.display = 'none';
             controls.style.display = 'flex';
-            setInsightChips(String(sol!.time ?? '—'), String(sol!.space ?? '—'));
+            applyResolvedComplexity(lcNum, title, insight, sol);
             solutionHasAnyDry = frames.some((s: any) => stepHasDrySnapshot(s.dry));
             playbackExpanded = frames.length >= 12;
             currentStep = 0;
@@ -1605,7 +1785,7 @@ import '../styles/global.css';
             solView.style.display = 'none';
             fallback.style.display = 'none';
             controls.style.display = 'flex';
-            setInsightChips('—', '—');
+            applyResolvedComplexity(lcNum, title, insight, null);
             frames = viz!.frames;
             currentStep = 0;
             isPlaying = true;
@@ -1630,7 +1810,7 @@ import '../styles/global.css';
             solView.style.display = 'block';
             fallback.style.display = 'none';
             controls.style.display = 'flex';
-            setInsightChips(String(sol!.time ?? '—'), String(sol!.space ?? '—'));
+            applyResolvedComplexity(lcNum, title, insight, sol);
             frames = sol!.steps!;
             solutionHasAnyDry = frames.some((s: any) => stepHasDrySnapshot(s.dry));
             playbackExpanded = frames.length >= 12;
@@ -1673,17 +1853,21 @@ import '../styles/global.css';
           if (e.key === 'Escape')      { closeOverlay(); return; }
           if (e.key === 'ArrowRight')  { pause(); showFrame(currentStep + 1); }
           if (e.key === 'ArrowLeft')   { pause(); showFrame(currentStep - 1); }
-          if (e.key === ' ')           { e.preventDefault(); isPlaying ? pause() : play(); }
+          if (e.key === ' ') { e.preventDefault(); isPlaying ? pause() : play(); }
         });
 
-        document.querySelectorAll('td.insight').forEach((cell) => {
+        document.querySelectorAll('td.insight-clickable').forEach((cell) => {
           const text = cell.textContent?.trim();
           if (!text) return;
-          (cell as HTMLElement).classList.add('insight-clickable');
+          (cell as HTMLElement).title = isPaid ? 'Open walkthrough' : 'Pro: full walkthrough';
           cell.addEventListener('click', () => {
             const row = cell.closest('tr')!;
             const lcNum = (row.querySelector('.lc-link')?.textContent || '').match(/\d+/)?.[0] || '';
             const title = row.querySelector('.prob-name')?.textContent?.replace(/^⚠️\s*/, '').trim() || '';
+            if (!isPaid) {
+              openInsightProGate(lcNum, title);
+              return;
+            }
             const problemId = row.getAttribute('data-problem-id') || '';
             openOverlay(lcNum, title, text, problemId);
           });

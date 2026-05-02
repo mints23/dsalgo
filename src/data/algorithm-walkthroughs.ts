@@ -14,7 +14,8 @@ export function looksLikeInsightOnlyStub(sol: Solution | null | undefined): bool
   return true;
 }
 
-function inferFromKeywords(title: string, insight: string): Solution | null {
+/** Match title + key insight to a curated walkthrough (used for complexity fallbacks too). */
+export function inferFromKeywords(title: string, insight: string): Solution | null {
   const s = `${title} ${insight}`.toLowerCase();
   if (/two sum ii|sorted.*two sum/.test(s) || (/sorted/.test(s) && /target/.test(s) && /two pointer|left.*right|\blo\b.*\bhi\b/.test(s))) {
     return LC_COMPREHENSIVE['167'];

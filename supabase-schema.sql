@@ -104,17 +104,28 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ── Activate subscription after payment ──
--- plan: 'monthly' → 30 days; 'quarterly' → 90 days
+-- plan: 'monthly' → +30 days; 'quarterly' → +90 days (stacked after max(paid_until, now()))
 create or replace function public.activate_subscription(payment_id text, plan text default 'monthly')
 returns json as $$
 declare
   result json;
+  cur_until timestamptz;
+  base_ts timestamptz;
+  add_interval interval;
   until_ts timestamptz;
 begin
-  until_ts := case lower(trim(coalesce(plan, 'monthly')))
-    when 'quarterly' then now() + interval '90 days'
-    else now() + interval '30 days'
+  select s.paid_until into cur_until
+  from public.subscriptions s
+  where s.user_id = auth.uid();
+
+  base_ts := greatest(coalesce(cur_until, now()), now());
+
+  add_interval := case lower(trim(coalesce(plan, 'monthly')))
+    when 'quarterly' then interval '90 days'
+    else interval '30 days'
   end;
+
+  until_ts := base_ts + add_interval;
 
   update public.subscriptions
   set status = 'active',
