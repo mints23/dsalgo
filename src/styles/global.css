@@ -1037,11 +1037,22 @@ table tbody tr:hover {
   font-size: 0.75rem;
   max-width: 180px;
 }
+/* Key insight column — layered text-shadow only (no column fill) */
 .insight {
   color: var(--muted);
   font-style: italic;
   font-size: 0.74rem;
+  font-weight: 500;
   max-width: 320px;
+  text-shadow:
+    0 0.5px 0 rgba(255, 255, 255, 0.88),
+    0 1px 3px rgba(40, 37, 29, 0.17),
+    0 0 18px color-mix(in oklab, var(--primary) 16%, transparent);
+}
+[data-theme='dark'] .insight {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.72),
+    0 0 22px color-mix(in oklab, var(--primary) 24%, transparent);
 }
 /* Teal glow on key-insight play mark — layered drop-shadows so it reads clearly */
 @keyframes insight-play-glow-pulse {
@@ -1056,6 +1067,19 @@ table tbody tr:hover {
       drop-shadow(0 0 16px color-mix(in oklab, var(--primary) 62%, transparent))
       drop-shadow(0 0 32px color-mix(in oklab, var(--primary) 38%, transparent));
   }
+}
+table thead th.th-insight-walkthrough {
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 1px 2px rgba(40, 37, 29, 0.11),
+    0 0 14px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+[data-theme='dark'] table thead th.th-insight-walkthrough {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.62),
+    0 0 18px color-mix(in oklab, var(--primary) 18%, transparent);
 }
 /* Key insight column — play mark (no label; reads as “open / play”) */
 th.th-insight-walkthrough::after {
@@ -1720,7 +1744,6 @@ tr.row-done .insight {
 td.insight-clickable {
   cursor: pointer;
   position: relative;
-  padding-left: 0.02rem;
 }
 td.insight-clickable::before {
   content: '';
@@ -1739,7 +1762,15 @@ td.insight-clickable::before {
   animation: insight-play-glow-pulse 2s ease-in-out infinite;
 }
 td.insight-clickable:hover {
-  color: var(--primary);
+  color: var(--primary-h);
+  text-shadow:
+    0 1px 2px color-mix(in oklab, var(--primary-h) 38%, transparent),
+    0 0 20px color-mix(in oklab, var(--primary) 32%, transparent);
+}
+[data-theme='dark'] td.insight-clickable:hover {
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.55),
+    0 0 24px color-mix(in oklab, var(--primary) 38%, transparent);
 }
 td.insight-clickable:hover::before {
   opacity: 1;
