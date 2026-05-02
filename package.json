@@ -10,7 +10,9 @@
     "astro": "astro",
     "deploy": "gh-pages -d dist --dotfiles",
     "migrate": "tsx scripts/migrate-to-structured.ts",
-    "remigrate": "tsx scripts/remigrate-structured.ts"
+    "remigrate": "tsx scripts/remigrate-structured.ts",
+    "sync:solutions": "tsx scripts/sync-solutions-from-db.ts",
+    "seed:playback": "tsx scripts/seed-problem-playback.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

@@ -104,14 +104,21 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ── Activate subscription after payment ──
-create or replace function public.activate_subscription(payment_id text)
+-- plan: 'monthly' → 30 days; 'quarterly' → 90 days
+create or replace function public.activate_subscription(payment_id text, plan text default 'monthly')
 returns json as $$
 declare
   result json;
+  until_ts timestamptz;
 begin
+  until_ts := case lower(trim(coalesce(plan, 'monthly')))
+    when 'quarterly' then now() + interval '90 days'
+    else now() + interval '30 days'
+  end;
+
   update public.subscriptions
   set status = 'active',
-      paid_until = now() + interval '30 days',
+      paid_until = until_ts,
       razorpay_payment_id = payment_id,
       updated_at = now()
   where user_id = auth.uid();
@@ -209,6 +216,98 @@ create policy "Problems access by subscription"
   );
 
 create index if not exists idx_problems_topic on problems (topic_id, order_num);
+
+-- ── Per-problem Key Insight overlay (solution + visualization JSON) ──
+-- solution: { approach, time, space, steps: [{ title, explain?, code[], note, phase?, dry? }] }
+--   explain = plain-language paragraph beside pseudocode (see src/data/solution-model.ts)
+create table if not exists public.problem_playback (
+  problem_id     bigint primary key references public.problems (id) on delete cascade,
+  solution       jsonb,
+  visualization  jsonb,
+  updated_at     timestamptz not null default now()
+);
+
+create index if not exists idx_problem_playback_updated on public.problem_playback (updated_at desc);
+
+alter table public.problem_playback enable row level security;
+
+drop policy if exists "Problem playback access by subscription" on public.problem_playback;
+create policy "Problem playback access by subscription"
+  on public.problem_playback for select
+  using (
+    exists (
+      select 1
+      from public.problems p
+      join public.topics t on t.id = p.topic_id
+      where p.id = problem_playback.problem_id
+        and (
+          t.is_free = true
+          or exists (
+            select 1
+            from public.subscriptions s
+            where s.user_id = auth.uid()
+              and (
+                (s.status = 'trial'  and s.trial_ends_at > now())
+                or
+                (s.status = 'active' and s.paid_until    > now())
+              )
+          )
+        )
+    )
+  );
+
+-- ── Pro study preferences (problem-table focus + core coverage per topic) ──
+create table if not exists public.user_study_preferences (
+  user_id                  uuid primary key references auth.users (id) on delete cascade,
+  problems_only            boolean not null default false,
+  min_coverage_by_topic    jsonb not null default '{}'::jsonb,
+  updated_at               timestamptz not null default now()
+);
+
+alter table public.user_study_preferences enable row level security;
+
+drop policy if exists "study_prefs_select_pro" on public.user_study_preferences;
+create policy "study_prefs_select_pro"
+  on public.user_study_preferences for select
+  using (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.subscriptions s
+      where s.user_id = auth.uid()
+        and s.status = 'active'
+        and s.paid_until is not null
+        and s.paid_until > now()
+    )
+  );
+
+drop policy if exists "study_prefs_insert_pro" on public.user_study_preferences;
+create policy "study_prefs_insert_pro"
+  on public.user_study_preferences for insert
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.subscriptions s
+      where s.user_id = auth.uid()
+        and s.status = 'active'
+        and s.paid_until is not null
+        and s.paid_until > now()
+    )
+  );
+
+drop policy if exists "study_prefs_update_pro" on public.user_study_preferences;
+create policy "study_prefs_update_pro"
+  on public.user_study_preferences for update
+  using (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.subscriptions s
+      where s.user_id = auth.uid()
+        and s.status = 'active'
+        and s.paid_until is not null
+        and s.paid_until > now()
+    )
+  )
+  with check (auth.uid() = user_id);
 
 -- After verifying migration data looks correct you can optionally remove body_html:
 -- alter table topics drop column body_html;

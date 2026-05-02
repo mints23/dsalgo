@@ -87,11 +87,6 @@ import '../styles/global.css';
 
           <div style="display:flex;align-items:center;gap:0.4rem;">
             <span id="user-name" style="font-size:0.78rem;color:var(--muted);font-weight:500;margin-right:0.3rem;"></span>
-            <label class="w98-switch" title="Questions only">
-              <input type="checkbox" id="w98-toggle" />
-              <span class="w98-slider"></span>
-              <span class="w98-label">Q</span>
-            </label>
             <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5" />
@@ -118,11 +113,89 @@ import '../styles/global.css';
         </svg>
       </button>
     </div>
+    <!-- ── Key Insight overlay (shared, single instance) ── -->
+    <div id="insight-overlay" class="insight-overlay" aria-modal="true" role="dialog" aria-labelledby="insight-overlay-title">
+      <div class="insight-modal">
+        <div class="insight-modal-accent" aria-hidden="true"></div>
+        <div class="insight-header">
+          <div class="insight-header-main">
+            <span class="insight-lc-badge"></span>
+            <div class="insight-header-body">
+              <span class="insight-title" id="insight-overlay-title"></span>
+              <div class="insight-header-chips" aria-label="Complexity">
+                <span class="insight-chip insight-chip--kind">Key insight</span>
+                <span class="insight-chip" title="Time">⏱&nbsp;<span class="insight-chip-time">—</span></span>
+                <span class="insight-chip" title="Space">💾&nbsp;<span class="insight-chip-space">—</span></span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="insight-close" aria-label="Close walkthrough">✕</button>
+        </div>
+        <div class="insight-panel">
+          <!-- 1. Visualization view: animated array + pointer frames (solo mode, or “Example” beside solution) -->
+          <div class="viz-view">
+            <div class="viz-example-badge">Example</div>
+            <div class="viz-step-label"></div>
+            <div class="viz-frame-wrap"></div>
+            <div class="viz-frame-note"></div>
+          </div>
+          <!-- 2. Solution view: pseudocode + side-by-side dry run -->
+          <div class="sol-view">
+            <div class="sol-split">
+              <div class="sol-split-main">
+                <div class="sol-step-title"></div>
+                <div class="sol-word-code">
+                  <div class="sol-prose-col">
+                    <div class="sol-prose-label">Summary</div>
+                    <div class="sol-explain"></div>
+                  </div>
+                  <div class="sol-code-col">
+                    <div class="sol-code-label">Code</div>
+                    <pre class="sol-code"></pre>
+                  </div>
+                </div>
+                <div class="sol-note"></div>
+              </div>
+              <aside class="sol-split-dry" aria-label="Numbers and state for this step">
+                <div class="sol-dry-head">Data · this step</div>
+                <div class="sol-dry-caption"></div>
+                <div class="sol-dry-frame"></div>
+                <pre class="sol-dry-aux"></pre>
+              </aside>
+            </div>
+          </div>
+          <!-- 3. Text fallback -->
+          <div class="insight-steps"></div>
+        </div>
+        <!-- Shared prev/play/next controls used by viz + sol modes -->
+        <div class="overlay-controls">
+          <div class="sol-dots"></div>
+          <label class="speed-ctl">
+            <span class="speed-ctl-lbl">Speed</span>
+            <select id="insight-speed" class="speed-ctl-select" aria-label="Playback speed" title="Applies to auto-advance, typing, pauses between steps, and note fade">
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+              <option value="3">3×</option>
+            </select>
+          </label>
+          <div class="sol-btns">
+            <button class="sol-btn sol-prev" aria-label="Previous">&#8592;</button>
+            <button class="sol-btn sol-playpause" aria-label="Play/Pause">&#9654;</button>
+            <button class="sol-btn sol-next" aria-label="Next">&#8594;</button>
+          </div>
+          <div class="sol-counter"></div>
+        </div>
+      </div>
+    </div>
+
     <div style="text-align:center;padding:0.6rem;font-size:0.72rem;color:var(--muted);">
       Need help? <a href="mailto:algofrog07@gmail.com" style="color:var(--primary);text-decoration:none;font-weight:600;">algofrog07@gmail.com</a>
     </div>
     <script>
       import { supabase } from '../lib/supabase';
+      import { getStepExplain, stepHasProseAside } from '../data/step-explain';
 
       // ── Auth Gate ──
       const { data: { session } } = await supabase.auth.getSession();
@@ -150,38 +223,61 @@ import '../styles/global.css';
       const isPaid = sub?.status === 'active' && sub.paid_until && new Date(sub.paid_until) > now;
       const isExpired = !isTrialActive && !isPaid;
 
+      type PayPlan = 'monthly' | 'quarterly';
+
       // Display user name + status badge
       const userName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || '';
       const userNameEl = document.getElementById('user-name')!;
       if (isTrialActive) {
         const daysLeft = Math.ceil((new Date(sub!.trial_ends_at).getTime() - now.getTime()) / 86400000);
         userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--warning, #e6a817);font-weight:600;margin-left:0.3rem;">Trial: ${daysLeft}d left</span>`;
-        const upgradeBtn = document.createElement('button');
-        upgradeBtn.textContent = 'Upgrade ₹199/mo';
-        upgradeBtn.style.cssText = 'font-size:0.68rem;padding:0.25rem 0.6rem;border-radius:0.3rem;background:var(--primary);color:var(--inv);border:none;cursor:pointer;font-weight:600;margin-left:0.4rem;';
-        upgradeBtn.addEventListener('click', () => openRazorpay());
-        userNameEl.parentElement!.insertBefore(upgradeBtn, userNameEl.nextSibling);
+        const trialBtns = document.createElement('span');
+        trialBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
+        const mkTrialPay = (label: string, plan: 'monthly' | 'quarterly') => {
+          const b = document.createElement('button');
+          b.textContent = label;
+          b.style.cssText =
+            'font-size:0.65rem;padding:0.22rem 0.5rem;border-radius:0.3rem;background:var(--primary);color:var(--inv);border:none;cursor:pointer;font-weight:600;';
+          b.addEventListener('click', () => openRazorpay(plan));
+          return b;
+        };
+        trialBtns.appendChild(mkTrialPay('₹149/mo', 'monthly'));
+        trialBtns.appendChild(mkTrialPay('₹299/3 mo', 'quarterly'));
+        userNameEl.parentElement!.insertBefore(trialBtns, userNameEl.nextSibling);
       } else if (isPaid) {
         const paidDaysLeft = Math.ceil((new Date(sub!.paid_until!).getTime() - now.getTime()) / 86400000);
         userNameEl.innerHTML = `${userName} <span style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.68rem;font-weight:700;margin-left:0.4rem;padding:0.15rem 0.5rem;border-radius:1rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;box-shadow:0 1px 4px rgba(1,105,111,0.3);letter-spacing:0.02em;">&#9733; PRO &middot; ${paidDaysLeft}d</span>`;
       } else {
-        // Expired: show banner + upgrade CTA
+        // Expired: show banner + upgrade choices
         userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:#e53e3e;font-weight:700;margin-left:0.3rem;">Trial Ended</span>`;
-        const upgradeBtn = document.createElement('button');
-        upgradeBtn.textContent = '🔓 Unlock Full Access';
-        upgradeBtn.style.cssText = 'font-size:0.68rem;padding:0.28rem 0.7rem;border-radius:0.3rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;border:none;cursor:pointer;font-weight:700;margin-left:0.5rem;box-shadow:0 1px 6px rgba(1,105,111,0.4);';
-        upgradeBtn.addEventListener('click', () => openRazorpay());
-        userNameEl.parentElement!.insertBefore(upgradeBtn, userNameEl.nextSibling);
+        const expBtns = document.createElement('span');
+        expBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
+        const mkExp = (label: string, plan: PayPlan) => {
+          const b = document.createElement('button');
+          b.textContent = label;
+          b.style.cssText =
+            'font-size:0.65rem;padding:0.24rem 0.55rem;border-radius:0.3rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;border:none;cursor:pointer;font-weight:700;box-shadow:0 1px 6px rgba(1,105,111,0.35);';
+          b.addEventListener('click', () => openRazorpay(plan));
+          return b;
+        };
+        expBtns.appendChild(mkExp('₹149/mo', 'monthly'));
+        expBtns.appendChild(mkExp('₹299/3 mo', 'quarterly'));
+        userNameEl.parentElement!.insertBefore(expBtns, userNameEl.nextSibling);
       }
 
       // ── Razorpay Checkout ──
-      function openRazorpay() {
+      function openRazorpay(plan: PayPlan = 'monthly') {
+        const amounts: Record<PayPlan, number> = { monthly: 14900, quarterly: 29900 };
+        const descriptions: Record<PayPlan, string> = {
+          monthly: 'DSA Mastery Guide — Monthly (₹149)',
+          quarterly: 'DSA Mastery Guide — Quarterly 3 months (₹299)',
+        };
         const options = {
           key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
-          amount: 19900, // ₹199 in paise
+          amount: amounts[plan],
           currency: 'INR',
           name: 'algofrog.in',
-          description: 'DSA Mastery Guide — Monthly Subscription',
+          description: descriptions[plan],
           prefill: {
             email: session.user.email,
             name: session.user.user_metadata?.full_name || '',
@@ -190,6 +286,7 @@ import '../styles/global.css';
           handler: async (response: any) => {
             const { data, error } = await supabase.rpc('activate_subscription', {
               payment_id: response.razorpay_payment_id,
+              plan,
             });
             if (error) {
               alert('Payment recorded but activation failed. Please contact support.');
@@ -216,11 +313,81 @@ import '../styles/global.css';
         .from('topics')
         // Explicitly exclude body_html from topics — content lives in topic_content now.
         // RLS on topic_content and problems restricts what expired users receive.
-        .select('id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta, topic_content(why_it_matters, core_idea, sub_variants, pattern_triggers, coverage_problems, red_flags), problems(order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)')
+        .select('id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta, topic_content(why_it_matters, core_idea, sub_variants, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)')
         .order('id');
       if (error || !topics?.length) {
         document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
         throw new Error(error?.message || 'No topics');
+      }
+
+      // ── Study preferences: Pro loads/saves to Supabase; non-Pro sees toggles disabled (no effect) ──
+      const LS_STUDY_PROBLEMS = 'study_problems_only';
+      const LS_STUDY_MIN = 'study_min_by_topic';
+
+      let studyProblemsOnlyPref = false;
+      let studyMinByTopic: Record<string, boolean> = {};
+
+      function loadStudyPrefsFromLocal() {
+        try {
+          const p = localStorage.getItem(LS_STUDY_PROBLEMS);
+          const legacyW98 = localStorage.getItem('w98mode');
+          studyProblemsOnlyPref = p === 'true' || (p === null && legacyW98 === 'true');
+          const raw = localStorage.getItem(LS_STUDY_MIN);
+          const parsed = raw ? JSON.parse(raw) : {};
+          studyMinByTopic = {};
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            for (const [k, v] of Object.entries(parsed)) {
+              if (v === true) studyMinByTopic[k] = true;
+            }
+          }
+        } catch (_) {
+          studyMinByTopic = {};
+        }
+      }
+
+      function normalizeMinMap(raw: unknown): Record<string, boolean> {
+        const out: Record<string, boolean> = {};
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+          for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+            if (v === true) out[k] = true;
+          }
+        }
+        return out;
+      }
+
+      if (isPaid) {
+        const { data: sp } = await supabase
+          .from('user_study_preferences')
+          .select('problems_only, min_coverage_by_topic')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        if (sp) {
+          studyProblemsOnlyPref = Boolean(sp.problems_only);
+          studyMinByTopic = normalizeMinMap(sp.min_coverage_by_topic);
+        } else {
+          loadStudyPrefsFromLocal();
+        }
+      } else {
+        studyProblemsOnlyPref = false;
+        studyMinByTopic = {};
+      }
+
+      let persistStudyTimer = 0;
+      function schedulePersistStudyPrefs() {
+        if (!isPaid) return;
+        window.clearTimeout(persistStudyTimer);
+        persistStudyTimer = window.setTimeout(async () => {
+          const { error: pe } = await supabase.from('user_study_preferences').upsert(
+            {
+              user_id: session.user.id,
+              problems_only: w98Active,
+              min_coverage_by_topic: studyMinByTopic,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' },
+          );
+          if (pe) console.error('Failed to save study preferences:', pe);
+        }, 450);
       }
 
       const topicMetas: Record<number, string> = {};
@@ -248,9 +415,7 @@ import '../styles/global.css';
           const navLocked = isExpired && !t.topic_content;
           navHtml += `<button class="nav-item${navLocked ? ' nav-locked' : ''}" data-topic-id="${t.id}" title="${navLocked ? 'Upgrade to Pro to access this topic' : ''}">`
             + `<span class="num">${t.display_number}</span>${t.nav_label}`
-            + (navLocked
-                ? `<span class="nav-lock-icon"><svg width="10" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg></span>`
-                : `<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>`)
+            + `<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>`
             + `</button>`;
         }
       }
@@ -312,7 +477,7 @@ import '../styles/global.css';
               ? `<span class="${DIFF_CLS[p.difficulty] || ''}">${p.difficulty}</span>`
               : '';
             const prem = p.is_premium ? `<span class="prem">✅</span>` : '';
-            h += `<tr>`;
+            h += `<tr data-problem-id="${p.id}">`;
             h += `<td class="num-cell">${p.order_num}</td>`;
             h += `<td><span class="${lc}">${isTrap ? '⚠️Trap' : esc(p.layer)}</span></td>`;
             h += `<td>${link}</td>`;
@@ -370,8 +535,14 @@ import '../styles/global.css';
             </div>
             <div class="locked-msg">Your free trial has ended</div>
             <div class="locked-sub">Upgrade to unlock all 43 topics and 1150+ problems — includes ${t.title} and everything beyond.</div>
-            <div class="locked-price"><span class="locked-price-amt">₹199</span><span class="locked-price-period"> / month</span></div>
-            <button class="upgrade-btn-card">🔓 Unlock Full Access</button>
+            <div class="locked-price-options">
+              <div><span class="locked-price-amt">₹149</span><span class="locked-price-period">/ month</span></div>
+              <div><span class="locked-price-amt">₹299</span><span class="locked-price-period">/ 3 months</span></div>
+            </div>
+            <div class="upgrade-btn-row">
+              <button type="button" class="upgrade-btn-card" data-pay-plan="monthly">🔓 Monthly — ₹149</button>
+              <button type="button" class="upgrade-btn-card upgrade-btn-card--secondary" data-pay-plan="quarterly">🔓 Quarterly — ₹299</button>
+            </div>
           </div>`;
         } else {
           bodyHtml = (t.problems?.length || t.topic_content?.why_it_matters || t.topic_content?.sub_variants?.length)
@@ -385,7 +556,10 @@ import '../styles/global.css';
 
       // Wire up upgrade buttons inside locked cards
       document.querySelectorAll('.upgrade-btn-card').forEach((btn) => {
-        btn.addEventListener('click', () => openRazorpay());
+        btn.addEventListener('click', () => {
+          const p = (btn as HTMLElement).dataset.payPlan === 'quarterly' ? 'quarterly' : 'monthly';
+          openRazorpay(p);
+        });
       });
 
       // ── Patch: add num-cell class to problem tables that lack it (DP topics) ──
@@ -397,6 +571,23 @@ import '../styles/global.css';
         table.querySelectorAll('tbody tr').forEach((row) => {
           const td = row.querySelector('td:first-child');
           if (td && /^\d+$/.test(td.textContent?.trim() || '')) td.classList.add('num-cell');
+        });
+      });
+
+      // ── Key Insight column: body_html tables often omit class="insight" on <td> ──
+      document.querySelectorAll('.topic-body table').forEach((table) => {
+        const thr = table.querySelector('thead tr');
+        if (!thr) return;
+        const headers = Array.from(thr.querySelectorAll('th')).map((th) =>
+          (th.textContent || '').toLowerCase().trim()
+        );
+        const insightIdx = headers.findIndex((h) => h.includes('insight'));
+        if (insightIdx < 0) return;
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+          const td = tr.children[insightIdx];
+          if (td && td.tagName === 'TD') {
+            td.classList.add('insight', 'insight-clickable');
+          }
         });
       });
 
@@ -416,44 +607,115 @@ import '../styles/global.css';
         });
       });
 
-      // ── Per-Topic "Min" Toggle (filters to coverage set) ──
-      document.querySelectorAll('.topic-card').forEach((card) => {
-        const pills = card.querySelectorAll('.coverage-box .pill');
-        if (!pills.length) return;
-
-        const coverageSet = new Set<string>();
-        pills.forEach((pill) => {
-          const m = (pill.textContent || '').match(/\d+/);
-          if (m) coverageSet.add(m[0]);
-        });
-        if (!coverageSet.size) return;
-
-        // Mark rows whose LC number is in the coverage set
-        let inMinCount = 0;
-        card.querySelectorAll('tbody tr').forEach((row) => {
-          if (!row.querySelector('.num-cell')) return;
-          const lcLink = row.querySelector('.lc-link');
-          const m = (lcLink?.textContent || '').match(/\d+/);
-          if (m && coverageSet.has(m[0])) {
-            row.classList.add('in-min');
-            inMinCount++;
+      // ── Attach DB problem IDs on problem-set rows (for problem_playback fetch) ──
+      function patchProblemRowIdsFromTopics(topicList: any[]) {
+        topicList.forEach((t: any) => {
+          if (!t.problems?.length) return;
+          const card = document.getElementById(`tp${t.id}`);
+          if (!card) return;
+          const sorted = [...t.problems].sort((a: any, b: any) => a.order_num - b.order_num);
+          const tables = card.querySelectorAll('.topic-body table');
+          let targetTable: HTMLTableElement | null = null;
+          for (const table of tables) {
+            const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+              (th.textContent || '').toLowerCase()
+            );
+            if (
+              headers.some((h) => h.includes('insight'))
+              && (headers.some((h) => h.includes('link')) || headers.some((h) => h.includes('layer')))
+            ) {
+              targetTable = table as HTMLTableElement;
+              break;
+            }
           }
+          if (!targetTable) {
+            for (const table of tables) {
+              if (table.querySelector('tbody tr .num-cell')) {
+                targetTable = table as HTMLTableElement;
+                break;
+              }
+            }
+          }
+          if (!targetTable) return;
+          const rows = [...targetTable.querySelectorAll('tbody tr')].filter((r) => r.querySelector('.num-cell'));
+          rows.forEach((row, idx) => {
+            const p = sorted[idx];
+            if (p?.id != null) row.setAttribute('data-problem-id', String(p.id));
+          });
         });
-        if (!inMinCount) return;
+      }
+      patchProblemRowIdsFromTopics(topics);
 
-        const titleRow = card.querySelector('.topic-title')?.parentElement;
+      let w98Active = studyProblemsOnlyPref;
+
+      function appendProblemsOnlyToggle(titleRow: HTMLElement) {
+        const lab = document.createElement('label');
+        lab.className = 'w98-switch w98-switch--inline' + (isPaid ? '' : ' study-pref--locked');
+        lab.title = isPaid
+          ? 'Problems only: hide explanations and extra sections (saved to your Pro profile)'
+          : 'Pro only — upgrade to filter the guide down to problem tables and sync this preference.';
+        lab.innerHTML =
+          '<input type="checkbox" class="w98-topic-toggle" /><span class="w98-slider"></span>'
+          + '<span class="w98-label">Problems only</span>';
+        titleRow.appendChild(lab);
+        const inp = lab.querySelector('.w98-topic-toggle') as HTMLInputElement;
+        inp.checked = isPaid && w98Active;
+        inp.disabled = !isPaid;
+      }
+
+      // ── Per-topic Core set + Problems only (Pro: both sync to profile) ──
+      document.querySelectorAll('.topic-card').forEach((card) => {
+        const titleRow = card.querySelector('.topic-title')?.parentElement as HTMLElement | undefined;
         if (!titleRow) return;
+        const topicIdStr = card.id.replace(/^tp/, '');
 
-        const toggle = document.createElement('label');
-        toggle.className = 'min-switch';
-        toggle.title = `Show only the ${inMinCount} minimum coverage problems`;
-        toggle.innerHTML = `<input type="checkbox" class="min-toggle" /><span class="min-slider"></span><span class="min-label">Min</span>`;
-        titleRow.appendChild(toggle);
+        const pills = card.querySelectorAll('.coverage-box .pill');
+        if (pills.length) {
+          const coverageSet = new Set<string>();
+          pills.forEach((pill) => {
+            const m = (pill.textContent || '').match(/\d+/);
+            if (m) coverageSet.add(m[0]);
+          });
+          if (coverageSet.size) {
+            let inMinCount = 0;
+            card.querySelectorAll('tbody tr').forEach((row) => {
+              if (!row.querySelector('.num-cell')) return;
+              const lcLink = row.querySelector('.lc-link');
+              const m = (lcLink?.textContent || '').match(/\d+/);
+              if (m && coverageSet.has(m[0])) {
+                row.classList.add('in-min');
+                inMinCount++;
+              }
+            });
+            if (inMinCount) {
+              const toggle = document.createElement('label');
+              toggle.className = 'min-switch' + (isPaid ? '' : ' study-pref--locked');
+              toggle.title = isPaid
+                ? `Core set: show only the ${inMinCount} minimum coverage problems (saved per topic in your Pro profile)`
+                : `Pro only — upgrade to show only these ${inMinCount} core coverage problems and save per topic.`;
+              toggle.innerHTML =
+                '<input type="checkbox" class="min-toggle" /><span class="min-slider"></span>'
+                + '<span class="min-label">Core set</span>';
+              titleRow.appendChild(toggle);
+              const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
+              if (isPaid && studyMinByTopic[topicIdStr]) {
+                checkbox.checked = true;
+                card.classList.add('min-active');
+              }
+              checkbox.disabled = !isPaid;
+              if (isPaid) {
+                checkbox.addEventListener('change', () => {
+                  card.classList.toggle('min-active', checkbox.checked);
+                  if (checkbox.checked) studyMinByTopic[topicIdStr] = true;
+                  else delete studyMinByTopic[topicIdStr];
+                  schedulePersistStudyPrefs();
+                });
+              }
+            }
+          }
+        }
 
-        const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
-        checkbox.addEventListener('change', () => {
-          card.classList.toggle('min-active', checkbox.checked);
-        });
+        appendProblemsOnlyToggle(titleRow);
       });
 
       // ── Progress Tracking (Pro only) ──
@@ -550,13 +812,12 @@ import '../styles/global.css';
       } else {
         const op = document.getElementById('overall-progress')!;
         op.innerHTML = '<div class="overall-progress-bar" style="opacity:0.3"><div class="overall-progress-fill" style="width:35%"></div></div><span style="font-size:0.65rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:0.3rem;margin-top:0.2rem;cursor:pointer;" id="pro-progress-cta">&#128274; Pro: Track progress</span>';
-        document.getElementById('pro-progress-cta')!.addEventListener('click', () => openRazorpay());
-        // Lock sidebar bars for non-pro
+        document.getElementById('pro-progress-cta')!.addEventListener('click', () => openRazorpay('monthly'));
+        // Non-pro: dim progress dots (no lock icon — same tier-dot affordance as Pro)
         document.querySelectorAll('.nav-item .tier-dot').forEach((dot) => {
           const el = dot as HTMLElement;
           el.style.opacity = '0.25';
           el.title = 'Upgrade to Pro to track progress';
-          el.innerHTML = '<svg width="10" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>';
         });
       }
 
@@ -574,11 +835,9 @@ import '../styles/global.css';
         btn.addEventListener('click', toggleTheme);
       });
 
-      // ── Windows 98 Mode ──
-      let w98Active = localStorage.getItem('w98mode') === 'true';
+      // ── Problems only (per-topic toggles; global state; Pro → profile) ──
       function applyW98() {
         document.documentElement.classList.toggle('w98-mode', w98Active);
-        // JS-based: hide/show — only problem tables & their section headings
         document.querySelectorAll('.topic-body').forEach((body) => {
           Array.from(body.children).forEach((child) => {
             const el = child as HTMLElement;
@@ -598,15 +857,25 @@ import '../styles/global.css';
             }
           });
         });
-        try { localStorage.setItem('w98mode', String(w98Active)); } catch (e) {}
       }
-      const w98Checkbox = document.getElementById('w98-toggle') as HTMLInputElement;
-      w98Checkbox.checked = w98Active;
+      function syncW98TopicToggles() {
+        document.querySelectorAll('.w98-topic-toggle').forEach((el) => {
+          const inp = el as HTMLInputElement;
+          if (!inp.disabled) inp.checked = w98Active;
+        });
+      }
+      syncW98TopicToggles();
       applyW98();
-      w98Checkbox.addEventListener('change', () => {
-        w98Active = w98Checkbox.checked;
-        applyW98();
-      });
+      if (isPaid) {
+        document.querySelectorAll('.w98-topic-toggle').forEach((el) => {
+          el.addEventListener('change', () => {
+            w98Active = (el as HTMLInputElement).checked;
+            syncW98TopicToggles();
+            applyW98();
+            schedulePersistStudyPrefs();
+          });
+        });
+      }
 
       // ── Topic Switching ──
       const navItems = document.querySelectorAll('.nav-item');
@@ -640,6 +909,786 @@ import '../styles/global.css';
         if (lastNav) show(parseInt(lastTopic), lastNav);
       }
 
+
+      // ── Key Insight Step-by-Step Overlay ──
+      (function () {
+        const overlay    = document.getElementById('insight-overlay')!;
+        const badge      = overlay.querySelector('.insight-lc-badge')!;
+        const titleEl    = overlay.querySelector('.insight-title')!;
+
+        // Views
+        const vizView    = overlay.querySelector<HTMLElement>('.viz-view')!;
+        const vizLabel   = overlay.querySelector<HTMLElement>('.viz-step-label')!;
+        const vizWrap    = overlay.querySelector<HTMLElement>('.viz-frame-wrap')!;
+        const vizNote    = overlay.querySelector<HTMLElement>('.viz-frame-note')!;
+        const solView    = overlay.querySelector<HTMLElement>('.sol-view')!;
+        const insightChipTime  = overlay.querySelector<HTMLElement>('.insight-chip-time')!;
+        const insightChipSpace = overlay.querySelector<HTMLElement>('.insight-chip-space')!;
+        const stepTitle     = overlay.querySelector('.sol-step-title')!;
+        const solWordCodeEl = overlay.querySelector<HTMLElement>('.sol-word-code')!;
+        const solExplainEl  = overlay.querySelector<HTMLElement>('.sol-explain')!;
+        const codeEl        = overlay.querySelector<HTMLElement>('.sol-code')!;
+        const noteEl        = overlay.querySelector<HTMLElement>('.sol-note')!;
+        const solSplitEl    = overlay.querySelector<HTMLElement>('.sol-split')!;
+        const solDryAside   = overlay.querySelector<HTMLElement>('.sol-split-dry')!;
+        const solDryCaption = overlay.querySelector<HTMLElement>('.sol-dry-caption')!;
+        const solDryFrame   = overlay.querySelector<HTMLElement>('.sol-dry-frame')!;
+        const solDryAux     = overlay.querySelector<HTMLElement>('.sol-dry-aux')!;
+        const fallback   = overlay.querySelector<HTMLElement>('.insight-steps')!;
+        const insightPanel = overlay.querySelector<HTMLElement>('.insight-panel')!;
+
+        // Shared controls
+        const controls   = overlay.querySelector<HTMLElement>('.overlay-controls')!;
+        const dotsEl     = overlay.querySelector('.sol-dots')!;
+        const prevBtn    = overlay.querySelector<HTMLButtonElement>('.sol-prev')!;
+        const ppBtn      = overlay.querySelector<HTMLButtonElement>('.sol-playpause')!;
+        const nextBtn    = overlay.querySelector<HTMLButtonElement>('.sol-next')!;
+        const counter    = overlay.querySelector('.sol-counter')!;
+        const speedSelect = document.getElementById('insight-speed') as HTMLSelectElement;
+        const LS_PLAYBACK_SPEED = 'insightPlaybackSpeed';
+        const SPEED_CHOICES = [0.5, 1, 1.5, 2, 3] as const;
+
+        // ── State ──
+        type OverlayMode = 'viz' | 'sol' | 'both';
+        let mode: OverlayMode = 'sol';
+        /** Viz frames when mode === 'both' (solution steps drive the timeline). */
+        let vizFrameList: any[] = [];
+        let frames: any[] = [];
+        let currentStep = 0;
+        let isPlaying = false;
+        let twTimer = 0;
+        let advTimer = 0;
+        /** Slightly slower typing/dwell only for very long curated walks */
+        let playbackExpanded = false;
+        /** Any step in current solution carries a dry-run snapshot */
+        let solutionHasAnyDry = false;
+        /** 0.5 … 3 — higher = faster (viz advance, typewriter, dwell) */
+        let playbackSpeed = 1;
+
+        function nearestPlaybackSpeed(v: number): number {
+          let best = SPEED_CHOICES[1];
+          let bestD = Infinity;
+          for (const s of SPEED_CHOICES) {
+            const d = Math.abs(s - v);
+            if (d < bestD) {
+              bestD = d;
+              best = s;
+            }
+          }
+          return best;
+        }
+
+        try {
+          const saved = parseFloat(localStorage.getItem(LS_PLAYBACK_SPEED) || '1');
+          if (Number.isFinite(saved) && saved >= 0.5 && saved <= 3) {
+            playbackSpeed = nearestPlaybackSpeed(saved);
+          }
+        } catch (_) {
+          /* ignore */
+        }
+
+        function syncSpeedSelect() {
+          const v = String(playbackSpeed);
+          if ([...speedSelect.options].some((o) => o.value === v)) speedSelect.value = v;
+          else {
+            speedSelect.value = '1';
+            playbackSpeed = 1;
+          }
+        }
+
+        /** Shorter CSS transitions when playback is faster (1/speed). */
+        function applyPlaybackSpeedCss() {
+          overlay.style.setProperty('--insight-speed-visual', String(1 / playbackSpeed));
+        }
+
+        syncSpeedSelect();
+        applyPlaybackSpeedCss();
+
+        /**
+         * Scale durations: 2× speed → half the wait.
+         * Use a low `floorMs` for per-character typing; higher floor for gaps between steps
+         * so timers never fire too eagerly.
+         */
+        function atSpeed(ms: number, floorMs = 40): number {
+          return Math.max(floorMs, Math.round(ms / playbackSpeed));
+        }
+
+        speedSelect.addEventListener('change', () => {
+          const v = parseFloat(speedSelect.value);
+          if (v >= 0.5 && v <= 3) playbackSpeed = v;
+          try {
+            localStorage.setItem(LS_PLAYBACK_SPEED, String(playbackSpeed));
+          } catch (_) {
+            /* ignore */
+          }
+          applyPlaybackSpeedCss();
+          if (overlay.classList.contains('active') && isPlaying) {
+            stopAll();
+            showFrame(currentStep);
+          }
+        });
+
+        function stepHasDrySnapshot(dry: unknown): boolean {
+          if (!dry || typeof dry !== 'object') return false;
+          const d = dry as { cells?: unknown[]; auxLines?: unknown[] };
+          return Boolean((d.cells && d.cells.length > 0) || (d.auxLines && d.auxLines.length > 0));
+        }
+
+        function escHtml(s: string) {
+          return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function setInsightChips(time: string, space: string) {
+          insightChipTime.textContent = time || '—';
+          insightChipSpace.textContent = space || '—';
+        }
+
+        function stopAll() { clearInterval(twTimer); clearTimeout(advTimer); }
+
+        function syncControls() {
+          dotsEl.querySelectorAll('.sol-dot').forEach((d, i) =>
+            d.classList.toggle('active', i === currentStep)
+          );
+          counter.textContent = `${currentStep + 1} / ${frames.length}`;
+          prevBtn.disabled = currentStep === 0;
+          nextBtn.disabled = currentStep === frames.length - 1;
+        }
+
+        function buildDots() {
+          dotsEl.innerHTML = frames.map((_, i) =>
+            `<button class="sol-dot${i === 0 ? ' active' : ''}" data-step="${i}" aria-label="Step ${i + 1}"></button>`
+          ).join('');
+          dotsEl.querySelectorAll<HTMLButtonElement>('.sol-dot').forEach((d) => {
+            d.addEventListener('click', () => { pause(); showFrame(parseInt(d.dataset.step!)); });
+          });
+        }
+
+        // ── Shared array / vars grid (viz + solution dry run) ──
+        function buildCellsVarsHtml(
+          cells: Array<{ v: string | number; s?: string; p?: string }>,
+          vars: Array<{ k: string; v: string | number; hi?: boolean }>
+        ): string {
+          if (!cells.length) return '';
+          const cellsHtml = cells.map((c) =>
+            `<div class="viz-cell viz-${c.s || 'n'}">${escHtml(String(c.v))}</div>`
+          ).join('');
+          const labelsHtml = cells.map((c) =>
+            `<div class="viz-ptr">${c.p ? `<span class="viz-arrow">↑</span><span>${escHtml(c.p.replace(/↑\s*/g, ''))}</span>` : ''}</div>`
+          ).join('');
+          const varsHtml = vars.map((v) =>
+            `<span class="viz-var${v.hi ? ' viz-hi' : ''}">${escHtml(v.k)}<span class="viz-eq"> = </span><strong>${escHtml(String(v.v))}</strong></span>`
+          ).join('');
+          return `<div class="viz-array-grid" style="grid-template-columns:repeat(${cells.length},1fr)">${cellsHtml}${labelsHtml}</div>${varsHtml ? `<div class="viz-vars">${varsHtml}</div>` : ''}`;
+        }
+
+        function renderVizFrame(frame: any): string {
+          const cells = (frame.cells || []) as Array<{ v: string | number; s?: string; p?: string }>;
+          const vars = (frame.vars || []) as Array<{ k: string; v: string | number; hi?: boolean }>;
+          return buildCellsVarsHtml(cells, vars);
+        }
+
+        /** Map solution step index → viz frame index when counts differ. */
+        function vizIdxForSolStep(solIdx: number): number {
+          const vn = vizFrameList.length;
+          const sn = frames.length;
+          if (vn <= 0 || sn <= 0) return 0;
+          if (sn <= 1) return 0;
+          if (vn >= sn) return Math.min(solIdx, vn - 1);
+          return Math.round((solIdx * (vn - 1)) / (sn - 1));
+        }
+
+        function renderPairedExample(solIdx: number) {
+          if (mode !== 'both' || !vizFrameList.length) return;
+          const fi = vizIdxForSolStep(solIdx);
+          const frame = vizFrameList[fi];
+          if (!frame) return;
+          vizLabel.textContent = frame.title || '';
+          vizWrap.style.opacity = '1';
+          vizWrap.innerHTML = renderVizFrame(frame);
+          vizNote.textContent = frame.note || '';
+        }
+
+        function updateSolDryPanel(step: any) {
+          const dry = step.dry as { caption?: string; cells?: any[]; vars?: any[]; auxTitle?: string; auxLines?: string[] } | undefined;
+          const showAside = solutionHasAnyDry && stepHasDrySnapshot(dry);
+          solSplitEl.classList.toggle('sol-split--wide', showAside);
+          solDryAside.style.display = showAside ? '' : 'none';
+          if (!showAside) {
+            solDryCaption.textContent = '';
+            solDryFrame.innerHTML = '';
+            solDryAux.textContent = '';
+            solDryAux.style.display = 'none';
+            return;
+          }
+          solDryCaption.textContent = dry!.caption || '';
+          solDryFrame.innerHTML = dry!.cells?.length ? buildCellsVarsHtml(dry!.cells, dry!.vars || []) : '';
+          if (dry!.auxLines?.length) {
+            solDryAux.style.display = 'block';
+            solDryAux.textContent = (dry!.auxTitle ? `${dry!.auxTitle}\n` : '') + dry!.auxLines.join('\n');
+          } else {
+            solDryAux.style.display = 'none';
+            solDryAux.textContent = '';
+          }
+        }
+
+        function showVizFrame(idx: number) {
+          stopAll();
+          currentStep = Math.max(0, Math.min(idx, frames.length - 1));
+          const frame = frames[currentStep];
+          syncControls();
+          vizLabel.textContent = frame.title;
+          vizWrap.style.opacity = '1';
+          vizWrap.innerHTML = renderVizFrame(frame);
+          vizNote.textContent = frame.note;
+          if (isPlaying) {
+            const dwellAt = currentStep;
+            if (dwellAt < frames.length - 1) {
+              advTimer = window.setTimeout(() => {
+                if (!isPlaying || currentStep !== dwellAt) return;
+                showVizFrame(dwellAt + 1);
+              }, atSpeed(1650, 120));
+            } else {
+              isPlaying = false;
+              ppBtn.textContent = '▶';
+            }
+          }
+        }
+
+        // ── Sol renderer (typewriter) ──
+        function typeCode(text: string, onDone: () => void, msPerChar?: number) {
+          stopAll();
+          codeEl.textContent = '';
+          codeEl.classList.remove('typing');
+          if (!text.length) {
+            queueMicrotask(onDone);
+            return;
+          }
+          codeEl.classList.add('typing');
+          let i = 0;
+          const n = text.length;
+          const adaptive =
+            msPerChar ??
+            (playbackExpanded
+              ? Math.max(5, Math.min(12, Math.floor(2100 / Math.max(n, 100))))
+              : Math.max(4, Math.min(11, Math.floor(1300 / Math.max(n, 72)))));
+          const tickMs = atSpeed(adaptive, 1);
+          twTimer = window.setInterval(() => {
+            if (i < text.length) {
+              codeEl.textContent += text[i++];
+            } else {
+              clearInterval(twTimer);
+              codeEl.classList.remove('typing');
+              onDone();
+            }
+          }, tickMs);
+        }
+
+        function solStepDwellMs(codeLen: number): number {
+          let base: number;
+          if (playbackExpanded) {
+            base = Math.min(5000, Math.max(2200, codeLen * 20 + 700));
+          } else {
+            base = Math.min(3600, Math.max(1100, codeLen * 13 + 350));
+          }
+          return atSpeed(base, 100);
+        }
+
+        function solutionStepCodeText(step: any): string {
+          const c = step?.code;
+          if (Array.isArray(c)) return c.join('\n');
+          if (c == null) return '';
+          return String(c);
+        }
+
+        /** After typing finishes: wait, then next step (only if still playing & same step). */
+        function scheduleSolAdvanceAfterDwell(finishedIdx: number, codeLen: number) {
+          if (!isPlaying) return;
+          advTimer = window.setTimeout(() => {
+            if (!isPlaying || currentStep !== finishedIdx) return;
+            if (finishedIdx < frames.length - 1) showSolStep(finishedIdx + 1);
+            else {
+              isPlaying = false;
+              ppBtn.textContent = '▶';
+            }
+          }, solStepDwellMs(codeLen));
+        }
+
+        function showSolStep(idx: number) {
+          stopAll();
+          currentStep = Math.max(0, Math.min(idx, frames.length - 1));
+          const step = frames[currentStep];
+          syncControls();
+          if (mode === 'both') renderPairedExample(currentStep);
+          stepTitle.textContent = step.title;
+          const prose = getStepExplain(step);
+          const splitWords = stepHasProseAside(step);
+          solWordCodeEl.classList.toggle('sol-word-code--split', splitWords);
+          solExplainEl.textContent = splitWords ? prose : '';
+          noteEl.classList.remove('visible');
+          const noteRaw = String(step.note ?? '').trim();
+          noteEl.textContent = noteRaw;
+          updateSolDryPanel(step);
+          const codeText = solutionStepCodeText(step);
+          const stepIdx = currentStep;
+          typeCode(codeText, () => {
+            if (noteRaw) noteEl.classList.add('visible');
+            if (isPlaying) {
+              if (stepIdx < frames.length - 1) scheduleSolAdvanceAfterDwell(stepIdx, codeText.length);
+              else {
+                isPlaying = false;
+                ppBtn.textContent = '▶';
+              }
+            }
+          });
+        }
+
+        // ── Unified dispatch ──
+        function showFrame(idx: number) {
+          if (mode === 'viz') showVizFrame(idx);
+          else showSolStep(idx);
+        }
+
+        function pause() { isPlaying = false; ppBtn.textContent = '▶'; stopAll(); }
+
+        function play() {
+          isPlaying = true;
+          ppBtn.textContent = '⏸';
+          if (mode === 'viz') {
+            showFrame(currentStep);
+            return;
+          }
+          const step = frames[currentStep];
+          if (!step) {
+            showFrame(currentStep);
+            return;
+          }
+          const codeText = solutionStepCodeText(step);
+          const noteText = String(step.note ?? '').trim();
+          const noteOk =
+            !noteText
+            || (noteEl.classList.contains('visible') && noteEl.textContent.trim() === noteText);
+          const fullyShown =
+            !codeEl.classList.contains('typing')
+            && codeEl.textContent === codeText
+            && noteOk;
+          if (fullyShown) {
+            if (currentStep < frames.length - 1) scheduleSolAdvanceAfterDwell(currentStep, codeText.length);
+            else {
+              isPlaying = false;
+              ppBtn.textContent = '▶';
+            }
+            return;
+          }
+          showFrame(currentStep);
+        }
+
+        /** Split key insight into fine-grained beats (also used by sync script idea). */
+        function parseInsightSegments(insight: string): string[] {
+          let t = insight.trim().replace(/\u2192/g, '→').replace(/\s*->\s*/g, '→');
+          if (!t) return [];
+          let chunks: string[] = [];
+          if (t.includes('→')) chunks = t.split('→').map((s) => s.trim()).filter(Boolean);
+          else if (t.includes(';')) chunks = t.split(';').map((s) => s.trim()).filter(Boolean);
+          else if (t.length > 36 && /\s\|\s/.test(t)) chunks = t.split(/\s\|\s/).map((s) => s.trim()).filter(Boolean);
+          else chunks = [t];
+
+          const out: string[] = [];
+          for (const c of chunks) {
+            if (c.length > 130 && c.includes('. ')) {
+              out.push(...c.split(/(?<=\.)\s+/).map((s) => s.trim()).filter(Boolean));
+            } else if (c.length > 85 && /,\s+/.test(c) && !/\bO\(/.test(c)) {
+              const bits = c.split(/,\s+/).map((s) => s.trim()).filter(Boolean);
+              if (bits.length > 1) out.push(...bits);
+              else out.push(c);
+            } else out.push(c);
+          }
+          return out.filter(Boolean);
+        }
+
+        function shortInsightTitle(s: string, max = 56): string {
+          const one = s.replace(/\s+/g, ' ').trim();
+          if (one.length <= max) return one;
+          return one.slice(0, max - 1) + '…';
+        }
+
+        function insightNoteToCodeLines(note: string): string[] {
+          const words = note.replace(/\s+/g, ' ').trim().split(/\s+/);
+          const lines: string[] = [];
+          let buf = '# ';
+          for (const w of words) {
+            if (!w) continue;
+            if ((buf + w).length > 72) {
+              lines.push(buf.trimEnd());
+              buf = '# ' + w + ' ';
+            } else buf += w + ' ';
+          }
+          const last = buf.trimEnd();
+          if (last !== '#') lines.push(last);
+          return lines.length ? lines : ['# ' + note];
+        }
+
+        function inferMicroHint(segment: string, ctx: string): string | null {
+          const s = (segment + ' ' + ctx).toLowerCase();
+          if (/invariant|eliminate|discard|search space|monotone/.test(s)) return 'Each step removes impossible candidates — the invariant tells you what is still possible.';
+          if (/two pointer|lo.*hi|left.*right|opposite/.test(s)) return 'Only move the pointer that cannot discard the answer yet; the other side stays a valid candidate.';
+          if (/binary|mid|half/.test(s)) return 'Compare mid to target or boundary — one side is always sorted or safe to drop.';
+          if (/window|subarray|substring/.test(s)) return 'Grow the window while valid, shrink from the left while invalid — amortized O(n).';
+          if (/hash|map|frequency|counter/.test(s)) return 'Turn “have I seen this?” into O(1) lookup — trade space for time.';
+          if (/stack|monotonic/.test(s)) return 'The stack orders candidates so the next useful element is always on top.';
+          if (/dp|memo|optimal sub/.test(s)) return 'Reuse answers to smaller prefixes — define state so overlaps appear.';
+          if (/bfs|queue|level/.test(s)) return 'Process layers in order — first time you reach a node is often shortest path.';
+          if (/dfs|recurs|backtrack/.test(s)) return 'Try choices, undo on failure — prune when constraints break.';
+          if (/greedy|sort.*then/.test(s)) return 'Make the locally safe choice that cannot block a global optimum (when the structure allows it).';
+          return null;
+        }
+
+        type SynthStep = { title: string; code: string[]; note: string; phase?: string };
+
+        /** Pattern vocabulary — gives viewers a mental scaffold before line-by-line insight. */
+        function patternPrimers(title: string, insight: string): SynthStep[] {
+          const s = (title + ' ' + insight).toLowerCase();
+          const primers: SynthStep[] = [];
+
+          const add = (title: string, code: string[], note: string, phase: string) => {
+            primers.push({ title, code, note, phase });
+          };
+
+          if (/binary search|bisect|\bmid\b.*\b(sorted|half)/.test(s) || (/sorted/.test(s) && /\blog\b|\(\s*lo|\bhi\b/.test(s))) {
+            add(
+              'Pattern · halving the search space',
+              [
+                '# Binary search mindset',
+                '# Maintain an interval [lo, hi] that MUST still contain the answer.',
+                '# Pick mid = (lo + hi) // 2  (watch overflow variants in code)',
+                '# Compare / check mid → discard one half → repeat.',
+                '# Stop when lo meets hi or you found the probe point.',
+              ],
+              'Every comparison removes roughly half of remaining possibilities — that is why we get logarithmic depth.',
+              'Pattern'
+            );
+          } else if (/two pointer|two-pointer|opposite|left.*right|\blo\b.*\bhi\b/.test(s)) {
+            add(
+              'Pattern · two moving boundaries',
+              [
+                '# Two-pointer scaffold',
+                '# Place pointers at meaningful ends (0 and n-1, or both array heads).',
+                '# Each step: use the problem rule to advance ONE pointer.',
+                '# The rule is usually monotone — you never undo a dismissal.',
+                '# Stop when pointers cross or meet the success condition.',
+              ],
+              'You are proving an invariant about what lies between the pointers while shrinking the unknown region.',
+              'Pattern'
+            );
+          } else if (/sliding window|subarray|substring|consecutive/.test(s)) {
+            add(
+              'Pattern · expanding / contracting window',
+              [
+                '# Sliding window scaffold',
+                '# right (or end) grows while the window is “allowed”.',
+                '# When it breaks validity, move left (start) forward until valid again.',
+                '# Track the aggregate you care about (sum, counts, uniqueness).',
+              ],
+              'Each index enters and leaves the window at most once — typically linear time overall.',
+              'Pattern'
+            );
+          } else if (/fast.*slow|floyd|cycle/.test(s)) {
+            add(
+              'Pattern · fast / slow pointers',
+              [
+                '# Floyd-style movement',
+                '# slow += 1 step per tick; fast += 2 (or k vs 1).',
+                '# If there is a cycle, fast eventually laps slow inside the loop.',
+                '# For entry detection: after meet, reset one pointer to head.',
+              ],
+              'Relative speed creates a meeting point that encodes structural facts about the list.',
+              'Pattern'
+            );
+          } else if (/hash|map|dictionary|frequency|counter/.test(s)) {
+            add(
+              'Pattern · dictionary / counts',
+              [
+                '# Hash map recipe',
+                '# Choose key = the piece you need to look up in O(1).',
+                '# Update structure as you scan; check complement / balance as you go.',
+                '# Space pays for time — bounded by alphabet or distinct elements.',
+              ],
+              'If the bottleneck is repeated lookup, a map turns linear scans into constant checks.',
+              'Pattern'
+            );
+          } else if (/monotonic stack|stack/.test(s)) {
+            add(
+              'Pattern · stack of candidates',
+              [
+                '# Stack intuition',
+                '# Push while maintaining order / usefulness.',
+                '# Pop when the new element invalidates old candidates.',
+                '# The answer for “next greater / nearest …” often sits at stack top.',
+              ],
+              'You delay decisions until future input proves which past items are irrelevant.',
+              'Pattern'
+            );
+          } else if (/\bbfs\b|queue|level-order|shortest.*unweighted/.test(s)) {
+            add(
+              'Pattern · breadth-first traversal',
+              [
+                '# BFS sketch',
+                '# Queue stores frontier; dequeue → explore neighbors.',
+                '# Mark visited to avoid cycles.',
+                '# First dequeue of a target often yields shortest path in unweighted graphs.',
+              ],
+              'Layers expand uniformly — distance increases one edge at a time.',
+              'Pattern'
+            );
+          } else if (/\bdfs\b|backtrack|recurs/.test(s)) {
+            add(
+              'Pattern · depth-first / backtracking',
+              [
+                '# DFS / backtrack sketch',
+                '# Choose → recurse → if dead end, undo last choice.',
+                '# Prune early when constraints fail.',
+                '# Memoize when the same sub-state appears from different paths.',
+              ],
+              'You explore one complete branch before switching — stack frames mirror the recursion tree.',
+              'Pattern'
+            );
+          } else if (/\bdp\b|memo|optimal sub/.test(s)) {
+            add(
+              'Pattern · dynamic programming',
+              [
+                '# DP checklist',
+                '# 1) Define state[i] or dp[i][j] as the optimum for a prefix/subproblem.',
+                '# 2) Write recurrence using smaller indices.',
+                '# 3) Pick order so dependencies are ready (bottom-up) or memo top-down.',
+              ],
+              'Overlapping subproblems mean brute-force recursion explodes — tables reuse work.',
+              'Pattern'
+            );
+          }
+
+          return primers.slice(0, 2);
+        }
+
+        function buildRichInsightStep(part: string, i: number, total: number, ctx: string): SynthStep {
+          const hint = inferMicroHint(part, ctx);
+          const code: string[] = [
+            `# ─── Logic ${i + 1} / ${total} ───`,
+            '#',
+            ...insightNoteToCodeLines(part),
+          ];
+          if (hint) {
+            code.push('#', `# Insight: ${hint}`);
+          }
+          return {
+            title: shortInsightTitle(part),
+            code,
+            note: hint ? `${part}\n\nWhy it fits: ${hint}` : part,
+            phase: 'Execution',
+          };
+        }
+
+        /** Multi-phase walkthrough when no hand-authored solution exists. */
+        function buildSyntheticSolutionSteps(insight: string, title: string): SynthStep[] {
+          let parts = parseInsightSegments(insight);
+          if (parts.length > 10) {
+            parts = parts.slice(0, 9).concat(parts.slice(9).join(' · '));
+          }
+          if (parts.length === 0) {
+            return [
+              {
+                title: 'Open the statement',
+                code: [
+                  '# No key insight text is stored for this row yet.',
+                  '# On LeetCode: read constraints → try one example by hand → note the bottleneck.',
+                  '# Common angles: brute force bound → sort → two pointers / binary search / hash map.',
+                ],
+                note: 'Once your Supabase row has key_insight text, this overlay will expand it into a full animated walkthrough.',
+                phase: 'Setup',
+              },
+            ];
+          }
+
+          const ctx = parts.join(' ');
+          const primers = patternPrimers(title, insight);
+          const steps: SynthStep[] = [];
+
+          for (const p of primers) steps.push(p);
+
+          steps.push({
+            title: `Goal · ${shortInsightTitle(title, 44)}`,
+            code: [
+              '# What we are proving / computing',
+              `# Problem focus: ${title}`,
+              '#',
+              ...insightNoteToCodeLines(parts[0]),
+              ...(parts.length > 1 ? ['#', '# (Additional moves follow in the next steps.)'] : []),
+            ],
+            note: '',
+            phase: 'Goal',
+          });
+
+          parts.forEach((part, i) => {
+            steps.push(buildRichInsightStep(part, i, parts.length, ctx));
+          });
+
+          steps.push({
+            title: 'Recap · chain the story',
+            code: [
+              '# End-to-end narrative (say this once fluently):',
+              ...parts.flatMap((p, j) => [`# ${j + 1}. ${shortInsightTitle(p, 68)}`]),
+              '#',
+              '# Tip: name the invariant or the quantity you minimize/maximize — interviewers listen for that.',
+            ],
+            note: parts.length > 1
+              ? `Single thread: ${parts.map((p) => shortInsightTitle(p, 42)).join(' → ')}`
+              : 'One core idea drives the whole solution — rehearse it until it feels obvious.',
+            phase: 'Recap',
+          });
+
+          return steps;
+        }
+
+        // ── Open overlay ──
+        async function openOverlay(lcNum: string, title: string, insight: string, problemId?: string) {
+          badge.textContent   = lcNum ? `LC ${lcNum}` : '';
+          titleEl.textContent = title;
+
+          let viz: { frames?: any[] } | null = null;
+          let sol: { approach?: string; time?: string; space?: string; steps?: any[] } | null = null;
+
+          if (problemId) {
+            const { data: pb } = await supabase
+              .from('problem_playback')
+              .select('solution, visualization')
+              .eq('problem_id', problemId)
+              .maybeSingle();
+            const vis = pb?.visualization;
+            if (vis && typeof vis === 'object' && Array.isArray((vis as { frames?: unknown }).frames)) {
+              const fr = (vis as { frames: unknown[] }).frames;
+              if (fr.length) viz = vis as { frames: any[] };
+            }
+            const s = pb?.solution;
+            if (s && typeof s === 'object' && Array.isArray((s as { steps?: unknown }).steps)) {
+              const st = (s as { steps: unknown[] }).steps;
+              if (st.length) sol = s as typeof sol;
+            }
+          }
+
+          const hasViz = Boolean(viz?.frames?.length);
+          const hasSolSteps = Boolean(sol?.steps?.length);
+
+          if (hasViz && hasSolSteps) {
+            // ── Example + walkthrough side by side (timeline = solution steps) ──
+            mode = 'both';
+            vizFrameList = viz!.frames;
+            frames = sol!.steps!;
+            vizView.style.display = 'block';
+            solView.style.display = 'block';
+            vizView.classList.add('viz-view--paired');
+            insightPanel.classList.add('insight-panel--example-split');
+            fallback.style.display = 'none';
+            controls.style.display = 'flex';
+            setInsightChips(String(sol!.time ?? '—'), String(sol!.space ?? '—'));
+            solutionHasAnyDry = frames.some((s: any) => stepHasDrySnapshot(s.dry));
+            playbackExpanded = frames.length >= 12;
+            currentStep = 0;
+            isPlaying = true;
+            buildDots();
+            ppBtn.textContent = '⏸';
+            showSolStep(0);
+          } else if (hasViz) {
+            // ── Visualization only ──
+            mode = 'viz';
+            vizFrameList = [];
+            vizView.classList.remove('viz-view--paired');
+            insightPanel.classList.remove('insight-panel--example-split');
+            vizView.style.display = 'block';
+            solView.style.display = 'none';
+            fallback.style.display = 'none';
+            controls.style.display = 'flex';
+            setInsightChips('—', '—');
+            frames = viz!.frames;
+            currentStep = 0;
+            isPlaying = true;
+            buildDots();
+            ppBtn.textContent = '⏸';
+            showVizFrame(0);
+          } else {
+            // ── Solution-only or synthesized insight ──
+            if (!sol?.steps?.length) {
+              sol = {
+                approach: 'Key insight',
+                time: '—',
+                space: '—',
+                steps: buildSyntheticSolutionSteps(insight, title),
+              };
+            }
+            mode = 'sol';
+            vizFrameList = [];
+            vizView.classList.remove('viz-view--paired');
+            insightPanel.classList.remove('insight-panel--example-split');
+            vizView.style.display = 'none';
+            solView.style.display = 'block';
+            fallback.style.display = 'none';
+            controls.style.display = 'flex';
+            setInsightChips(String(sol!.time ?? '—'), String(sol!.space ?? '—'));
+            frames = sol!.steps!;
+            solutionHasAnyDry = frames.some((s: any) => stepHasDrySnapshot(s.dry));
+            playbackExpanded = frames.length >= 12;
+            currentStep = 0;
+            isPlaying = true;
+            buildDots();
+            ppBtn.textContent = '⏸';
+            showSolStep(0);
+          }
+
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeOverlay() {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+          stopAll(); isPlaying = false;
+          vizFrameList = [];
+          vizView.classList.remove('viz-view--paired');
+          insightPanel.classList.remove('insight-panel--example-split');
+          setInsightChips('—', '—');
+          solutionHasAnyDry = false;
+          solSplitEl.classList.remove('sol-split--wide');
+          solDryAside.style.display = '';
+          solDryCaption.textContent = '';
+          solDryFrame.innerHTML = '';
+          solDryAux.textContent = '';
+          solDryAux.style.display = 'none';
+        }
+
+        prevBtn.addEventListener('click', () => { pause(); showFrame(currentStep - 1); });
+        nextBtn.addEventListener('click', () => { pause(); showFrame(currentStep + 1); });
+        ppBtn.addEventListener('click',   () => { isPlaying ? pause() : play(); });
+
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+        overlay.querySelector('.insight-close')!.addEventListener('click', closeOverlay);
+        document.addEventListener('keydown', (e) => {
+          if (!overlay.classList.contains('active')) return;
+          if (e.key === 'Escape')      { closeOverlay(); return; }
+          if (e.key === 'ArrowRight')  { pause(); showFrame(currentStep + 1); }
+          if (e.key === 'ArrowLeft')   { pause(); showFrame(currentStep - 1); }
+          if (e.key === ' ')           { e.preventDefault(); isPlaying ? pause() : play(); }
+        });
+
+        document.querySelectorAll('td.insight').forEach((cell) => {
+          const text = cell.textContent?.trim();
+          if (!text) return;
+          (cell as HTMLElement).classList.add('insight-clickable');
+          cell.addEventListener('click', () => {
+            const row = cell.closest('tr')!;
+            const lcNum = (row.querySelector('.lc-link')?.textContent || '').match(/\d+/)?.[0] || '';
+            const title = row.querySelector('.prob-name')?.textContent?.replace(/^⚠️\s*/, '').trim() || '';
+            const problemId = row.getAttribute('data-problem-id') || '';
+            openOverlay(lcNum, title, text, problemId);
+          });
+        });
+      })();
 
       // ── Mobile Nav ──
       document.getElementById('mob-nav-btn')!.addEventListener('click', () => {
