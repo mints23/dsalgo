@@ -1,0 +1,22 @@
+---
+/**
+ * Brand mark: lotus on a pond with ripples (source: /public/logo-mark.svg).
+ */
+interface Props {
+  width?: number;
+  height?: number;
+  class?: string;
+  /** Empty string when the wordmark beside the mark already names the product */
+  alt?: string;
+}
+const { width = 28, height = 28, class: className = '', alt = '' } = Astro.props;
+---
+<img
+  src="/logo-mark.svg"
+  width={width}
+  height={height}
+  class:list={['logo-mark', className]}
+  alt={alt}
+  loading="eager"
+  decoding="async"
+/>
