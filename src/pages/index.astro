@@ -166,6 +166,37 @@ import '../styles/global.css';
             </button>
           </div>
         </div>
+        <div class="guide-method-strip" id="guide-method-strip">
+          <div class="guide-method-strip-layout">
+            <details class="guide-method-details">
+              <summary class="guide-method-summary">
+                <span class="guide-method-badge">Method</span>
+                <div class="guide-method-summary-main">
+                  <span class="guide-method-tagline">Solve in sequence</span>
+                  <p class="guide-method-blurb">
+                    Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
+                  </p>
+                  <span class="guide-method-summary-hint">Why sequence matters</span>
+                </div>
+                <span class="guide-method-chevron" aria-hidden="true">▾</span>
+              </summary>
+              <div class="guide-method-body">
+                <p class="guide-method-lede">
+                  Inside every topic table, rows are <strong>ordered on purpose</strong>: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most <strong>methodical path to mastering the topic</strong>—learning accumulates step by step instead of skipping around.
+                </p>
+              </div>
+            </details>
+            <button
+              type="button"
+              class="guide-method-dismiss"
+              id="guide-method-dismiss"
+              aria-label="Hide this note until next visit"
+              title="Hide until next visit"
+            >
+              ×
+            </button>
+          </div>
+        </div>
         <div class="content" id="content"></div>
       </div>
 
@@ -439,6 +470,18 @@ import '../styles/global.css';
         document.getElementById('pro-benefits-dismiss')?.addEventListener('click', () => {
           sessionStorage.setItem(PRO_STRIP_DISMISS_KEY, '1');
           proBenefitsStrip.hidden = true;
+        });
+      }
+
+      const GUIDE_METHOD_DISMISS_KEY = 'guide_method_strip_dismiss';
+      const guideMethodStrip = document.getElementById('guide-method-strip');
+      if (guideMethodStrip) {
+        if (sessionStorage.getItem(GUIDE_METHOD_DISMISS_KEY) === '1') {
+          guideMethodStrip.hidden = true;
+        }
+        document.getElementById('guide-method-dismiss')?.addEventListener('click', () => {
+          sessionStorage.setItem(GUIDE_METHOD_DISMISS_KEY, '1');
+          guideMethodStrip.hidden = true;
         });
       }
 
@@ -796,6 +839,17 @@ import '../styles/global.css';
 
       let w98Active = studyProblemsOnlyPref;
 
+      function syncGuideMethodStripVisibility() {
+        const strip = document.getElementById('guide-method-strip');
+        if (!strip) return;
+        if (sessionStorage.getItem(GUIDE_METHOD_DISMISS_KEY) === '1') {
+          strip.hidden = true;
+          return;
+        }
+        strip.hidden = w98Active;
+      }
+      syncGuideMethodStripVisibility();
+
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
         const lab = document.createElement('label');
         lab.className = 'w98-switch w98-switch--inline' + (isPaid ? '' : ' study-pref--locked');
@@ -1021,6 +1075,7 @@ import '../styles/global.css';
             }
           });
         });
+        syncGuideMethodStripVisibility();
       }
       function syncW98TopicToggles() {
         document.querySelectorAll('.w98-topic-toggle').forEach((el) => {

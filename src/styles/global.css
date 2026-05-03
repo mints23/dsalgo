@@ -18,6 +18,11 @@
   --warn: #964219;
   --shadow: 0 4px 16px rgba(40, 37, 29, 0.09);
   --radius: 0.5rem;
+  /* Method strip: violet family — reads clearly different from teal primary & Pro bar */
+  --guide-method-edge: #5b21b6;
+  --guide-method-mid: #7c3aed;
+  --guide-method-glow: rgba(91, 33, 182, 0.2);
+  --guide-method-hint: #b45309;
 }
 [data-theme='dark'] {
   --study-core-ring: #a78bfa;
@@ -37,6 +42,10 @@
   --error: #d163a7;
   --warn: #bb653b;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --guide-method-edge: #8b5cf6;
+  --guide-method-mid: #a78bfa;
+  --guide-method-glow: rgba(139, 92, 246, 0.35);
+  --guide-method-hint: #fbbf24;
 }
 *,
 *::before,
@@ -720,6 +729,379 @@ button {
 .pro-benefits-footnote {
   font-size: 0.65rem;
   color: var(--muted);
+}
+
+/* ── Method / sequencing strip (logged-in guide) ── */
+.guide-method-strip {
+  position: relative;
+  border-bottom: 1px solid color-mix(in srgb, var(--guide-method-edge) 28%, var(--border));
+  background: linear-gradient(
+    118deg,
+    color-mix(in srgb, var(--guide-method-edge) 16%, var(--surface2)) 0%,
+    color-mix(in srgb, var(--guide-method-mid) 7%, var(--surface)) 42%,
+    var(--surface2) 100%
+  );
+  box-shadow:
+    inset 5px 0 0 0 var(--guide-method-edge),
+    0 0 28px var(--guide-method-glow);
+  animation: guide-method-strip-attn 4s ease-in-out infinite;
+}
+@keyframes guide-method-strip-attn {
+  0%,
+  100% {
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-edge),
+      0 0 18px var(--guide-method-glow);
+  }
+  50% {
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-mid),
+      0 0 36px var(--guide-method-glow),
+      0 0 52px color-mix(in srgb, var(--guide-method-mid) 25%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-method-strip {
+    animation: none;
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-edge),
+      0 0 26px var(--guide-method-glow);
+  }
+}
+.guide-method-strip-layout {
+  display: flex;
+  align-items: stretch;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 0;
+}
+.guide-method-details {
+  flex: 1;
+  min-width: 0;
+}
+.guide-method-dismiss {
+  flex-shrink: 0;
+  align-self: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0 0.5rem 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--faint);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.guide-method-dismiss:hover {
+  background: var(--offset);
+  color: var(--muted);
+}
+.guide-method-dismiss:focus-visible {
+  outline: 2px solid var(--guide-method-mid);
+  outline-offset: 1px;
+}
+.guide-method-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.48rem 0 0.48rem 1.35rem;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--muted);
+  user-select: none;
+}
+.guide-method-summary::-webkit-details-marker {
+  display: none;
+}
+.guide-method-summary::marker {
+  content: '';
+}
+.guide-method-summary:focus-visible {
+  outline: 2px solid var(--guide-method-mid);
+  outline-offset: -2px;
+}
+.guide-method-badge {
+  flex-shrink: 0;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.48rem;
+  border-radius: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--guide-method-edge) 45%, transparent);
+  background: linear-gradient(145deg, var(--guide-method-edge), var(--guide-method-mid));
+  color: #fafafa;
+  line-height: 1.2;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--guide-method-edge) 35%, transparent);
+}
+.guide-method-summary-main {
+  flex: 1;
+  min-width: 12rem;
+  font-size: 0.73rem;
+  line-height: 1.45;
+  color: var(--text);
+  font-weight: 500;
+}
+.guide-method-summary-hint {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.12rem 0.38rem;
+  font-size: 0.58rem;
+  color: var(--guide-method-hint);
+  font-weight: 700;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--guide-method-hint) 14%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--guide-method-hint) 35%, var(--border));
+}
+[data-theme='dark'] .guide-method-summary-hint {
+  background: color-mix(in srgb, var(--guide-method-hint) 16%, var(--surface));
+  color: #fde68a;
+  border-color: color-mix(in srgb, var(--guide-method-hint) 42%, var(--border));
+}
+@media (max-width: 720px) {
+  .guide-method-summary-main {
+    width: 100%;
+  }
+}
+.guide-method-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-right: 0.35rem;
+  font-size: 0.68rem;
+  color: var(--guide-method-edge);
+  font-weight: 700;
+  transition: transform 0.15s ease;
+}
+[data-theme='dark'] .guide-method-chevron {
+  color: var(--guide-method-mid);
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-method-chevron {
+    transition: none;
+  }
+}
+.guide-method-details[open] .guide-method-chevron {
+  transform: rotate(-180deg);
+}
+.guide-method-body {
+  padding: 0 1.35rem 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--guide-method-edge) 18%, var(--divider));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--guide-method-mid) 9%, var(--surface)) 0%,
+    var(--surface) 100%
+  );
+}
+.guide-method-lede {
+  margin: 0;
+  padding: 0.55rem 0 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 52rem;
+}
+.guide-method-lede strong {
+  color: var(--guide-method-edge);
+  font-weight: 700;
+}
+[data-theme='dark'] .guide-method-lede strong {
+  color: var(--guide-method-mid);
+}
+
+/* Full-width Method strip (logged-in banner): tight grid, copy uses full width */
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 0.55rem;
+  row-gap: 0;
+  padding: 0.45rem 0.25rem 0.45rem 1rem;
+  font-size: 0.8rem;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-badge {
+  align-self: start;
+  margin-top: 0.08rem;
+  font-size: 0.58rem;
+  padding: 0.18rem 0.44rem;
+  border-radius: 0.35rem;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 2px 8px color-mix(in srgb, var(--guide-method-edge) 28%, transparent);
+}
+[data-theme='dark'] .guide-method-strip:not(.guide-method-strip--embed) .guide-method-badge {
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--guide-method-edge) 22%, transparent);
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-summary-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  min-width: 0;
+  width: 100%;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-tagline {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--guide-method-edge);
+  line-height: 1.2;
+}
+[data-theme='dark'] .guide-method-strip:not(.guide-method-strip--embed) .guide-method-tagline {
+  color: color-mix(in srgb, var(--guide-method-mid) 92%, #fff);
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-blurb {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  font-weight: 500;
+  max-width: none;
+  width: 100%;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-summary-hint {
+  margin-left: 0;
+  margin-top: 0;
+  font-size: 0.62rem;
+  text-transform: none;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-chevron {
+  align-self: center;
+  margin-top: 0;
+  padding-right: 0.35rem;
+  font-size: 0.78rem;
+  opacity: 0.72;
+  transition: opacity 0.15s ease;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-summary:hover .guide-method-chevron {
+  opacity: 1;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-body {
+  padding: 0.4rem 0.85rem 0.55rem 1rem;
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-lede {
+  margin: 0;
+  padding: 0.2rem 0 0 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--guide-method-edge) 55%, transparent);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--muted) 18%, var(--text));
+  max-width: none;
+}
+[data-theme='dark'] .guide-method-strip:not(.guide-method-strip--embed) .guide-method-lede {
+  border-left-color: color-mix(in srgb, var(--guide-method-mid) 50%, transparent);
+}
+.guide-method-strip:not(.guide-method-strip--embed) .guide-method-dismiss {
+  margin-right: 0.3rem;
+}
+@media (max-width: 540px) {
+  .guide-method-strip:not(.guide-method-strip--embed) .guide-method-summary {
+    padding: 0.42rem 0.2rem 0.42rem 0.85rem;
+    column-gap: 0.45rem;
+  }
+  .guide-method-strip:not(.guide-method-strip--embed) .guide-method-blurb {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .guide-method-strip:not(.guide-method-strip--embed) .guide-method-body {
+    padding: 0.38rem 0.75rem 0.5rem 0.85rem;
+  }
+  .guide-method-strip:not(.guide-method-strip--embed) .guide-method-lede {
+    padding-left: 0.65rem;
+    font-size: 0.78rem;
+  }
+}
+
+/* Method strip inside login card — same messaging, rounded to fit narrow layout */
+.guide-method-strip--embed {
+  margin-bottom: 1rem;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  /* Calmer pulse than full-width strip — readable copy shouldn’t fight motion */
+  animation: guide-method-strip-attn-embed 5.5s ease-in-out infinite;
+}
+@keyframes guide-method-strip-attn-embed {
+  0%,
+  100% {
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-edge),
+      0 0 14px color-mix(in srgb, var(--guide-method-glow) 55%, transparent);
+  }
+  50% {
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-mid),
+      0 0 26px color-mix(in srgb, var(--guide-method-glow) 70%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-method-strip--embed {
+    animation: none;
+    box-shadow:
+      inset 5px 0 0 0 var(--guide-method-edge),
+      0 0 18px color-mix(in srgb, var(--guide-method-glow) 50%, transparent);
+  }
+}
+.guide-method-strip--embed .guide-method-strip-layout {
+  max-width: none;
+}
+.guide-method-strip--embed .guide-method-summary {
+  align-items: flex-start;
+  padding: 0.65rem 0.4rem 0.65rem 0.95rem;
+  gap: 0.55rem;
+  font-size: 0.8125rem;
+}
+.guide-method-strip--embed .guide-method-badge {
+  font-size: 0.62rem;
+  padding: 0.22rem 0.52rem;
+  margin-top: 0.12rem;
+}
+.guide-method-strip--embed .guide-method-body {
+  padding: 0 0.95rem 0.85rem;
+}
+.guide-method-strip--embed .guide-method-summary-main {
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 1.58;
+  letter-spacing: -0.012em;
+  color: var(--text);
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.guide-method-strip--embed .guide-method-summary-hint {
+  margin-left: 0;
+  font-size: 0.65rem;
+  padding: 0.16rem 0.48rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: 700;
+}
+.guide-method-strip--embed .guide-method-chevron {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+}
+.guide-method-strip--embed .guide-method-lede {
+  font-size: 0.8125rem;
+  line-height: 1.62;
+  letter-spacing: -0.01em;
+  padding-top: 0.65rem;
+  color: color-mix(in srgb, var(--muted) 35%, var(--text));
+}
+.guide-method-strip--embed .guide-method-lede strong {
+  font-weight: 700;
 }
 
 /* ── CONTENT ── */
