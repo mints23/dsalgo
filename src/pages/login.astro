@@ -3,6 +3,7 @@
  * Login page only. Preview drawer uses `login-sneak-static` — not imported by `index.astro` or the app shell.
  */
 import '../styles/global.css';
+import LogoMark from '../components/LogoMark.astro';
 import {
   LOGIN_SNEAK_NAV,
   LOGIN_SNEAK_SAMPLE_TOPIC,
@@ -75,7 +76,7 @@ const tableStaggerBase = 26;
       name="description"
       content="algofrog.in — DSA sheet: problems sequenced for mastery, saved progress; Pro animated solution replays. Sign in with email, Google, or GitHub."
     />
-    <meta name="theme-color" content="#01696f" />
+    <meta name="theme-color" content="#1f5c61" />
     <link rel="canonical" href="https://algofrog.in/login" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -450,6 +451,11 @@ const tableStaggerBase = 26;
         gap: 0.6rem;
         margin-bottom: 1.15rem;
         justify-content: center;
+      }
+      .login-logo-mark {
+        display: block;
+        border-radius: 8px;
+        box-shadow: 0 2px 18px color-mix(in srgb, var(--primary) 10%, transparent);
       }
       .login-logo-text {
         font-size: 1.1rem;
@@ -1016,10 +1022,7 @@ const tableStaggerBase = 26;
       <main class="login-card-centre" id="main-content">
       <div class="login-card">
         <div class="login-logo">
-          <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="46" stroke="var(--primary)" stroke-width="5" />
-            <text x="50" y="62" text-anchor="middle" font-size="38" font-weight="700" fill="var(--primary)" font-family="Inter, sans-serif">af</text>
-          </svg>
+          <LogoMark width={40} height={40} class="login-logo-mark" />
           <div>
             <div class="login-logo-text">algofrog.in</div>
             <div class="login-logo-sub">DSA Mastery Guide</div>

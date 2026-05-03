@@ -119,6 +119,11 @@ button {
 .logo svg {
   flex-shrink: 0;
 }
+.logo .logo-mark {
+  flex-shrink: 0;
+  display: block;
+  border-radius: 6px;
+}
 .logo-text {
   font-size: 0.95rem;
   font-weight: 700;

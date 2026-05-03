@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import LogoMark from '../components/LogoMark.astro';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +20,7 @@ import '../styles/global.css';
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#01696f" />
+    <meta name="theme-color" content="#1f5c61" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>DSA Mastery Guide</title>
@@ -53,10 +54,7 @@ import '../styles/global.css';
     <div class="app" style="visibility:hidden">
       <nav class="sidebar" id="sidebar">
         <div class="logo">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="6" fill="#01696f" />
-            <path d="M7 14h4l3-6 3 12 3-6h1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <LogoMark width={28} height={28} />
           <div>
             <div class="logo-text">DSA Mastery</div>
             <div class="logo-sub">Interview Preparation Guide</div>
