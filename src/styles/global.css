@@ -1,5 +1,7 @@
 :root,
 [data-theme='light'] {
+  /* Main column + strips: grows on large / ultrawide displays so UI does not stay “phone-sized” */
+  --content-max: 1400px;
   --study-core-ring: #6d28d9;
   --study-problems-ring: #01696f;
   --bg: #f7f6f2;
@@ -24,6 +26,28 @@
   --guide-method-glow: rgba(91, 33, 182, 0.2);
   --guide-method-hint: #b45309;
 }
+@media (min-width: 1536px) {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    --content-max: min(1720px, calc(100vw - 300px));
+  }
+}
+@media (min-width: 1920px) {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    --content-max: min(2000px, calc(100vw - 320px));
+  }
+}
+@media (min-width: 2560px) {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    --content-max: min(2400px, calc(100vw - 340px));
+  }
+}
+
 [data-theme='dark'] {
   --study-core-ring: #a78bfa;
   --study-problems-ring: #4f98a3;
@@ -60,7 +84,8 @@ html {
 }
 body {
   font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
+  /* Slightly larger type on wide viewports (rem still = browser default 16px) */
+  font-size: clamp(0.875rem, 0.8rem + 0.22vw, 1.0625rem);
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
@@ -498,7 +523,7 @@ button {
 .pro-benefits-strip-layout {
   display: flex;
   align-items: stretch;
-  max-width: 1400px;
+  max-width: var(--content-max);
   margin: 0 auto;
   gap: 0;
 }
@@ -776,7 +801,7 @@ button {
 .guide-method-strip-layout {
   display: flex;
   align-items: stretch;
-  max-width: 1400px;
+  max-width: var(--content-max);
   margin: 0 auto;
   gap: 0;
 }
@@ -1112,7 +1137,8 @@ button {
 /* ── CONTENT ── */
 .content {
   padding: 1.5rem;
-  max-width: 1400px;
+  max-width: var(--content-max);
+  margin-inline: auto;
 }
 .topic-card {
   display: none;
@@ -1423,6 +1449,17 @@ table tbody tr:hover {
   color: var(--primary);
   font-size: 0.75rem;
   max-width: 180px;
+}
+@media (min-width: 1536px) {
+  .prob-name {
+    max-width: 280px;
+  }
+  .variant-cell {
+    max-width: 240px;
+  }
+  .insight {
+    max-width: 420px;
+  }
 }
 /* Key insight column — layered text-shadow only (no column fill) */
 .insight {
