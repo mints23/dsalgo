@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "gh-pages -d dist --dotfiles",
+    "deploy": "npm run build && gh-pages -d dist --dotfiles",
     "migrate": "tsx scripts/migrate-to-structured.ts",
     "remigrate": "tsx scripts/remigrate-structured.ts",
     "sync:solutions": "tsx scripts/sync-solutions-from-db.ts",

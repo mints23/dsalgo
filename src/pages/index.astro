@@ -764,7 +764,10 @@ import LogoMark from '../components/LogoMark.astro';
       document.querySelectorAll('.topic-body table').forEach((table) => {
         if (table.querySelector('.num-cell')) return;
         const headers = Array.from(table.querySelectorAll('thead th')).map(th => (th.textContent || '').toLowerCase().trim());
-        const isProb = headers.some(h => h.includes('difficulty') || h === 'diff' || h.includes('# / name') || h === 'problem');
+        // Heuristic: either the header looks like a problem set, OR we see a LeetCode link cell.
+        const isProb =
+          headers.some(h => h.includes('difficulty') || h === 'diff' || h.includes('# / name') || h === 'problem' || h === '#')
+          || Boolean(table.querySelector('a.lc-link'));
         if (!isProb) return;
         table.querySelectorAll('tbody tr').forEach((row) => {
           const td = row.querySelector('td:first-child');
@@ -929,7 +932,9 @@ import LogoMark from '../components/LogoMark.astro';
           }
         }
 
-        if (card.querySelector('tbody tr .num-cell')) {
+        // Some authored tables may not include `.num-cell` even after patching; `.lc-link` is a strong signal
+        // that this topic has a problem set, so we can still show the filter UI.
+        if (card.querySelector('.lc-link')) {
           const revToggle = document.createElement('label');
           revToggle.className = 'rev-switch' + (isPaid ? '' : ' study-pref--locked');
           revToggle.title = isPaid

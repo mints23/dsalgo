@@ -525,7 +525,8 @@ button {
   display: none !important;
 }
 
-.topic-card.rev-only-active tbody tr:has(.num-cell):not(.row-revision) {
+.topic-card.rev-only-active tbody tr:has(.lc-link):not(.row-revision),
+.topic-card.rev-only-active tbody tr:has(.prob-name):not(.row-revision) {
   display: none !important;
 }
 
