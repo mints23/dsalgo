@@ -505,9 +505,11 @@ import LogoMark from '../components/LogoMark.astro';
       // ── Study preferences: Pro loads/saves to Supabase; non-Pro sees toggles disabled (no effect) ──
       const LS_STUDY_PROBLEMS = 'study_problems_only';
       const LS_STUDY_MIN = 'study_min_by_topic';
+      const LS_STUDY_REV = 'study_rev_only_by_topic';
 
       let studyProblemsOnlyPref = false;
       let studyMinByTopic: Record<string, boolean> = {};
+      let studyRevOnlyByTopic: Record<string, boolean> = {};
 
       function loadStudyPrefsFromLocal() {
         try {
@@ -522,8 +524,17 @@ import LogoMark from '../components/LogoMark.astro';
               if (v === true) studyMinByTopic[k] = true;
             }
           }
+          const rawRev = localStorage.getItem(LS_STUDY_REV);
+          const parsedRev = rawRev ? JSON.parse(rawRev) : {};
+          studyRevOnlyByTopic = {};
+          if (parsedRev && typeof parsedRev === 'object' && !Array.isArray(parsedRev)) {
+            for (const [k, v] of Object.entries(parsedRev)) {
+              if (v === true) studyRevOnlyByTopic[k] = true;
+            }
+          }
         } catch (_) {
           studyMinByTopic = {};
+          studyRevOnlyByTopic = {};
         }
       }
 
@@ -540,18 +551,20 @@ import LogoMark from '../components/LogoMark.astro';
       if (isPaid) {
         const { data: sp } = await supabase
           .from('user_study_preferences')
-          .select('problems_only, min_coverage_by_topic')
+          .select('problems_only, min_coverage_by_topic, revision_only_by_topic')
           .eq('user_id', session.user.id)
           .maybeSingle();
         if (sp) {
           studyProblemsOnlyPref = Boolean(sp.problems_only);
           studyMinByTopic = normalizeMinMap(sp.min_coverage_by_topic);
+          studyRevOnlyByTopic = normalizeMinMap(sp.revision_only_by_topic);
         } else {
           loadStudyPrefsFromLocal();
         }
       } else {
         studyProblemsOnlyPref = false;
         studyMinByTopic = {};
+        studyRevOnlyByTopic = {};
       }
 
       let persistStudyTimer = 0;
@@ -564,6 +577,7 @@ import LogoMark from '../components/LogoMark.astro';
               user_id: session.user.id,
               problems_only: w98Active,
               min_coverage_by_topic: studyMinByTopic,
+              revision_only_by_topic: studyRevOnlyByTopic,
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'user_id' },
@@ -915,16 +929,48 @@ import LogoMark from '../components/LogoMark.astro';
           }
         }
 
+        if (card.querySelector('tbody tr .num-cell')) {
+          const revToggle = document.createElement('label');
+          revToggle.className = 'rev-switch' + (isPaid ? '' : ' study-pref--locked');
+          revToggle.title = isPaid
+            ? 'Revision only: hide everything except the problem table, and show only rows marked for revision (saved per topic in your Pro profile)'
+            : 'Pro only — upgrade to filter by revision marks and save per topic.';
+          revToggle.innerHTML =
+            '<input type="checkbox" class="rev-only-toggle" /><span class="rev-slider"></span>'
+            + '<span class="rev-label">Revision only</span>';
+          titleRow.appendChild(revToggle);
+          const revCb = revToggle.querySelector('.rev-only-toggle') as HTMLInputElement;
+          if (isPaid && studyRevOnlyByTopic[topicIdStr]) {
+            revCb.checked = true;
+            card.classList.add('rev-only-active');
+          }
+          revCb.disabled = !isPaid;
+          if (isPaid) {
+            revCb.addEventListener('change', () => {
+              card.classList.toggle('rev-only-active', revCb.checked);
+              if (revCb.checked) studyRevOnlyByTopic[topicIdStr] = true;
+              else delete studyRevOnlyByTopic[topicIdStr];
+              schedulePersistStudyPrefs();
+              applyW98();
+            });
+          }
+        }
+
         appendProblemsOnlyToggle(titleRow);
       });
 
       // ── Progress Tracking (checkboxes always visible; Pro syncs to server) ──
       const userId = session.user.id;
       let completedSet = new Set<string>();
+      let revisionSet = new Set<string>();
       if (isPaid) {
         const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
         completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
+        const { data: revRows } = await supabase.from('user_revision').select('topic_id, problem_num').eq('user_id', userId);
+        revisionSet = new Set((revRows || []).map((r: any) => `${r.topic_id}-${r.problem_num}`));
       }
+      const REV_PIN_SVG =
+        '<svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path class="rev-pin-shape" d="M1.75 1.25h7.5v9.35L5.5 8.05 1.75 10.6V1.25z" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linejoin="round"/></svg>';
       document.querySelectorAll('.topic-card').forEach((card) => {
         const topicId = parseInt(card.id.replace('tp', ''));
         card.querySelectorAll('tbody tr').forEach((row) => {
@@ -934,6 +980,7 @@ import LogoMark from '../components/LogoMark.astro';
           if (!probNum) return;
           const key = `${topicId}-${probNum}`;
           const isComplete = isPaid && completedSet.has(key);
+          const isRevision = isPaid && revisionSet.has(key);
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.checked = isComplete;
@@ -948,7 +995,25 @@ import LogoMark from '../components/LogoMark.astro';
             cb.setAttribute('aria-label', lockedHint);
           }
           if (isComplete) row.classList.add('row-done');
+          if (isRevision) row.classList.add('row-revision');
           numCell.insertBefore(cb, numCell.firstChild);
+
+          const revBtn = document.createElement('button');
+          revBtn.type = 'button';
+          revBtn.className = 'rev-pin';
+          revBtn.innerHTML = REV_PIN_SVG;
+          revBtn.setAttribute('aria-pressed', isRevision ? 'true' : 'false');
+          if (isPaid) {
+            revBtn.title = isRevision ? 'Remove from revision' : 'Mark for revision';
+            revBtn.setAttribute('aria-label', revBtn.title);
+          } else {
+            const revLocked = 'Pro only — upgrade to save revision marks across devices.';
+            revBtn.title = revLocked;
+            revBtn.setAttribute('aria-label', revLocked);
+            revBtn.disabled = true;
+          }
+          numCell.insertBefore(revBtn, cb.nextSibling);
+
           if (isPaid) {
             cb.addEventListener('change', async () => {
               cb.disabled = true;
@@ -962,6 +1027,37 @@ import LogoMark from '../components/LogoMark.astro';
               cb.disabled = false;
               cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
               cb.setAttribute('aria-label', cb.title);
+            });
+            revBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              revBtn.disabled = true;
+              const wasOn = revisionSet.has(key);
+              if (wasOn) {
+                const { error } = await supabase
+                  .from('user_revision')
+                  .delete()
+                  .eq('user_id', userId)
+                  .eq('topic_id', topicId)
+                  .eq('problem_num', probNum);
+                if (!error) {
+                  revisionSet.delete(key);
+                  row.classList.remove('row-revision');
+                  revBtn.setAttribute('aria-pressed', 'false');
+                  revBtn.title = 'Mark for revision';
+                  revBtn.setAttribute('aria-label', revBtn.title);
+                }
+              } else {
+                const { error } = await supabase.from('user_revision').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
+                if (!error) {
+                  revisionSet.add(key);
+                  row.classList.add('row-revision');
+                  revBtn.setAttribute('aria-pressed', 'true');
+                  revBtn.title = 'Remove from revision';
+                  revBtn.setAttribute('aria-label', revBtn.title);
+                }
+              }
+              revBtn.disabled = false;
             });
           }
         });
@@ -1051,10 +1147,12 @@ import LogoMark from '../components/LogoMark.astro';
         btn.addEventListener('click', toggleTheme);
       });
 
-      // ── Problems only (per-topic toggles; global state; Pro → profile) ──
-      function applyW98() {
-        document.documentElement.classList.toggle('w98-mode', w98Active);
+      // ── Problems only (global) + Revision only (per topic): strip non–problem-set sections ──
+      function applyTopicBodyVisibility() {
         document.querySelectorAll('.topic-body').forEach((body) => {
+          const card = body.closest('.topic-card');
+          const revOnlyThisTopic = Boolean(card?.classList.contains('rev-only-active'));
+          const wantProblemFocus = w98Active || revOnlyThisTopic;
           Array.from(body.children).forEach((child) => {
             const el = child as HTMLElement;
             const tbl = el.tagName === 'TABLE' ? el : el.querySelector('table');
@@ -1062,7 +1160,7 @@ import LogoMark from '../components/LogoMark.astro';
             const txt = el.textContent || '';
             const isProblemHeading = (el.classList.contains('sec-title') || /^H[1-6]$/.test(el.tagName))
               && (/problem\s*set/i.test(txt) || /section\s*[A-Z]/i.test(txt));
-            if (w98Active) {
+            if (wantProblemFocus) {
               if (isProblemTable || isProblemHeading) {
                 el.style.setProperty('display', isProblemTable ? 'block' : '', 'important');
               } else {
@@ -1073,6 +1171,10 @@ import LogoMark from '../components/LogoMark.astro';
             }
           });
         });
+      }
+      function applyW98() {
+        document.documentElement.classList.toggle('w98-mode', w98Active);
+        applyTopicBodyVisibility();
         syncGuideMethodStripVisibility();
       }
       function syncW98TopicToggles() {

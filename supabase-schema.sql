@@ -58,6 +58,33 @@ create policy "Users delete own progress"
 create index if not exists idx_user_progress_user
   on user_progress (user_id);
 
+-- ── User revision marks (revisit later) ──
+create table if not exists user_revision (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  topic_id int not null,
+  problem_num int not null,
+  marked_at timestamptz default now(),
+  unique (user_id, topic_id, problem_num)
+);
+
+alter table user_revision enable row level security;
+
+create policy "Users read own revision marks"
+  on user_revision for select
+  using (auth.uid() = user_id);
+
+create policy "Users insert own revision marks"
+  on user_revision for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users delete own revision marks"
+  on user_revision for delete
+  using (auth.uid() = user_id);
+
+create index if not exists idx_user_revision_user
+  on user_revision (user_id);
+
 -- ── Subscriptions table: tracks trial & paid status ──
 create table if not exists subscriptions (
   id bigint generated always as identity primary key,
@@ -272,6 +299,7 @@ create table if not exists public.user_study_preferences (
   user_id                  uuid primary key references auth.users (id) on delete cascade,
   problems_only            boolean not null default false,
   min_coverage_by_topic    jsonb not null default '{}'::jsonb,
+  revision_only_by_topic   jsonb not null default '{}'::jsonb,
   updated_at               timestamptz not null default now()
 );
 
