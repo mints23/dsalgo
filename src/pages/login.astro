@@ -74,7 +74,7 @@ const tableStaggerBase = 26;
     <title>Sign in — DSA Mastery Guide · algofrog.in</title>
     <meta
       name="description"
-      content="algofrog.in — DSA sheet: problems sequenced for mastery, saved progress; Pro animated solution replays. Sign in with email, Google, or GitHub."
+      content="DSA sheet with problems in teaching order, not a shuffled list. Preview the full roadmap without an account; sign in to sync progress. Email, Google, or GitHub."
     />
     <meta name="theme-color" content="#1f5c61" />
     <link rel="canonical" href="https://algofrog.in/login" />
@@ -90,139 +90,291 @@ const tableStaggerBase = 26;
       .login-page {
         min-height: 100dvh;
         display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        /* Extra top padding so content clears fixed Help + theme (top-right) */
-        padding: clamp(3rem, 6.5vh, 3.5rem) 1.5rem 1.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: clamp(3rem, 6.5vh, 3.5rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 4vh, 2.5rem);
         position: relative;
+        background:
+          radial-gradient(
+            ellipse 120% 80% at 20% -20%,
+            color-mix(in oklab, var(--primary) 14%, transparent),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 90% 60% at 100% 100%,
+            color-mix(in oklab, var(--primary) 8%, transparent),
+            transparent 50%
+          ),
+          var(--bg);
       }
-      .login-card-centre {
+      [data-theme='dark'] .login-page {
+        background:
+          radial-gradient(ellipse 100% 70% at 15% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 50%),
+          radial-gradient(ellipse 80% 50% at 95% 90%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 45%),
+          var(--bg);
+      }
+      .login-shell {
         width: 100%;
-        max-width: 400px;
-        flex-shrink: 0;
+        max-width: min(1120px, 100%);
+        margin-inline: auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(1.5rem, 4vw, 2.75rem);
+        align-items: start;
       }
-
-      /* ── Tantalizing peek tab (fixed left) ── */
-      .login-peek-tab {
-        position: fixed;
-        left: 0;
-        top: 50%;
-        z-index: 60;
-        transform: translateY(-50%);
+      @media (min-width: 960px) {
+        .login-shell {
+          grid-template-columns: minmax(0, 1.05fr) minmax(360px, 440px);
+          align-items: start;
+          gap: clamp(2rem, 5vw, 3.5rem);
+          min-height: min(640px, calc(100dvh - 7rem));
+        }
+      }
+      .login-hero {
+        order: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0;
+        width: 100%;
+        min-width: 0;
+      }
+      @media (min-width: 960px) {
+        .login-hero {
+          order: 0;
+          max-width: 36rem;
+        }
+      }
+      .login-hero-brand {
         display: flex;
         align-items: center;
-        gap: 0.45rem;
-        max-width: min(11.5rem, 38vw);
-        padding: 0.65rem 0.75rem 0.65rem 0.55rem;
+        gap: 0.85rem;
+      }
+      .login-hero-mark {
+        display: block;
+        border-radius: 10px;
+        box-shadow: 0 4px 24px color-mix(in srgb, var(--primary) 16%, transparent);
+      }
+      .login-hero-name {
+        display: block;
+        font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text);
+        line-height: 1.15;
+      }
+      .login-hero-tag {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-top: 0.12rem;
+        letter-spacing: 0.02em;
+      }
+      .login-hero-title {
         margin: 0;
-        border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
-        border-left: none;
-        border-radius: 0 0.9rem 0.9rem 0;
+        font-size: clamp(1.25rem, 3.2vw, 1.75rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.25;
+        color: var(--text);
+        max-width: none;
+      }
+      .login-hero-benefits {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      .login-hero-benefits li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        font-size: 0.84rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      .login-hero-benefits li::before {
+        content: '';
+        flex-shrink: 0;
+        width: 1.15rem;
+        height: 1.15rem;
+        margin-top: 0.12rem;
+        border-radius: 0.3rem;
+        background: color-mix(in oklab, var(--primary) 18%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 20%, transparent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%2301696f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2.5 6.2 5 8.7 9.5 3.8'/%3E%3C/svg%3E");
+        background-size: 10px 10px;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      [data-theme='dark'] .login-hero-benefits li::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%234f98a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2.5 6.2 5 8.7 9.5 3.8'/%3E%3C/svg%3E");
+      }
+      .login-hero-benefits strong {
+        color: var(--text);
+        font-weight: 650;
+      }
+      .login-hero-peek {
+        align-self: flex-start;
+        margin-top: 0;
+        padding: 0.45rem 0.85rem;
+        border-radius: 0.5rem;
+        border: 1px solid color-mix(in oklab, var(--primary) 35%, var(--border));
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, transform 0.12s;
+      }
+      .login-hero-peek:hover {
+        background: color-mix(in oklab, var(--primary) 14%, var(--surface));
+        border-color: color-mix(in oklab, var(--primary) 50%, var(--border));
+        transform: translateY(-1px);
+      }
+      .login-hero-peek:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .login-hero-method-cta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        width: 100%;
+        min-width: 0;
+      }
+      .login-hero-method-cta .login-hero-peek {
+        margin-top: 0;
+      }
+      .login-main {
+        order: 1;
+        width: 100%;
+        min-width: 0;
+        align-self: stretch;
+      }
+      @media (min-width: 960px) {
+        .login-main {
+          order: 1;
+        }
+      }
+      .login-card-kicker {
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        margin: 0 0 0.35rem;
+      }
+      .login-card-title {
+        margin: 0 0 1rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        line-height: 1.3;
+      }
+      @media (min-width: 960px) {
+        .login-card-title {
+          font-size: 1.12rem;
+        }
+      }
+      .login-card-lede {
+        margin: -0.35rem 0 1rem;
+        font-size: 0.78rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      /* Guide preview trigger — top bar (same row as Help / theme) */
+      .login-top-preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 2.25rem;
+        max-width: min(11rem, 42vw);
+        padding: 0.2rem 0.55rem 0.2rem 0.5rem;
+        box-sizing: border-box;
+        margin: 0;
+        border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+        border-radius: 0.4rem;
         background: linear-gradient(
-          135deg,
-          color-mix(in srgb, var(--primary) 18%, var(--surface)),
-          color-mix(in srgb, var(--primary) 6%, var(--bg))
+          165deg,
+          color-mix(in srgb, var(--primary) 14%, var(--surface)),
+          color-mix(in srgb, var(--primary) 5%, var(--surface))
         );
-        box-shadow:
-          0 4px 20px color-mix(in srgb, var(--primary) 18%, transparent),
-          inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
+        box-shadow: 0 1px 0 color-mix(in srgb, #fff 28%, transparent);
         cursor: pointer;
         text-align: left;
         font: inherit;
         color: var(--text);
         transition:
-          transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-          box-shadow 0.2s ease,
-          filter 0.2s ease;
-        animation: login-peek-glow 3.2s ease-in-out infinite;
+          background 0.15s ease,
+          border-color 0.15s ease,
+          filter 0.15s ease;
       }
-      [data-theme='dark'] .login-peek-tab {
-        box-shadow:
-          0 4px 24px rgba(0, 0, 0, 0.35),
-          inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+      [data-theme='dark'] .login-top-preview {
+        box-shadow: 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
       }
-      .login-peek-tab:hover {
-        filter: brightness(1.03);
-        box-shadow:
-          0 6px 28px color-mix(in srgb, var(--primary) 28%, transparent),
-          inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
+      .login-top-preview:hover {
+        filter: brightness(1.02);
+        border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+        background: linear-gradient(
+          165deg,
+          color-mix(in srgb, var(--primary) 18%, var(--surface)),
+          color-mix(in srgb, var(--primary) 7%, var(--surface))
+        );
       }
-      .login-peek-tab:focus-visible {
+      .login-top-preview:focus-visible {
         outline: 2px solid var(--primary);
-        outline-offset: 3px;
+        outline-offset: 2px;
       }
-      .login-page.peek-open .login-peek-tab {
-        transform: translateY(-50%) translateX(-120%);
-        opacity: 0;
-        pointer-events: none;
-      }
-      .login-peek-tab-emoji {
-        font-size: 1.15rem;
-        line-height: 1;
+      .login-top-preview-emoji {
         flex-shrink: 0;
-        animation: login-peek-sparkle 2.8s ease-in-out infinite;
+        font-size: 1rem;
+        line-height: 1;
+        width: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      @keyframes login-peek-sparkle {
-        0%,
-        100% {
-          transform: scale(1) rotate(-4deg);
-          filter: brightness(1);
-        }
-        50% {
-          transform: scale(1.08) rotate(4deg);
-          filter: brightness(1.15);
-        }
-      }
-      @keyframes login-peek-glow {
-        0%,
-        100% {
-          box-shadow:
-            0 4px 20px color-mix(in srgb, var(--primary) 18%, transparent),
-            inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
-        }
-        50% {
-          box-shadow:
-            0 6px 26px color-mix(in srgb, var(--primary) 32%, transparent),
-            inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .login-peek-tab {
-          animation: none;
-        }
-        .login-peek-tab-emoji {
-          animation: none;
-        }
-        .login-page.peek-open .login-peek-tab {
-          transition: opacity 0.2s ease;
-        }
-      }
-      .login-peek-tab-lines {
+      .login-top-preview-lines {
         display: flex;
         flex-direction: column;
-        gap: 0.12rem;
+        justify-content: center;
+        gap: 0.06rem;
         min-width: 0;
       }
-      .login-peek-tab-title {
-        font-size: 0.72rem;
+      .login-top-preview-title {
+        font-size: 0.65rem;
         font-weight: 800;
         letter-spacing: -0.02em;
         line-height: 1.2;
         color: var(--text);
       }
-      .login-peek-tab-sub {
-        font-size: 0.6rem;
+      .login-top-preview-sub {
+        font-size: 0.55rem;
         font-weight: 600;
         color: var(--primary);
         letter-spacing: 0.02em;
-        line-height: 1.25;
+        line-height: 1.2;
       }
-      .login-peek-tab-arrow {
-        flex-shrink: 0;
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--primary);
-        opacity: 0.9;
+      @media (max-width: 380px) {
+        .login-top-preview {
+          max-width: min(9rem, 48vw);
+          padding-inline: 0.45rem;
+        }
+        .login-top-preview-sub {
+          display: none;
+        }
+        .login-top-preview-title {
+          font-size: 0.62rem;
+        }
       }
 
       .login-peek-backdrop {
@@ -326,12 +478,19 @@ const tableStaggerBase = 26;
       }
       .login-card {
         width: 100%;
-        max-width: 400px;
+        max-width: none;
         background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 2.25rem 1.75rem 2rem;
+        border: 1px solid color-mix(in oklab, var(--primary) 12%, var(--border));
+        border-radius: 0.85rem;
+        box-shadow:
+          var(--shadow),
+          0 0 0 1px color-mix(in srgb, #fff 40%, transparent);
+        padding: clamp(1.5rem, 3.5vw, 2rem) clamp(1.35rem, 3vw, 1.85rem) clamp(1.5rem, 3vw, 1.85rem);
+      }
+      [data-theme='dark'] .login-card {
+        box-shadow:
+          0 4px 28px rgba(0, 0, 0, 0.4),
+          0 0 0 1px color-mix(in oklab, var(--primary) 15%, transparent);
       }
       .login-usp-hero {
         text-align: left;
@@ -383,6 +542,10 @@ const tableStaggerBase = 26;
       }
       .login-usp-hero .guide-method-strip--embed .guide-method-lede {
         padding-top: 0.45rem;
+      }
+      .login-usp-hero--hero-col {
+        margin-top: 0;
+        margin-bottom: 0;
       }
       .login-usp-foot {
         margin-top: 0.4rem;
@@ -444,27 +607,6 @@ const tableStaggerBase = 26;
       .login-card-footer a:hover {
         color: var(--primary);
         text-decoration: underline;
-      }
-      .login-logo {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        margin-bottom: 1.15rem;
-        justify-content: center;
-      }
-      .login-logo-mark {
-        display: block;
-        border-radius: 8px;
-        box-shadow: 0 2px 18px color-mix(in srgb, var(--primary) 10%, transparent);
-      }
-      .login-logo-text {
-        font-size: 1.1rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-      }
-      .login-logo-sub {
-        font-size: 0.7rem;
-        color: var(--muted);
       }
       /* OAuth directly under logo — high visibility */
       .login-oauth-hero {
@@ -647,22 +789,28 @@ const tableStaggerBase = 26;
       }
       .login-top-bar-right {
         position: fixed;
-        top: 1rem;
-        right: 1rem;
+        top: max(0.85rem, env(safe-area-inset-top, 0px));
+        right: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-right, 0px));
         z-index: 55;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: flex-end;
-        gap: 0.5rem 0.75rem;
-        max-width: min(100vw - 1.5rem, 20rem);
+        gap: 0.5rem;
+        max-width: min(100vw - 2 * clamp(1rem, 3vw, 2rem), 22rem);
       }
       .login-top-help {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.25rem;
+        padding: 0 0.65rem;
+        box-sizing: border-box;
         font-size: 0.72rem;
         font-weight: 700;
+        line-height: 1;
         color: var(--primary);
         text-decoration: none;
-        padding: 0.35rem 0.5rem;
         border-radius: 0.4rem;
         background: color-mix(in srgb, var(--primary) 8%, var(--surface));
         border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
@@ -680,14 +828,31 @@ const tableStaggerBase = 26;
       }
       .theme-toggle-login {
         position: static;
-        padding: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-height: 2.25rem;
+        min-width: 2.25rem;
+        padding: 0;
+        border: 1px solid var(--border);
         border-radius: 0.4rem;
+        background: var(--surface);
         color: var(--muted);
-        transition: color 0.15s;
+        transition:
+          color 0.15s,
+          background 0.12s,
+          border-color 0.12s;
         flex-shrink: 0;
       }
       .theme-toggle-login:hover {
         color: var(--text);
+        background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+        border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+      }
+      [data-theme='dark'] .theme-toggle-login {
+        background: color-mix(in srgb, var(--surface) 92%, var(--bg));
+        border-color: color-mix(in srgb, var(--border) 80%, transparent);
       }
 
       .login-sneak {
@@ -900,6 +1065,21 @@ const tableStaggerBase = 26;
   <body>
     <div class="login-page" id="login-page-root">
       <div class="login-top-bar-right">
+        <button
+          type="button"
+          class="login-top-preview"
+          id="login-peek-open"
+          aria-expanded="false"
+          aria-controls="login-peek-drawer"
+          aria-label="Open preview: same topic order as the app, plus a sample table. No sign-in."
+          title="Same roadmap as the live app—scroll it here first."
+        >
+          <span class="login-top-preview-emoji" aria-hidden="true">✨</span>
+          <span class="login-top-preview-lines">
+            <span class="login-top-preview-title">See the sheet first</span>
+            <span class="login-top-preview-sub">{sidebarTopicCount} topics · sample table · no login</span>
+          </span>
+        </button>
         <a
           class="login-top-help"
           href="mailto:algofrog07@gmail.com?subject=DSA%20Mastery%20Guide%20%E2%80%94%20question"
@@ -914,21 +1094,6 @@ const tableStaggerBase = 26;
         </button>
       </div>
 
-      <button
-        type="button"
-        class="login-peek-tab"
-        id="login-peek-open"
-        aria-expanded="false"
-        aria-controls="login-peek-drawer"
-      >
-        <span class="login-peek-tab-emoji" aria-hidden="true">✨</span>
-        <span class="login-peek-tab-lines">
-          <span class="login-peek-tab-title">What’s in the guide?</span>
-          <span class="login-peek-tab-sub">{sidebarTopicCount} topics · sample problems — no login</span>
-        </span>
-        <span class="login-peek-tab-arrow" aria-hidden="true">›</span>
-      </button>
-
       <div class="login-peek-backdrop" id="login-peek-backdrop" aria-hidden="true"></div>
 
       <div
@@ -940,17 +1105,17 @@ const tableStaggerBase = 26;
         aria-hidden="true"
       >
         <div class="login-peek-drawer-top">
-          <span class="login-peek-drawer-title" id="login-peek-heading">Peek inside — static preview</span>
+          <span class="login-peek-drawer-title" id="login-peek-heading">Preview — same roadmap as the app</span>
           <button type="button" class="login-peek-drawer-close" id="login-peek-close" aria-label="Close preview">
             ×
           </button>
         </div>
         <div class="login-peek-drawer-body">
           <aside class="login-sneak" aria-label="Static curriculum preview">
-            <p class="login-sneak-kicker">Ships with this page · zero API calls</p>
-            <h2 class="login-sneak-title">Your roadmap, before you sign in</h2>
+            <p class="login-sneak-kicker">No account—just the same order you’ll see after sign-in</p>
+            <h2 class="login-sneak-title">Scroll the list, then decide</h2>
             <p class="login-sneak-sub">
-              Every topic below matches the live app. Plus a few real rows from
+              Topics match the live guide. The table is a short slice of
               <strong>{LOGIN_SNEAK_SAMPLE_TOPIC.title}</strong>
               ({LOGIN_SNEAK_SAMPLE_TOPIC.summaryMeta.split('·')[0]?.trim()}).
             </p>
@@ -1013,52 +1178,77 @@ const tableStaggerBase = 26;
               </table>
             </div>
             <p class="login-sneak-foot">
-              After sign-in: full tables, progress, study modes, and Pro solution replays.
+              Sign in when you want full tables, saved checkboxes, study modes, and Pro replays.
             </p>
           </aside>
         </div>
       </div>
 
-      <main class="login-card-centre" id="main-content">
-      <div class="login-card">
-        <div class="login-logo">
-          <LogoMark width={40} height={40} class="login-logo-mark" />
-          <div>
-            <div class="login-logo-text">algofrog.in</div>
-            <div class="login-logo-sub">DSA Mastery Guide</div>
-          </div>
-        </div>
-
-        <div class="login-usp-hero">
-          <h1 class="login-usp-headline">DSA sheet</h1>
-          <div class="guide-method-strip guide-method-strip--embed" id="login-guide-method-strip">
-            <div class="guide-method-strip-layout">
-              <details class="guide-method-details">
-                <summary class="guide-method-summary">
-                  <span class="guide-method-badge">Method</span>
-                  <span class="guide-method-summary-main">
-                    Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
-                    <span class="guide-method-summary-hint">Why sequence matters</span>
-                  </span>
-                  <span class="guide-method-chevron" aria-hidden="true">▾</span>
-                </summary>
-                <div class="guide-method-body">
-                  <p class="guide-method-lede">
-                    Inside every topic table, rows are <strong>ordered on purpose</strong>: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most <strong>methodical path to mastering the topic</strong>—learning accumulates step by step instead of skipping around.
-                  </p>
-                </div>
-              </details>
+      <div class="login-shell">
+        <aside class="login-hero" aria-label="About algofrog.in">
+          <div class="login-hero-brand">
+            <LogoMark width={44} height={44} class="login-hero-mark" />
+            <div>
+              <span class="login-hero-name">algofrog.in</span>
+              <span class="login-hero-tag">DSA Mastery Guide</span>
             </div>
           </div>
-          <div class="login-usp-foot">
-            <p class="login-usp-foot-line">
-              <strong>Sneak peek:</strong>
-              <button type="button" class="login-trust-peek-btn" id="login-trust-open-peek" aria-controls="login-peek-drawer">
-                Full roadmap
-              </button>
-            </p>
+          <h1 class="login-hero-title">
+            Each topic is a ladder of problems—not a grab bag. Sign in when you want your place saved.
+          </h1>
+
+          <div class="login-hero-method-cta">
+            <div class="login-usp-hero login-usp-hero--hero-col">
+              <h2 class="login-usp-headline">Why sequence beats random grind</h2>
+              <div class="guide-method-strip guide-method-strip--embed" id="login-guide-method-strip">
+                <div class="guide-method-strip-layout">
+                  <details class="guide-method-details">
+                    <summary class="guide-method-summary">
+                      <span class="guide-method-badge">Method</span>
+                      <span class="guide-method-summary-main">
+                        Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
+                        <span class="guide-method-summary-hint">Why sequence matters</span>
+                      </span>
+                      <span class="guide-method-chevron" aria-hidden="true">▾</span>
+                    </summary>
+                    <div class="guide-method-body">
+                      <p class="guide-method-lede">
+                        Inside every topic table, rows are <strong>ordered on purpose</strong>: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most <strong>methodical path to mastering the topic</strong>—learning accumulates step by step instead of skipping around.
+                      </p>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="login-hero-peek"
+              id="login-hero-peek-btn"
+              aria-controls="login-peek-drawer"
+            >
+              See the full topic list (no account)
+            </button>
           </div>
-        </div>
+
+          <ul class="login-hero-benefits">
+            <li>
+              <span><strong>{sidebarTopicCount} topics</strong> — each table ordered so the next row adds a new skill.</span>
+            </li>
+            <li>
+              <span><strong>Pick up where you left off</strong> — solves, filters, and prefs sync across your devices.</span>
+            </li>
+            <li>
+              <span><strong>Pro</strong> — short step-through walkthroughs on the insights that usually click late.</span>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="login-main" id="main-content">
+          <div class="login-card">
+        <p class="login-card-kicker">Account</p>
+        <h2 class="login-card-title">Sign in or create an account</h2>
+        <p class="login-card-lede">Google, GitHub, or email—use whatever you already trust.</p>
 
         <div class="login-oauth-hero">
           <div class="divider-row divider-row--oauth">Continue with</div>
@@ -1144,8 +1334,9 @@ const tableStaggerBase = 26;
           · © 2026
         </p>
 
+          </div>
+        </main>
       </div>
-      </main>
     </div>
 
     <script>
@@ -1215,7 +1406,7 @@ const tableStaggerBase = 26;
         }
 
         peekOpen.addEventListener('click', () => openPeek());
-        document.getElementById('login-trust-open-peek')?.addEventListener('click', () => openPeek());
+        document.getElementById('login-hero-peek-btn')?.addEventListener('click', () => openPeek());
         peekBackdrop.addEventListener('click', () => closePeek());
         peekClose.addEventListener('click', () => closePeek());
         document.addEventListener('keydown', (e) => {

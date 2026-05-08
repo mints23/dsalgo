@@ -83,6 +83,16 @@ import LogoMark from '../components/LogoMark.astro';
             <span class="overall-progress-text" id="overall-text">0/0</span>
           </div>
 
+          <div class="streak-mini" id="daily-streak-card" hidden aria-label="7 day streak">
+            <div class="streak-mini-days" id="daily-streak-row" aria-label="Solved in the last 7 days"></div>
+            <button type="button" class="streak-mini-meta" id="daily-streak-meta" title="Streak + last 7 days">
+              —
+            </button>
+            <button type="button" class="streak-mini-btn" id="streak-open-year" title="Open year heatmap">
+              Year
+            </button>
+          </div>
+
           <div style="display:flex;align-items:center;gap:0.4rem;">
             <span id="user-name" style="font-size:0.78rem;color:var(--muted);font-weight:500;margin-right:0.3rem;"></span>
             <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
@@ -193,6 +203,36 @@ import LogoMark from '../components/LogoMark.astro';
             >
               ×
             </button>
+          </div>
+        </div>
+        <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
+          <div class="heatmap-modal-inner">
+            <div class="heatmap-modal-head">
+              <div class="heatmap-modal-title">
+                <div class="heatmap-modal-title-main" id="heatmap-modal-title">Daily solved</div>
+                <div class="heatmap-modal-title-sub" id="heatmap-modal-subtitle">—</div>
+              </div>
+              <button type="button" class="heatmap-modal-close" id="heatmap-modal-close" aria-label="Close year view">✕</button>
+            </div>
+            <div class="heatmap-modal-body">
+              <div class="heatmap-months" id="daily-heatmap-months" aria-hidden="true"></div>
+              <div class="heatmap-grid-wrap heatmap-grid-wrap--modal">
+                <div class="heatmap-weekdays" aria-hidden="true">
+                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+                <div class="heatmap-grid" id="daily-heatmap-grid" role="grid" aria-label="Daily solved heatmap"></div>
+              </div>
+              <div class="heatmap-legend" aria-hidden="true">
+                <span class="heatmap-legend-lbl">Less</span>
+                <span class="heatmap-swatch heatmap-l0"></span>
+                <span class="heatmap-swatch heatmap-l1"></span>
+                <span class="heatmap-swatch heatmap-l2"></span>
+                <span class="heatmap-swatch heatmap-l3"></span>
+                <span class="heatmap-swatch heatmap-l4"></span>
+                <span class="heatmap-legend-lbl">More</span>
+              </div>
+              <div class="heatmap-meta" id="daily-heatmap-meta"></div>
+            </div>
           </div>
         </div>
         <div class="content" id="content"></div>
@@ -586,10 +626,55 @@ import LogoMark from '../components/LogoMark.astro';
         }, 450);
       }
 
-      const topicMetas: Record<number, string> = {};
-      topics.forEach((t: any) => { topicMetas[t.id] = t.topbar_meta; });
-
       // Lock detection is DB-driven: topic_content is null when RLS withheld it (expired user, non-free topic).
+
+      /** Plain text for heuristics (topic meta is usually plain; tolerate simple HTML). */
+      function metaPlainForTags(s: string): string {
+        return (s || '')
+          .replace(/<br\s*\/?>/gi, ' ')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      /**
+       * In the DP nav section, "Dynamic Programming · …" repeats the section name.
+       * Strip that prefix (and bare "Dynamic Programming" alone). Requires real punctuation
+       * after "Programming" so we do not strip titles like "Dynamic Programming Techniques".
+       * Normalizes look-alike bullets (∙ • ․ etc.).
+       */
+      function stripDpNavSectionNoise(s: string): string {
+        if (!s) return s;
+        let out = s.trim();
+        if (/^dynamic\s+programming$/i.test(metaPlainForTags(out))) return '';
+        out = out.replace(
+          /[\u2219\u2022\u2024\u2027\u30FB\u0387\u22C5\uFF65\u2023\u2043\u2E31\u2E33]/g,
+          '\u00B7',
+        );
+        // "Programming" then optional space, then one+ punctuation tokens (middot, colon, dash, etc.).
+        const re =
+          /^Dynamic\s+Programming\b(?:[\s\u00A0]*(?:\u00B7|·|&middot;|&#183;|&#8226;|:|[\u2013\u2014\-/,;\\|]|&nbsp;))+[\s\u00A0]*/iu;
+        for (let i = 0; i < 6; i++) {
+          const next = out.replace(re, '').trim();
+          if (next === out) break;
+          out = next;
+          if (/^dynamic\s+programming$/i.test(metaPlainForTags(out))) return '';
+        }
+        return out;
+      }
+
+      /** Same as stripDpNavSectionNoise for each line or HTML br chunk (multi-line topic-meta). */
+      function stripDpNavSectionNoiseDeep(s: string): string {
+        if (!s) return s;
+        const parts = s.split(/(\r?\n|<br\s*\/?>)/gi);
+        return parts
+          .map((part) => {
+            if (/^\r?\n$/i.test(part) || /^<br/i.test(part)) return part;
+            return stripDpNavSectionNoise(part);
+          })
+          .join('');
+      }
 
       // ── Build Sidebar ──
       const sectionOrder = ['Algorithms', 'Data Structures', 'Dynamic Programming', 'Graphs', 'Advanced Techniques'];
@@ -609,8 +694,10 @@ import LogoMark from '../components/LogoMark.astro';
         navHtml += `<div class="nav-section">${section}</div>`;
         for (const t of grouped.get(section)!) {
           const navLocked = isExpired && !t.topic_content;
+          const navLabel =
+            section === 'Dynamic Programming' ? stripDpNavSectionNoiseDeep(t.nav_label || '') : t.nav_label;
           navHtml += `<button class="nav-item${navLocked ? ' nav-locked' : ''}" data-topic-id="${t.id}" title="${navLocked ? 'Upgrade to Pro to access this topic' : ''}">`
-            + `<span class="num">${t.display_number}</span>${t.nav_label}`
+            + `<span class="num">${t.display_number}</span>${navLabel}`
             + `<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>`
             + `</button>`;
         }
@@ -624,6 +711,93 @@ import LogoMark from '../components/LogoMark.astro';
       function esc(s: string): string {
         return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
+
+      // "Fixed-Window" is sometimes authored with a Unicode hyphen (U+2011, etc.).
+      const FIXED_WINDOW_RE = /Fixed[\s\u2010\u2011\u2012\u2013\u2014-]*Window/i;
+
+      // Some topic `summary_meta` strings accidentally repeat the same tag sequence
+      // (e.g. "Fixed-Window · Kadane · ... · CHT" showing twice). This removes
+      // subsequent occurrences while keeping the first one intact.
+      function dedupeLinearDpTagSequence(summaryMeta: string): string {
+        if (!summaryMeta) return summaryMeta;
+
+        const sep = '(?:\\s*(?:·|&middot;|&#183;)\\s*)';
+        const pattern = `${FIXED_WINDOW_RE.source}${sep}Kadane${sep}Knapsack${sep}LIS${sep}State\\s*Machine${sep}CHT`;
+        const re1 = new RegExp(pattern, 'g');
+
+        const first = re1.exec(summaryMeta);
+        if (!first || first.index == null) return summaryMeta;
+
+        const firstEnd = first.index + first[0].length;
+
+        const re2 = new RegExp(pattern, 'g');
+        const out =
+          summaryMeta.slice(0, firstEnd) + summaryMeta.slice(firstEnd).replace(re2, '');
+
+        // Cosmetic: avoid double spaces created by removing the repeated block.
+        return out.replace(/[ \t]{2,}/g, ' ');
+      }
+
+      // Tag line "Fixed-Window · Kadane · … · CHT" is redundant when the stats line
+      // (N problems · stages · …) already lists the same ideas.
+      function topicMetaHasProblemStatsLine(s: string): boolean {
+        if (!s) return false;
+        return (
+          /\d+[\s\u00a0]*problems/i.test(s)
+          || /fixed-window\s*,\s*knapsack/i.test(s)
+        );
+      }
+
+      /** Chip row like "A · B · C" (3+ items) — redundant when the next line is "N problems · stages · …". */
+      function isMiddotTagLine(s: string): boolean {
+        const plain = metaPlainForTags(s);
+        const sep = /(?:·|&middot;|&#183;)/;
+        const parts = plain.split(sep).map((x) => x.trim()).filter(Boolean);
+        return parts.length >= 3;
+      }
+
+      /**
+       * Dynamic Programming topics: drop a leading middot "tag" block before the first "N problems" line
+       * when the stats line already expands the same ideas (avoids duplicate header rows).
+       */
+      function removeDpRedundantMiddotPrefixBeforeStats(summaryMeta: string): string {
+        if (!summaryMeta || !topicMetaHasProblemStatsLine(summaryMeta)) return summaryMeta;
+
+        const problemsIdx = summaryMeta.search(/\d+[\s\u00a0]*problems/i);
+        if (problemsIdx <= 0) return summaryMeta;
+
+        const prefix = summaryMeta.slice(0, problemsIdx);
+        if (!isMiddotTagLine(prefix)) return summaryMeta;
+
+        const plainLen = metaPlainForTags(prefix).length;
+        if (plainLen > 220) return summaryMeta;
+
+        let out = summaryMeta.slice(problemsIdx);
+        out = out.replace(/^(?:\s|&nbsp;)*(?:·|&middot;|&#183;)\s*/i, '');
+        return out.replace(/[ \t]{2,}/g, ' ').replace(/^\s+|\s+$/g, '');
+      }
+
+      // Tag chip row is sometimes stored in `type_label` / `tier_label` while `summary_meta` has the stats row.
+      function stripRedundantDpMiddotLabel(label: string, summaryMeta: string): string {
+        if (!label || !summaryMeta) return label;
+        if (!topicMetaHasProblemStatsLine(summaryMeta)) return label;
+        if (!isMiddotTagLine(label)) return label;
+        return '';
+      }
+
+      const topicMetas: Record<number, string> = {};
+      topics.forEach((t: any) => {
+        let m = t.topbar_meta || '';
+        const isDp = t.nav_section === 'Dynamic Programming';
+        if (isDp) {
+          m = dedupeLinearDpTagSequence(m);
+          if (topicMetaHasProblemStatsLine(m)) {
+            m = removeDpRedundantMiddotPrefixBeforeStats(m);
+          }
+          m = stripDpNavSectionNoiseDeep(m);
+        }
+        topicMetas[t.id] = m;
+      });
 
       const LAYER_CLS: Record<string, string> = {
         Foundation: 'l1', Variants: 'l2', Combo: 'l3', Hard: 'l4', Trap: 'l5',
@@ -748,9 +922,46 @@ import LogoMark from '../components/LogoMark.astro';
           }
         }
 
-        cardsHtml += `<div class="topic-card${isLocked ? ' topic-locked' : ''}" id="tp${t.id}"><div class="topic-header"><div class="topic-num">${t.display_number}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><div class="topic-title">${t.title}</div><span class="tier-badge tier-${t.tier_code}">${t.tier_label}</span><span class="topic-type">${t.type_label}</span></div><div class="topic-meta">${t.summary_meta}</div></div></div><div class="topic-body">${bodyHtml}</div></div>`;
+        const isDpTopic = t.nav_section === 'Dynamic Programming';
+        let meta = t.summary_meta || '';
+        if (isDpTopic) {
+          meta = dedupeLinearDpTagSequence(meta);
+          if (topicMetaHasProblemStatsLine(meta)) {
+            meta = removeDpRedundantMiddotPrefixBeforeStats(meta);
+          }
+          meta = stripDpNavSectionNoiseDeep(meta);
+        }
+        const rawSummary = t.summary_meta || '';
+        const typeLabel = isDpTopic
+          ? stripRedundantDpMiddotLabel(stripDpNavSectionNoiseDeep(t.type_label || ''), rawSummary)
+          : (t.type_label || '');
+        const tierLabelClean = isDpTopic
+          ? stripRedundantDpMiddotLabel(stripDpNavSectionNoiseDeep(t.tier_label || ''), rawSummary)
+          : (t.tier_label || '');
+        const topicTitle =
+          isDpTopic
+            ? (() => {
+                const cleaned = stripDpNavSectionNoiseDeep(t.title || '').trim();
+                return cleaned || t.title;
+              })()
+            : t.title;
+        cardsHtml += `<div class="topic-card topic-collapsed${isLocked ? ' topic-locked' : ''}" id="tp${t.id}"><div class="topic-header"><div class="topic-num">${t.display_number}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><div class="topic-title">${topicTitle}</div><span class="tier-badge tier-${t.tier_code}">${tierLabelClean}</span><span class="topic-type">${typeLabel}</span><button type="button" class="topic-details-btn" aria-expanded="false" title="Show details">Details</button></div><div class="topic-meta">${meta}</div></div></div><div class="topic-body">${bodyHtml}</div></div>`;
       }
       document.getElementById('content')!.innerHTML = cardsHtml;
+
+      // ── Topic header collapse (questions-first) ──
+      document.querySelectorAll('.topic-card').forEach((card) => {
+        const btn = card.querySelector<HTMLButtonElement>('.topic-details-btn');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const collapsed = card.classList.toggle('topic-collapsed');
+          btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          btn.textContent = collapsed ? 'Details' : 'Hide';
+          btn.title = collapsed ? 'Show details' : 'Hide details';
+        });
+      });
 
       // Wire up upgrade buttons inside locked cards
       document.querySelectorAll('.upgrade-btn-card').forEach((btn) => {
@@ -867,13 +1078,13 @@ import LogoMark from '../components/LogoMark.astro';
 
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
         const lab = document.createElement('label');
-        lab.className = 'w98-switch w98-switch--inline' + (isPaid ? '' : ' study-pref--locked');
+        lab.className = 'w98-switch w98-switch--inline study-toggle study-toggle--problems' + (isPaid ? '' : ' study-pref--locked');
         lab.title = isPaid
           ? 'Problems only: hide explanations and extra sections (saved to your Pro profile)'
           : 'Pro only — upgrade to filter the guide down to problem tables and sync this preference.';
         lab.innerHTML =
           '<input type="checkbox" class="w98-topic-toggle" /><span class="w98-slider"></span>'
-          + '<span class="w98-label">Problems only</span>';
+          + '<span class="w98-label">Just problems</span>';
         titleRow.appendChild(lab);
         const inp = lab.querySelector('.w98-topic-toggle') as HTMLInputElement;
         inp.checked = isPaid && w98Active;
@@ -906,13 +1117,13 @@ import LogoMark from '../components/LogoMark.astro';
             });
             if (inMinCount) {
               const toggle = document.createElement('label');
-              toggle.className = 'min-switch' + (isPaid ? '' : ' study-pref--locked');
+              toggle.className = 'min-switch study-toggle study-toggle--core' + (isPaid ? '' : ' study-pref--locked');
               toggle.title = isPaid
                 ? `Core set: show only the ${inMinCount} minimum coverage problems (saved per topic in your Pro profile)`
                 : `Pro only — upgrade to show only these ${inMinCount} core coverage problems and save per topic.`;
               toggle.innerHTML =
                 '<input type="checkbox" class="min-toggle" /><span class="min-slider"></span>'
-                + '<span class="min-label">Core set</span>';
+                + '<span class="min-label">Core bites</span>';
               titleRow.appendChild(toggle);
               const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
               if (isPaid && studyMinByTopic[topicIdStr]) {
@@ -936,13 +1147,13 @@ import LogoMark from '../components/LogoMark.astro';
         // that this topic has a problem set, so we can still show the filter UI.
         if (card.querySelector('.lc-link')) {
           const revToggle = document.createElement('label');
-          revToggle.className = 'rev-switch' + (isPaid ? '' : ' study-pref--locked');
+          revToggle.className = 'rev-switch study-toggle study-toggle--rev' + (isPaid ? '' : ' study-pref--locked');
           revToggle.title = isPaid
             ? 'Revision only: hide everything except the problem table, and show only rows marked for revision (saved per topic in your Pro profile)'
             : 'Pro only — upgrade to filter by revision marks and save per topic.';
           revToggle.innerHTML =
             '<input type="checkbox" class="rev-only-toggle" /><span class="rev-slider"></span>'
-            + '<span class="rev-label">Revision only</span>';
+            + '<span class="rev-label">Redo queue</span>';
           titleRow.appendChild(revToggle);
           const revCb = revToggle.querySelector('.rev-only-toggle') as HTMLInputElement;
           if (isPaid && studyRevOnlyByTopic[topicIdStr]) {
@@ -968,11 +1179,276 @@ import LogoMark from '../components/LogoMark.astro';
       const userId = session.user.id;
       let completedSet = new Set<string>();
       let revisionSet = new Set<string>();
+      let dailySolvedMap: Record<string, number> = {};
       if (isPaid) {
         const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
         completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
         const { data: revRows } = await supabase.from('user_revision').select('topic_id, problem_num').eq('user_id', userId);
         revisionSet = new Set((revRows || []).map((r: any) => `${r.topic_id}-${r.problem_num}`));
+      }
+
+      // ── Daily solved heatmap (GitHub-style) ──
+      const streakCard = document.getElementById('daily-streak-card') as HTMLElement | null;
+      const streakRow = document.getElementById('daily-streak-row') as HTMLElement | null;
+      const streakMeta = document.getElementById('daily-streak-meta') as HTMLButtonElement | null;
+      const heatmapGrid = document.getElementById('daily-heatmap-grid') as HTMLElement | null;
+      const heatmapMeta = document.getElementById('daily-heatmap-meta') as HTMLElement | null;
+      const streakOpenYear = document.getElementById('streak-open-year') as HTMLButtonElement | null;
+      const heatmapModal = document.getElementById('heatmap-modal') as HTMLElement | null;
+      const heatmapModalClose = document.getElementById('heatmap-modal-close') as HTMLButtonElement | null;
+      const heatmapMonths = document.getElementById('daily-heatmap-months') as HTMLElement | null;
+      const heatmapModalSubtitle = document.getElementById('heatmap-modal-subtitle') as HTMLElement | null;
+
+      function ymd(d: Date) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+      function startOfDay(d: Date) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+      function addDays(d: Date, n: number) {
+        const x = new Date(d);
+        x.setDate(x.getDate() + n);
+        return x;
+      }
+      function addMonths(d: Date, n: number) {
+        const x = new Date(d);
+        x.setMonth(x.getMonth() + n);
+        return x;
+      }
+      function isoWeekdayMon0(d: Date) {
+        // JS: 0=Sun..6=Sat → map to 0=Mon..6=Sun
+        return (d.getDay() + 6) % 7;
+      }
+      function levelForCount(n: number) {
+        if (!n || n <= 0) return 0;
+        if (n === 1) return 1;
+        if (n <= 3) return 2;
+        if (n <= 6) return 3;
+        return 4;
+      }
+      function sumLastNDays(map: Record<string, number>, days: number) {
+        const today = startOfDay(new Date());
+        let total = 0;
+        for (let i = 0; i < days; i++) {
+          const k = ymd(addDays(today, -i));
+          total += map[k] || 0;
+        }
+        return total;
+      }
+
+      function renderHeatmap(map: Record<string, number>, rangeStart: Date) {
+        if (!isPaid || !heatmapGrid || !heatmapMeta) return;
+        heatmapGrid.innerHTML = '';
+        if (heatmapMonths) heatmapMonths.innerHTML = '';
+
+        const today = startOfDay(new Date());
+        const end = today;
+        const start = startOfDay(rangeStart);
+        // Align grid to Monday start (GitHub-like columns)
+        const gridStart = addDays(start, -isoWeekdayMon0(start));
+        const gridEnd = addDays(end, (6 - isoWeekdayMon0(end)));
+        const totalDays = Math.round((gridEnd.getTime() - gridStart.getTime()) / 86400000) + 1;
+        const weeks = Math.ceil(totalDays / 7);
+
+        const rangeSubtitleFmt = new Intl.DateTimeFormat(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+        if (heatmapModalSubtitle) {
+          heatmapModalSubtitle.textContent = `${rangeSubtitleFmt.format(start)} – ${rangeSubtitleFmt.format(end)}`;
+        }
+
+        heatmapGrid.style.setProperty('--heatmap-weeks', String(weeks));
+        if (heatmapMonths) heatmapMonths.style.setProperty('--heatmap-weeks', String(weeks));
+
+        let bestDay = { key: '', count: 0 };
+        let total = 0;
+
+        // Month labels aligned to week columns
+        if (heatmapMonths) {
+          const monthFmt = new Intl.DateTimeFormat(undefined, { month: 'short' });
+          const yearFmt = new Intl.DateTimeFormat(undefined, { year: 'numeric' });
+          const labels: Array<string | null> = Array.from({ length: weeks }, () => null);
+
+          const monthYear = (d: Date) => `${monthFmt.format(d)}\n${yearFmt.format(d)}`;
+          // First column: month + year for the range start (stacked, fits narrow cols)
+          labels[0] = monthYear(start);
+          // Each 1st of month: month + year
+          for (let i = 0; i < totalDays; i++) {
+            const d = addDays(gridStart, i);
+            if (d.getDate() !== 1) continue;
+            const weekIdx = Math.floor(i / 7);
+            if (weekIdx < 0 || weekIdx >= weeks) continue;
+            labels[weekIdx] = monthYear(d);
+          }
+          // Render as a grid with week columns
+          heatmapMonths.classList.toggle('heatmap-months--two-year', start.getFullYear() !== end.getFullYear());
+          heatmapMonths.innerHTML = labels
+            .map((t) => `<span class="heatmap-month">${t ? t : ''}</span>`)
+            .join('');
+        }
+
+        for (let i = 0; i < totalDays; i++) {
+          const d = addDays(gridStart, i);
+          const key = ymd(d);
+          const count = map[key] || 0;
+          total += count;
+          if (count > bestDay.count) bestDay = { key, count };
+          const lv = levelForCount(count);
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = `heatmap-cell heatmap-l${lv}`;
+          cell.setAttribute('role', 'gridcell');
+          cell.setAttribute('data-day', key);
+          cell.textContent = String(d.getDate());
+          cell.title = `${key}: ${count} solved`;
+          cell.setAttribute('aria-label', `${key}: ${count} solved`);
+          cell.addEventListener('click', async () => {
+            if (!isPaid) return openRazorpay('monthly');
+            // Heatmap is DB-derived; update it by solving problems (checkboxes).
+          });
+          heatmapGrid.appendChild(cell);
+        }
+
+        const last7 = sumLastNDays(map, 7);
+        const last30 = sumLastNDays(map, 30);
+        const todayCount = map[ymd(today)] || 0;
+        heatmapMeta.textContent =
+          `Today: ${todayCount} · Last 7 days: ${last7} · Last 30 days: ${last30}` +
+          (bestDay.count > 0 ? ` · Best: ${bestDay.count} on ${bestDay.key}` : '');
+      }
+
+      /** e.g. May 2–8, 2026 (no “May 02” padding); spans months/years when needed */
+      function streakRangeLabel(a: Date, b: Date) {
+        const mo = new Intl.DateTimeFormat(undefined, { month: 'short' });
+        const dayNum = new Intl.DateTimeFormat(undefined, { day: 'numeric' });
+        const yearNum = new Intl.DateTimeFormat(undefined, { year: 'numeric' });
+        const sameMonth = a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+        const sameYear = a.getFullYear() === b.getFullYear();
+        if (sameMonth) {
+          return `${mo.format(a)} ${dayNum.format(a)}–${dayNum.format(b)}, ${yearNum.format(b)}`;
+        }
+        if (sameYear) {
+          return `${mo.format(a)} ${dayNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}, ${yearNum.format(b)}`;
+        }
+        return `${mo.format(a)} ${dayNum.format(a)}, ${yearNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}, ${yearNum.format(b)}`;
+      }
+
+      function renderStreak(map: Record<string, number>) {
+        if (!isPaid || !streakCard || !streakRow || !streakMeta) return;
+        streakRow.innerHTML = '';
+        const today = startOfDay(new Date());
+        const fmtCell = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        const dowFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+        let streak = 0;
+        for (let i = 0; i < 365; i++) {
+          const k = ymd(addDays(today, -i));
+          const c = map[k] || 0;
+          if (c > 0) streak++;
+          else break;
+        }
+        const last7 = sumLastNDays(map, 7);
+        const first = addDays(today, -6);
+        const range = streakRangeLabel(first, today);
+        streakMeta.textContent = range;
+        streakMeta.title = `${streak} day streak · ${last7} solved in last 7 days (click to refresh)`;
+        streakMeta.setAttribute('aria-label', `${range}. ${streak} day streak, ${last7} solved in last 7 days`);
+
+        for (let i = 6; i >= 0; i--) {
+          const d = addDays(today, -i);
+          const k = ymd(d);
+          const c = map[k] || 0;
+          const lv = levelForCount(c);
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          const dow = dowFmt.format(d);
+          const dowLetter = (dow || '').trim().slice(0, 1).toUpperCase() || '';
+          cell.className = `streak-cell heatmap-l${lv}` + (i === 0 ? ' streak-cell--today' : '');
+          cell.title = `${fmtCell.format(d)} (${k}): ${c} solved`;
+          cell.setAttribute('aria-label', `${k}: ${c} solved`);
+          cell.setAttribute('data-dow', dowLetter);
+          cell.textContent = String(d.getDate());
+          cell.addEventListener('click', () => {
+            if (!isPaid) return openRazorpay('monthly');
+            openYearView();
+          });
+          streakRow.appendChild(cell);
+        }
+        streakCard.hidden = false;
+      }
+
+      function openYearView() {
+        if (!isPaid || !heatmapModal) return;
+        heatmapModal.hidden = false;
+        heatmapModal.classList.add('open');
+      }
+      function closeYearView() {
+        if (!heatmapModal) return;
+        heatmapModal.classList.remove('open');
+        heatmapModal.hidden = true;
+      }
+
+      async function fetchDailySolved() {
+        if (!isPaid) return;
+        const today = startOfDay(new Date());
+        const createdAt = startOfDay(new Date((session.user as any).created_at || Date.now()));
+        const sixMonthsBack = startOfDay(addMonths(today, -6));
+        const rangeStartDate = createdAt > sixMonthsBack ? createdAt : sixMonthsBack;
+        const start = ymd(rangeStartDate);
+        const end = ymd(today);
+        const { data, error } = await supabase
+          .from('user_daily_solved_view')
+          .select('day, solved_count')
+          .eq('user_id', userId)
+          .gte('day', start)
+          .lte('day', end);
+        if (error) return;
+        dailySolvedMap = {};
+        (data || []).forEach((r: any) => {
+          const k = typeof r.day === 'string' ? r.day : String(r.day);
+          dailySolvedMap[k] = Number(r.solved_count || 0);
+        });
+        renderStreak(dailySolvedMap);
+        renderHeatmap(dailySolvedMap, rangeStartDate);
+      }
+
+      if (streakMeta) {
+        streakMeta.addEventListener('click', async () => {
+          if (!isPaid) return openRazorpay('monthly');
+          await fetchDailySolved();
+        });
+      }
+      if (streakOpenYear) {
+        streakOpenYear.addEventListener('click', () => {
+          if (!isPaid) return openRazorpay('monthly');
+          openYearView();
+        });
+      }
+      if (heatmapModalClose) {
+        heatmapModalClose.addEventListener('click', closeYearView);
+      }
+      if (heatmapModal) {
+        heatmapModal.addEventListener('click', (e) => {
+          if (e.target === heatmapModal) closeYearView();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeYearView();
+        });
+      }
+
+      if (isPaid) {
+        // Don’t block the rest of the UI; render when ready.
+        fetchDailySolved();
+      } else {
+        if (streakCard) {
+          streakCard.hidden = true;
+          streakCard.classList.remove('streak-card--locked');
+        }
+        closeYearView();
       }
       const REV_PIN_SVG =
         '<svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path class="rev-pin-shape" d="M1.75 1.25h7.5v9.35L5.5 8.05 1.75 10.6V1.25z" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linejoin="round"/></svg>';
@@ -1001,7 +1477,18 @@ import LogoMark from '../components/LogoMark.astro';
           }
           if (isComplete) row.classList.add('row-done');
           if (isRevision) row.classList.add('row-revision');
-          numCell.insertBefore(cb, numCell.firstChild);
+          // Keep # column perfectly aligned: fixed-width controls + stable number text
+          const numRaw = (numCell.textContent || '').trim();
+          const inner = document.createElement('span');
+          inner.className = 'num-cell-inner';
+
+          const controls = document.createElement('span');
+          controls.className = 'num-controls';
+          controls.appendChild(cb);
+
+          const numText = document.createElement('span');
+          numText.className = 'num-text';
+          numText.textContent = numRaw;
 
           const revBtn = document.createElement('button');
           revBtn.type = 'button';
@@ -1017,17 +1504,23 @@ import LogoMark from '../components/LogoMark.astro';
             revBtn.setAttribute('aria-label', revLocked);
             revBtn.disabled = true;
           }
-          numCell.insertBefore(revBtn, cb.nextSibling);
+          controls.appendChild(revBtn);
+
+          // Replace existing content with a stable inline layout.
+          numCell.textContent = '';
+          inner.appendChild(controls);
+          inner.appendChild(numText);
+          numCell.appendChild(inner);
 
           if (isPaid) {
             cb.addEventListener('change', async () => {
               cb.disabled = true;
               if (cb.checked) {
                 const { error } = await supabase.from('user_progress').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
-                if (error) { cb.checked = false; } else { row.classList.add('row-done'); completedSet.add(key); }
+                if (error) { cb.checked = false; } else { row.classList.add('row-done'); completedSet.add(key); fetchDailySolved(); }
               } else {
                 const { error } = await supabase.from('user_progress').delete().eq('user_id', userId).eq('topic_id', topicId).eq('problem_num', probNum);
-                if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); }
+                if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); fetchDailySolved(); }
               }
               cb.disabled = false;
               cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
@@ -1213,11 +1706,34 @@ import LogoMark from '../components/LogoMark.astro';
         topicCards.forEach((card) => card.classList.remove('active'));
         const activeCard = document.getElementById(`tp${topicNum}`);
         if (activeCard) activeCard.classList.add('active');
-        topbarTitle.textContent = clickedItem.textContent?.replace(/^\d+\s*/, '') || '';
-        topbarMeta.textContent = topicMetas[topicNum] || '';
+        // Avoid duplicating the topic title (it already appears in the topic card header).
+        // Topbar shows only higher-level context.
+        topbarTitle.textContent = topicMetas[topicNum] || '';
+        topbarMeta.textContent = '';
         const sb = document.getElementById('sidebar')!;
         if (sb.classList.contains('open')) sb.classList.remove('open');
         try { localStorage.setItem('lastTopic', String(topicNum)); } catch (e) {}
+
+        // Jump user directly to the questions table (first problem set) to reduce bloat.
+        if (activeCard) {
+          // Avoid `:has()` for broader browser support.
+          const tables = Array.from(activeCard.querySelectorAll('.topic-body table')) as HTMLElement[];
+          const target =
+            (tables.find((t) => Boolean(t.querySelector('.num-cell'))) as HTMLElement | undefined)
+            || (activeCard.querySelector('.topic-body a.lc-link')?.closest('table') as HTMLElement | null)
+            || (tables[0] as HTMLElement | undefined)
+            || null;
+          if (target) {
+            // scrollIntoView + adjust for sticky topbar
+            setTimeout(() => {
+              // Avoid non-standard behavior values ("instant") which can throw in some browsers.
+              target.scrollIntoView({ block: 'start', behavior: 'auto' });
+              const tb = document.querySelector('.topbar') as HTMLElement | null;
+              const tbH = tb ? tb.getBoundingClientRect().height : 0;
+              window.scrollBy(0, -Math.round(tbH + 10));
+            }, 0);
+          }
+        }
       }
 
       navItems.forEach((item) => {
