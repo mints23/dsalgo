@@ -391,6 +391,51 @@ summary:focus-visible {
   font-weight: 600;
   color: color-mix(in oklab, var(--text) 78%, var(--primary) 8%);
 }
+.topbar-subscription-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  flex-shrink: 0;
+  max-width: min(16rem, 52vw);
+  margin-right: 0.05rem;
+}
+.topbar-subscription-badge[hidden] {
+  display: none !important;
+}
+.topbar-pro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 1rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 55%, #02a6a0));
+  box-shadow: 0 1px 5px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+.topbar-trial-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--warning, #e6a817);
+  white-space: nowrap;
+}
+.topbar-expired-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e53e3e;
+  white-space: nowrap;
+}
+[data-theme='dark'] .topbar-expired-pill {
+  color: color-mix(in oklab, #f87171 85%, #e53e3e);
+}
 
 .w98-switch {
   display: inline-flex;

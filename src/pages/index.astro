@@ -113,6 +113,7 @@ import LogoMark from '../components/LogoMark.astro';
 
           <div class="topbar-actions">
             <span id="user-name" class="topbar-user"></span>
+            <span id="user-subscription-badge" class="topbar-subscription-badge" hidden></span>
             <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5" />
@@ -405,13 +406,26 @@ import LogoMark from '../components/LogoMark.astro';
 
       type PayPlan = 'monthly' | 'quarterly';
 
-      // Display user name + status badge
+      // Display user name + status badge (badge is separate from .topbar-user so days-left isn’t ellipsized away)
       const userName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || '';
       const userNameEl = document.getElementById('user-name')!;
+      const subBadgeEl = document.getElementById('user-subscription-badge')!;
+      userNameEl.textContent = userName;
+
+      function clearSubscriptionUi() {
+        subBadgeEl.textContent = '';
+        subBadgeEl.innerHTML = '';
+        subBadgeEl.hidden = true;
+        subBadgeEl.removeAttribute('title');
+      }
+
       if (isTrialActive) {
-        const daysLeft = Math.ceil((new Date(sub!.trial_ends_at).getTime() - now.getTime()) / 86400000);
-        userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:var(--warning, #e6a817);font-weight:600;margin-left:0.3rem;">Trial: ${daysLeft}d left</span>`;
+        clearSubscriptionUi();
+        const daysLeft = Math.max(0, Math.ceil((new Date(sub!.trial_ends_at).getTime() - now.getTime()) / 86400000));
+        subBadgeEl.hidden = false;
+        subBadgeEl.innerHTML = `<span class="topbar-trial-pill">Trial · ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left</span>`;
         const trialBtns = document.createElement('span');
+        trialBtns.className = 'topbar-pay-btns';
         trialBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
         const mkTrialPay = (label: string, plan: 'monthly' | 'quarterly') => {
           const b = document.createElement('button');
@@ -423,14 +437,27 @@ import LogoMark from '../components/LogoMark.astro';
         };
         trialBtns.appendChild(mkTrialPay('₹149/mo', 'monthly'));
         trialBtns.appendChild(mkTrialPay('₹299/3 mo', 'quarterly'));
-        userNameEl.parentElement!.insertBefore(trialBtns, userNameEl.nextSibling);
+        subBadgeEl.appendChild(trialBtns);
       } else if (isPaid) {
-        const paidDaysLeft = Math.ceil((new Date(sub!.paid_until!).getTime() - now.getTime()) / 86400000);
-        userNameEl.innerHTML = `${userName} <span style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.68rem;font-weight:700;margin-left:0.4rem;padding:0.15rem 0.5rem;border-radius:1rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;box-shadow:0 1px 4px rgba(1,105,111,0.3);letter-spacing:0.02em;">&#9733; PRO &middot; ${paidDaysLeft}d</span>`;
+        clearSubscriptionUi();
+        const paidUntil = new Date(sub!.paid_until!);
+        const paidDaysLeft = Math.max(0, Math.ceil((paidUntil.getTime() - now.getTime()) / 86400000));
+        const dayWord = paidDaysLeft === 1 ? 'day' : 'days';
+        subBadgeEl.hidden = false;
+        subBadgeEl.innerHTML = `<span class="topbar-pro-pill">&#9733; Pro · ${paidDaysLeft} ${dayWord} left</span>`;
+        try {
+          const endStr = paidUntil.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+          subBadgeEl.setAttribute('title', `Pro access through ${endStr}`);
+        } catch {
+          subBadgeEl.setAttribute('title', 'Pro subscription');
+        }
       } else {
         // Expired: show banner + upgrade choices
-        userNameEl.innerHTML = `${userName} <span style="font-size:0.68rem;color:#e53e3e;font-weight:700;margin-left:0.3rem;">Trial Ended</span>`;
+        clearSubscriptionUi();
+        subBadgeEl.hidden = false;
+        subBadgeEl.innerHTML = `<span class="topbar-expired-pill">Trial ended</span>`;
         const expBtns = document.createElement('span');
+        expBtns.className = 'topbar-pay-btns';
         expBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
         const mkExp = (label: string, plan: PayPlan) => {
           const b = document.createElement('button');
@@ -442,7 +469,7 @@ import LogoMark from '../components/LogoMark.astro';
         };
         expBtns.appendChild(mkExp('₹149/mo', 'monthly'));
         expBtns.appendChild(mkExp('₹299/3 mo', 'quarterly'));
-        userNameEl.parentElement!.insertBefore(expBtns, userNameEl.nextSibling);
+        subBadgeEl.appendChild(expBtns);
       }
 
       // ── Razorpay Checkout ──
