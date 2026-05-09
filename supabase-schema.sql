@@ -20,6 +20,7 @@ create table if not exists topics (
 alter table topics enable row level security;
 
 -- Only authenticated users can read topics
+drop policy if exists "Authenticated users can read topics" on topics;
 create policy "Authenticated users can read topics"
   on topics for select
   using (auth.role() = 'authenticated');
@@ -40,16 +41,19 @@ create table if not exists user_progress (
 alter table user_progress enable row level security;
 
 -- Users can only see their own progress
+drop policy if exists "Users read own progress" on user_progress;
 create policy "Users read own progress"
   on user_progress for select
   using (auth.uid() = user_id);
 
 -- Users can only insert their own progress
+drop policy if exists "Users insert own progress" on user_progress;
 create policy "Users insert own progress"
   on user_progress for insert
   with check (auth.uid() = user_id);
 
 -- Users can only delete their own progress
+drop policy if exists "Users delete own progress" on user_progress;
 create policy "Users delete own progress"
   on user_progress for delete
   using (auth.uid() = user_id);
@@ -70,14 +74,17 @@ create table if not exists user_revision (
 
 alter table user_revision enable row level security;
 
+drop policy if exists "Users read own revision marks" on user_revision;
 create policy "Users read own revision marks"
   on user_revision for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users insert own revision marks" on user_revision;
 create policy "Users insert own revision marks"
   on user_revision for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users delete own revision marks" on user_revision;
 create policy "Users delete own revision marks"
   on user_revision for delete
   using (auth.uid() = user_id);
@@ -101,11 +108,13 @@ create table if not exists subscriptions (
 alter table subscriptions enable row level security;
 
 -- Users can read their own subscription
+drop policy if exists "Users read own subscription" on subscriptions;
 create policy "Users read own subscription"
   on subscriptions for select
   using (auth.uid() = user_id);
 
 -- Users can insert their own subscription (for existing users without a row)
+drop policy if exists "Users insert own subscription" on subscriptions;
 create policy "Users insert own subscription"
   on subscriptions for insert
   with check (auth.uid() = user_id);
@@ -201,6 +210,7 @@ alter table topic_content enable row level security;
 --   • the user has an active trial, OR
 --   • the user has an active paid subscription
 drop policy if exists "Authenticated users can read topic_content" on topic_content;
+drop policy if exists "Topic content access by subscription" on topic_content;
 
 create policy "Topic content access by subscription"
   on topic_content for select
@@ -237,6 +247,7 @@ alter table problems enable row level security;
 
 -- Same access rule for problems rows
 drop policy if exists "Authenticated users can read problems" on problems;
+drop policy if exists "Problems access by subscription" on problems;
 
 create policy "Problems access by subscription"
   on problems for select
@@ -347,6 +358,81 @@ create policy "study_prefs_update_pro"
     )
   )
   with check (auth.uid() = user_id);
+
+-- Study prefs RPCs (client uses these; see migrations/study_preferences_rpc.sql)
+drop function if exists public.get_user_study_preferences();
+
+create or replace function public.get_user_study_preferences()
+returns table (
+  problems_only boolean,
+  min_coverage_by_topic jsonb,
+  revision_only_by_topic jsonb
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    return;
+  end if;
+  if not exists (
+    select 1 from public.subscriptions s
+    where s.user_id = auth.uid()
+      and s.status = 'active'
+      and s.paid_until is not null
+      and s.paid_until > now()
+  ) then
+    return;
+  end if;
+  return query
+  select p.problems_only, p.min_coverage_by_topic, p.revision_only_by_topic
+  from public.user_study_preferences p
+  where p.user_id = auth.uid();
+end;
+$$;
+
+create or replace function public.upsert_user_study_preferences(
+  p_problems_only boolean,
+  p_min jsonb default '{}'::jsonb,
+  p_rev jsonb default '{}'::jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated' using errcode = '42501';
+  end if;
+  if not exists (
+    select 1 from public.subscriptions s
+    where s.user_id = auth.uid()
+      and s.status = 'active'
+      and s.paid_until is not null
+      and s.paid_until > now()
+  ) then
+    raise exception 'subscription required' using errcode = '42501';
+  end if;
+  insert into public.user_study_preferences (
+    user_id, problems_only, min_coverage_by_topic, revision_only_by_topic, updated_at
+  )
+  values (
+    auth.uid(), p_problems_only, coalesce(p_min, '{}'::jsonb), coalesce(p_rev, '{}'::jsonb), now()
+  )
+  on conflict (user_id) do update set
+    problems_only = excluded.problems_only,
+    min_coverage_by_topic = excluded.min_coverage_by_topic,
+    revision_only_by_topic = excluded.revision_only_by_topic,
+    updated_at = excluded.updated_at;
+end;
+$$;
+
+revoke all on function public.get_user_study_preferences() from public;
+grant execute on function public.get_user_study_preferences() to authenticated;
+revoke all on function public.upsert_user_study_preferences(boolean, jsonb, jsonb) from public;
+grant execute on function public.upsert_user_study_preferences(boolean, jsonb, jsonb) to authenticated;
 
 -- After verifying migration data looks correct you can optionally remove body_html:
 -- alter table topics drop column body_html;

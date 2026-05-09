@@ -18,20 +18,20 @@ import LogoMark from '../components/LogoMark.astro';
         }
       })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1f5c61" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>DSA Mastery Guide</title>
-    <meta name="description" content="Comprehensive DSA interview preparation guide with 1150+ problems across 43 topics — Two Pointers, Binary Search, DP, Graphs, and more." />
-    <meta property="og:title" content="DSA Mastery Guide — algofrog.in" />
-    <meta property="og:description" content="Comprehensive DSA interview preparation guide with 1150+ problems across 43 topics." />
+    <title>Questions by topic — DSA Mastery Guide</title>
+    <meta name="description" content="Interview prep built around problem tables: 1150+ questions across 43 topics, each row in teaching order. Pick a topic, work the list." />
+    <meta property="og:title" content="Questions by topic — DSA Mastery Guide · algofrog.in" />
+    <meta property="og:description" content="Problem tables in teaching order — 1150+ questions across 43 DSA topics." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://algofrog.in" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="DSA Mastery Guide — algofrog.in" />
-    <meta name="twitter:description" content="1150+ problems across 43 DSA topics for interview prep." />
+    <meta name="twitter:description" content="1150+ questions in ordered tables — 43 DSA topics for interview prep." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Google tag (gtag.js) -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-RKMP4BG1N2"></script>
@@ -50,16 +50,18 @@ import LogoMark from '../components/LogoMark.astro';
     <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to questions</a>
     <!-- Shell only — NO topic data in the HTML. Content fetched from Supabase after auth. -->
     <div class="app" style="visibility:hidden">
-      <nav class="sidebar" id="sidebar">
+      <nav class="sidebar" id="sidebar" aria-label="Topics">
         <div class="logo">
           <LogoMark width={28} height={28} />
           <div>
             <div class="logo-text">DSA Mastery</div>
-            <div class="logo-sub">Interview Preparation Guide</div>
+            <div class="logo-sub">Problem tables · one topic at a time</div>
           </div>
         </div>
+        <p class="sidebar-purpose">Pick a topic here — the main column is always the question list.</p>
         <div id="nav-list"></div>
         <div class="sidebar-footer">
           <button class="theme-btn" aria-label="Toggle theme">
@@ -72,29 +74,45 @@ import LogoMark from '../components/LogoMark.astro';
         </div>
       </nav>
 
-      <div class="main">
-        <div class="topbar">
-          <div>
-            <div class="topbar-title" id="topbar-title"></div>
-            <div class="topbar-meta" id="topbar-meta"></div>
+      <button
+        type="button"
+        id="sidebar-scrim"
+        class="sidebar-scrim"
+        aria-label="Close topic list"
+        hidden
+      ></button>
+
+      <main class="main" id="main-content">
+        <div class="topbar" role="banner" aria-label="Progress and account">
+          <div class="topbar-topic" id="topbar-topic" hidden>
+            <span class="topbar-topic-num" id="topbar-topic-num" aria-hidden="true"></span>
+            <span class="topbar-topic-title" id="topbar-topic-title"></span>
           </div>
-          <div class="overall-progress" id="overall-progress" title="Overall progress" style="min-width:120px;max-width:180px;">
-            <div class="overall-progress-bar"><div class="overall-progress-fill" id="overall-fill"></div></div>
-            <span class="overall-progress-text" id="overall-text">0/0</span>
+          <div class="topbar-spacer" aria-hidden="true"></div>
+          <div class="topbar-metrics">
+            <div
+              class="overall-progress overall-progress--topbar"
+              id="overall-progress"
+              role="group"
+              aria-label="Solve progress across all problems in the guide"
+            >
+              <div class="overall-progress-bar" aria-hidden="true"><div class="overall-progress-fill" id="overall-fill"></div></div>
+              <span class="overall-progress-text" id="overall-text" aria-live="polite" aria-atomic="true">0/0</span>
+            </div>
+
+            <div class="streak-mini" id="daily-streak-card" hidden aria-label="7 day streak">
+              <div class="streak-mini-days" id="daily-streak-row" aria-label="Solved in the last 7 days"></div>
+              <button type="button" class="streak-mini-meta" id="daily-streak-meta" title="Streak + last 7 days">
+                —
+              </button>
+              <button type="button" class="streak-mini-btn" id="streak-open-year" title="Open activity calendar" aria-label="Open activity calendar">
+                Calendar
+              </button>
+            </div>
           </div>
 
-          <div class="streak-mini" id="daily-streak-card" hidden aria-label="7 day streak">
-            <div class="streak-mini-days" id="daily-streak-row" aria-label="Solved in the last 7 days"></div>
-            <button type="button" class="streak-mini-meta" id="daily-streak-meta" title="Streak + last 7 days">
-              —
-            </button>
-            <button type="button" class="streak-mini-btn" id="streak-open-year" title="Open year heatmap">
-              Year
-            </button>
-          </div>
-
-          <div style="display:flex;align-items:center;gap:0.4rem;">
-            <span id="user-name" style="font-size:0.78rem;color:var(--muted);font-weight:500;margin-right:0.3rem;"></span>
+          <div class="topbar-actions">
+            <span id="user-name" class="topbar-user"></span>
             <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5" />
@@ -180,9 +198,9 @@ import LogoMark from '../components/LogoMark.astro';
               <summary class="guide-method-summary">
                 <span class="guide-method-badge">Method</span>
                 <div class="guide-method-summary-main">
-                  <span class="guide-method-tagline">Solve in sequence</span>
+                  <span class="guide-method-tagline">Work the rows like a checklist</span>
                   <p class="guide-method-blurb">
-                    Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
+                    Every row is a question; order matters—each one assumes you’ve done the rows above, not a random playlist.
                   </p>
                   <span class="guide-method-summary-hint">Why sequence matters</span>
                 </div>
@@ -190,7 +208,7 @@ import LogoMark from '../components/LogoMark.astro';
               </summary>
               <div class="guide-method-body">
                 <p class="guide-method-lede">
-                  Inside every topic table, rows are <strong>ordered on purpose</strong>: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most <strong>methodical path to mastering the topic</strong>—learning accumulates step by step instead of skipping around.
+                  Each <strong>row is a question</strong>, stacked on purpose: the next row always adds something new on top of what you just solved. That’s the straightest path through the topic—no shuffling the deck.
                 </p>
               </div>
             </details>
@@ -210,9 +228,8 @@ import LogoMark from '../components/LogoMark.astro';
             <div class="heatmap-modal-head">
               <div class="heatmap-modal-title">
                 <div class="heatmap-modal-title-main" id="heatmap-modal-title">Daily solved</div>
-                <div class="heatmap-modal-title-sub" id="heatmap-modal-subtitle">—</div>
               </div>
-              <button type="button" class="heatmap-modal-close" id="heatmap-modal-close" aria-label="Close year view">✕</button>
+              <button type="button" class="heatmap-modal-close" id="heatmap-modal-close" aria-label="Close calendar">✕</button>
             </div>
             <div class="heatmap-modal-body">
               <div class="heatmap-months" id="daily-heatmap-months" aria-hidden="true"></div>
@@ -236,9 +253,9 @@ import LogoMark from '../components/LogoMark.astro';
           </div>
         </div>
         <div class="content" id="content"></div>
-      </div>
+      </main>
 
-      <button class="mob-nav-btn" id="mob-nav-btn" aria-label="Open navigation">
+      <button class="mob-nav-btn" id="mob-nav-btn" aria-label="Open topic list" aria-controls="sidebar" aria-expanded="false" type="button">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="6" x2="21" y2="6" />
@@ -364,11 +381,12 @@ import LogoMark from '../components/LogoMark.astro';
       if (!session) { window.location.href = '/login'; throw new Error('redirect'); }
 
       // ── Trial / Subscription Check ──
-      let { data: sub } = await supabase
+      let { data: sub, error: subErr } = await supabase
         .from('subscriptions')
         .select('status, trial_ends_at, paid_until')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
+      if (subErr) console.error('subscriptions load:', subErr);
 
       // Existing users without a subscription row get a 7-day trial
       if (!sub) {
@@ -523,9 +541,6 @@ import LogoMark from '../components/LogoMark.astro';
         });
       }
 
-      document.getElementById('logout-btn')!.addEventListener('click', async () => {
-        await supabase.auth.signOut(); window.location.href = '/login';
-      });
       supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') window.location.href = '/login';
       });
@@ -543,7 +558,6 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       // ── Study preferences: Pro loads/saves to Supabase; non-Pro sees toggles disabled (no effect) ──
-      const LS_STUDY_PROBLEMS = 'study_problems_only';
       const LS_STUDY_MIN = 'study_min_by_topic';
       const LS_STUDY_REV = 'study_rev_only_by_topic';
 
@@ -551,11 +565,9 @@ import LogoMark from '../components/LogoMark.astro';
       let studyMinByTopic: Record<string, boolean> = {};
       let studyRevOnlyByTopic: Record<string, boolean> = {};
 
-      function loadStudyPrefsFromLocal() {
+      /** Core / revision maps only — used when Pro has no DB row yet. `problems_only` is never read from localStorage. */
+      function loadMinRevPrefsFromLocal() {
         try {
-          const p = localStorage.getItem(LS_STUDY_PROBLEMS);
-          const legacyW98 = localStorage.getItem('w98mode');
-          studyProblemsOnlyPref = p === 'true' || (p === null && legacyW98 === 'true');
           const raw = localStorage.getItem(LS_STUDY_MIN);
           const parsed = raw ? JSON.parse(raw) : {};
           studyMinByTopic = {};
@@ -588,18 +600,44 @@ import LogoMark from '../components/LogoMark.astro';
         return out;
       }
 
+      /** RPC can return a row array, a legacy JSON object, or a JSON string — normalize to one row or null. */
+      function coalesceStudyPrefsRow(raw: unknown): Record<string, unknown> | null {
+        if (raw == null) return null;
+        if (Array.isArray(raw)) {
+          const row = raw[0];
+          return row && typeof row === 'object' && 'problems_only' in row ? (row as Record<string, unknown>) : null;
+        }
+        if (typeof raw === 'string') {
+          try {
+            return coalesceStudyPrefsRow(JSON.parse(raw));
+          } catch {
+            return null;
+          }
+        }
+        if (typeof raw === 'object' && 'problems_only' in raw) return raw as Record<string, unknown>;
+        return null;
+      }
+
       if (isPaid) {
-        const { data: sp } = await supabase
-          .from('user_study_preferences')
-          .select('problems_only, min_coverage_by_topic, revision_only_by_topic')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+        const { data: rpcSp, error: spErr } = await supabase.rpc('get_user_study_preferences');
+        if (spErr) console.error('study preferences RPC load:', spErr);
+        let sp = coalesceStudyPrefsRow(rpcSp);
+        if (!sp) {
+          const { data: row, error: rowErr } = await supabase
+            .from('user_study_preferences')
+            .select('problems_only, min_coverage_by_topic, revision_only_by_topic')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          if (rowErr) console.error('study preferences table load:', rowErr);
+          if (row) sp = row as Record<string, unknown>;
+        }
         if (sp) {
-          studyProblemsOnlyPref = Boolean(sp.problems_only);
+          studyProblemsOnlyPref = sp.problems_only === true;
           studyMinByTopic = normalizeMinMap(sp.min_coverage_by_topic);
           studyRevOnlyByTopic = normalizeMinMap(sp.revision_only_by_topic);
         } else {
-          loadStudyPrefsFromLocal();
+          studyProblemsOnlyPref = false;
+          loadMinRevPrefsFromLocal();
         }
       } else {
         studyProblemsOnlyPref = false;
@@ -608,11 +646,17 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       let persistStudyTimer = 0;
-      function schedulePersistStudyPrefs() {
+      async function persistStudyPrefsNow() {
         if (!isPaid) return;
-        window.clearTimeout(persistStudyTimer);
-        persistStudyTimer = window.setTimeout(async () => {
-          const { error: pe } = await supabase.from('user_study_preferences').upsert(
+        const args = {
+          p_problems_only: w98Active,
+          p_min: studyMinByTopic,
+          p_rev: studyRevOnlyByTopic,
+        };
+        let { error: pe } = await supabase.rpc('upsert_user_study_preferences', args);
+        if (pe) {
+          console.warn('study preferences RPC save failed, trying table upsert:', pe.message);
+          ({ error: pe } = await supabase.from('user_study_preferences').upsert(
             {
               user_id: session.user.id,
               problems_only: w98Active,
@@ -621,8 +665,15 @@ import LogoMark from '../components/LogoMark.astro';
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'user_id' },
-          );
-          if (pe) console.error('Failed to save study preferences:', pe);
+          ));
+        }
+        if (pe) console.error('Failed to save study preferences:', pe);
+      }
+      function schedulePersistStudyPrefs() {
+        if (!isPaid) return;
+        window.clearTimeout(persistStudyTimer);
+        persistStudyTimer = window.setTimeout(() => {
+          void persistStudyPrefsNow();
         }, 450);
       }
 
@@ -703,7 +754,7 @@ import LogoMark from '../components/LogoMark.astro';
         }
       }
       document.getElementById('nav-list')!.innerHTML = navHtml;
-      document.getElementById('topic-count')!.textContent = `${topics.length} Topics`;
+      document.getElementById('topic-count')!.textContent = `${topics.length} topics · question lists`;
 
       // ── Build Topic Cards ──
 
@@ -784,20 +835,6 @@ import LogoMark from '../components/LogoMark.astro';
         if (!isMiddotTagLine(label)) return label;
         return '';
       }
-
-      const topicMetas: Record<number, string> = {};
-      topics.forEach((t: any) => {
-        let m = t.topbar_meta || '';
-        const isDp = t.nav_section === 'Dynamic Programming';
-        if (isDp) {
-          m = dedupeLinearDpTagSequence(m);
-          if (topicMetaHasProblemStatsLine(m)) {
-            m = removeDpRedundantMiddotPrefixBeforeStats(m);
-          }
-          m = stripDpNavSectionNoiseDeep(m);
-        }
-        topicMetas[t.id] = m;
-      });
 
       const LAYER_CLS: Record<string, string> = {
         Foundation: 'l1', Variants: 'l2', Combo: 'l3', Hard: 'l4', Trap: 'l5',
@@ -945,7 +982,7 @@ import LogoMark from '../components/LogoMark.astro';
                 return cleaned || t.title;
               })()
             : t.title;
-        cardsHtml += `<div class="topic-card topic-collapsed${isLocked ? ' topic-locked' : ''}" id="tp${t.id}"><div class="topic-header"><div class="topic-num">${t.display_number}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><div class="topic-title">${topicTitle}</div><span class="tier-badge tier-${t.tier_code}">${tierLabelClean}</span><span class="topic-type">${typeLabel}</span><button type="button" class="topic-details-btn" aria-expanded="false" title="Show details">Details</button></div><div class="topic-meta">${meta}</div></div></div><div class="topic-body">${bodyHtml}</div></div>`;
+        cardsHtml += `<article class="topic-card topic-collapsed${isLocked ? ' topic-locked' : ''}" id="tp${t.id}" aria-labelledby="tp${t.id}-heading"><div class="topic-header"><div class="topic-num" aria-hidden="true">${t.display_number}</div><div class="topic-header-main"><div class="topic-header-row"><h2 class="topic-title" id="tp${t.id}-heading">${topicTitle}</h2><span class="tier-badge tier-${t.tier_code}">${tierLabelClean}</span><span class="topic-type">${typeLabel}</span><button type="button" class="topic-details-btn" aria-expanded="false" aria-controls="tp${t.id}-panel" title="Show topic details">Details</button></div><div class="topic-meta">${meta}</div></div></div><div class="topic-body" id="tp${t.id}-panel">${bodyHtml}</div></article>`;
       }
       document.getElementById('content')!.innerHTML = cardsHtml;
 
@@ -1197,8 +1234,6 @@ import LogoMark from '../components/LogoMark.astro';
       const heatmapModal = document.getElementById('heatmap-modal') as HTMLElement | null;
       const heatmapModalClose = document.getElementById('heatmap-modal-close') as HTMLButtonElement | null;
       const heatmapMonths = document.getElementById('daily-heatmap-months') as HTMLElement | null;
-      const heatmapModalSubtitle = document.getElementById('heatmap-modal-subtitle') as HTMLElement | null;
-
       function ymd(d: Date) {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -1229,6 +1264,15 @@ import LogoMark from '../components/LogoMark.astro';
         if (n <= 6) return 3;
         return 4;
       }
+      /** Faded count inside every heatmap / streak cell (0 included). */
+      function appendCellSolveCount(cell: HTMLElement, count: number) {
+        const span = document.createElement('span');
+        span.className = 'heatmap-cell-num';
+        span.textContent = String(count);
+        if (count === 0) span.classList.add('heatmap-cell-num--zero');
+        if (count >= 10) span.classList.add('heatmap-cell-num--2');
+        cell.appendChild(span);
+      }
       function sumLastNDays(map: Record<string, number>, days: number) {
         const today = startOfDay(new Date());
         let total = 0;
@@ -1256,11 +1300,7 @@ import LogoMark from '../components/LogoMark.astro';
         const rangeSubtitleFmt = new Intl.DateTimeFormat(undefined, {
           month: 'short',
           day: 'numeric',
-          year: 'numeric',
         });
-        if (heatmapModalSubtitle) {
-          heatmapModalSubtitle.textContent = `${rangeSubtitleFmt.format(start)} – ${rangeSubtitleFmt.format(end)}`;
-        }
 
         heatmapGrid.style.setProperty('--heatmap-weeks', String(weeks));
         if (heatmapMonths) heatmapMonths.style.setProperty('--heatmap-weeks', String(weeks));
@@ -1271,21 +1311,17 @@ import LogoMark from '../components/LogoMark.astro';
         // Month labels aligned to week columns
         if (heatmapMonths) {
           const monthFmt = new Intl.DateTimeFormat(undefined, { month: 'short' });
-          const yearFmt = new Intl.DateTimeFormat(undefined, { year: 'numeric' });
           const labels: Array<string | null> = Array.from({ length: weeks }, () => null);
 
-          const monthYear = (d: Date) => `${monthFmt.format(d)}\n${yearFmt.format(d)}`;
-          // First column: month + year for the range start (stacked, fits narrow cols)
-          labels[0] = monthYear(start);
-          // Each 1st of month: month + year
+          const monthOnly = (d: Date) => monthFmt.format(d);
+          labels[0] = monthOnly(start);
           for (let i = 0; i < totalDays; i++) {
             const d = addDays(gridStart, i);
             if (d.getDate() !== 1) continue;
             const weekIdx = Math.floor(i / 7);
             if (weekIdx < 0 || weekIdx >= weeks) continue;
-            labels[weekIdx] = monthYear(d);
+            labels[weekIdx] = monthOnly(d);
           }
-          // Render as a grid with week columns
           heatmapMonths.classList.toggle('heatmap-months--two-year', start.getFullYear() !== end.getFullYear());
           heatmapMonths.innerHTML = labels
             .map((t) => `<span class="heatmap-month">${t ? t : ''}</span>`)
@@ -1304,9 +1340,10 @@ import LogoMark from '../components/LogoMark.astro';
           cell.className = `heatmap-cell heatmap-l${lv}`;
           cell.setAttribute('role', 'gridcell');
           cell.setAttribute('data-day', key);
-          cell.textContent = String(d.getDate());
-          cell.title = `${key}: ${count} solved`;
-          cell.setAttribute('aria-label', `${key}: ${count} solved`);
+          appendCellSolveCount(cell, count);
+          const dayLbl = rangeSubtitleFmt.format(d);
+          cell.title = `${dayLbl}: ${count} solved`;
+          cell.setAttribute('aria-label', `${dayLbl}: ${count} solved`);
           cell.addEventListener('click', async () => {
             if (!isPaid) return openRazorpay('monthly');
             // Heatmap is DB-derived; update it by solving problems (checkboxes).
@@ -1319,31 +1356,25 @@ import LogoMark from '../components/LogoMark.astro';
         const todayCount = map[ymd(today)] || 0;
         heatmapMeta.textContent =
           `Today: ${todayCount} · Last 7 days: ${last7} · Last 30 days: ${last30}` +
-          (bestDay.count > 0 ? ` · Best: ${bestDay.count} on ${bestDay.key}` : '');
+          (bestDay.count > 0 ? ` · Best day: ${bestDay.count} solved` : '');
       }
 
-      /** e.g. May 2–8, 2026 (no “May 02” padding); spans months/years when needed */
+      /** e.g. May 2–8 (no year in UI) */
       function streakRangeLabel(a: Date, b: Date) {
         const mo = new Intl.DateTimeFormat(undefined, { month: 'short' });
         const dayNum = new Intl.DateTimeFormat(undefined, { day: 'numeric' });
-        const yearNum = new Intl.DateTimeFormat(undefined, { year: 'numeric' });
         const sameMonth = a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
-        const sameYear = a.getFullYear() === b.getFullYear();
         if (sameMonth) {
-          return `${mo.format(a)} ${dayNum.format(a)}–${dayNum.format(b)}, ${yearNum.format(b)}`;
+          return `${mo.format(a)} ${dayNum.format(a)}–${dayNum.format(b)}`;
         }
-        if (sameYear) {
-          return `${mo.format(a)} ${dayNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}, ${yearNum.format(b)}`;
-        }
-        return `${mo.format(a)} ${dayNum.format(a)}, ${yearNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}, ${yearNum.format(b)}`;
+        return `${mo.format(a)} ${dayNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}`;
       }
 
       function renderStreak(map: Record<string, number>) {
         if (!isPaid || !streakCard || !streakRow || !streakMeta) return;
         streakRow.innerHTML = '';
         const today = startOfDay(new Date());
-        const fmtCell = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-        const dowFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+        const fmtCell = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
         let streak = 0;
         for (let i = 0; i < 365; i++) {
           const k = ymd(addDays(today, -i));
@@ -1351,12 +1382,14 @@ import LogoMark from '../components/LogoMark.astro';
           if (c > 0) streak++;
           else break;
         }
-        const last7 = sumLastNDays(map, 7);
         const first = addDays(today, -6);
         const range = streakRangeLabel(first, today);
-        streakMeta.textContent = range;
-        streakMeta.title = `${streak} day streak · ${last7} solved in last 7 days (click to refresh)`;
-        streakMeta.setAttribute('aria-label', `${range}. ${streak} day streak, ${last7} solved in last 7 days`);
+        streakMeta.textContent = streak > 0 ? `${streak} streak` : '—';
+        streakMeta.title = `${range}. ${streak} day streak (tap to refresh activity)`;
+        streakMeta.setAttribute(
+          'aria-label',
+          `${range}. ${streak} day streak. Tap to refresh activity data.`,
+        );
 
         for (let i = 6; i >= 0; i--) {
           const d = addDays(today, -i);
@@ -1365,18 +1398,20 @@ import LogoMark from '../components/LogoMark.astro';
           const lv = levelForCount(c);
           const cell = document.createElement('button');
           cell.type = 'button';
-          const dow = dowFmt.format(d);
-          const dowLetter = (dow || '').trim().slice(0, 1).toUpperCase() || '';
           cell.className = `streak-cell heatmap-l${lv}` + (i === 0 ? ' streak-cell--today' : '');
-          cell.title = `${fmtCell.format(d)} (${k}): ${c} solved`;
-          cell.setAttribute('aria-label', `${k}: ${c} solved`);
-          cell.setAttribute('data-dow', dowLetter);
-          cell.textContent = String(d.getDate());
+          cell.title = `${fmtCell.format(d)}: ${c} solved`;
+          cell.setAttribute('aria-label', `${fmtCell.format(d)}: ${c} solved`);
+          appendCellSolveCount(cell, c);
           cell.addEventListener('click', () => {
             if (!isPaid) return openRazorpay('monthly');
             openYearView();
           });
           streakRow.appendChild(cell);
+        }
+        if (streakOpenYear) {
+          const hideCal = streak === 0;
+          streakOpenYear.hidden = hideCal;
+          streakOpenYear.setAttribute('aria-hidden', hideCal ? 'true' : 'false');
         }
         streakCard.hidden = false;
       }
@@ -1621,7 +1656,9 @@ import LogoMark from '../components/LogoMark.astro';
         });
       } else {
         const op = document.getElementById('overall-progress')!;
-        op.innerHTML = '<div class="overall-progress-bar" style="opacity:0.3"><div class="overall-progress-fill" style="width:35%"></div></div><span style="font-size:0.65rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:0.3rem;margin-top:0.2rem;cursor:pointer;" id="pro-progress-cta">&#128274; Pro: Track progress</span>';
+        op.innerHTML =
+          '<div class="overall-progress-bar" style="opacity:0.3" aria-hidden="true"><div class="overall-progress-fill" style="width:35%"></div></div>'
+          + '<button type="button" class="pro-progress-cta" id="pro-progress-cta">Pro — track solves</button>';
         document.getElementById('pro-progress-cta')!.addEventListener('click', () => openRazorpay('monthly'));
         // Non-pro: dim progress dots (no lock icon — same tier-dot affordance as Pro)
         document.querySelectorAll('.nav-item .tier-dot').forEach((dot) => {
@@ -1689,30 +1726,103 @@ import LogoMark from '../components/LogoMark.astro';
             w98Active = (el as HTMLInputElement).checked;
             syncW98TopicToggles();
             applyW98();
-            schedulePersistStudyPrefs();
+            void persistStudyPrefsNow();
           });
         });
       }
 
+      document.getElementById('logout-btn')!.addEventListener('click', async () => {
+        window.clearTimeout(persistStudyTimer);
+        if (isPaid) await persistStudyPrefsNow();
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+      });
+      window.addEventListener('pagehide', () => {
+        window.clearTimeout(persistStudyTimer);
+        if (isPaid) void persistStudyPrefsNow();
+      });
+
       // ── Topic Switching ──
       const navItems = document.querySelectorAll('.nav-item');
       const topicCards = document.querySelectorAll('.topic-card');
-      const topbarTitle = document.getElementById('topbar-title')!;
-      const topbarMeta = document.getElementById('topbar-meta')!;
+      let topicHeaderIo: IntersectionObserver | null = null;
+
+      function syncTopbarTopicTitle(activeCard: HTMLElement | null) {
+        const wrap = document.getElementById('topbar-topic');
+        const numOut = document.getElementById('topbar-topic-num');
+        const titleOut = document.getElementById('topbar-topic-title');
+        if (!wrap || !numOut || !titleOut) return;
+        if (!activeCard) {
+          numOut.textContent = '';
+          titleOut.textContent = '';
+          wrap.hidden = true;
+          return;
+        }
+        const numEl = activeCard.querySelector('.topic-num');
+        const titleEl = activeCard.querySelector('.topic-title');
+        numOut.textContent = numEl?.textContent?.trim() || '';
+        titleOut.textContent = titleEl?.textContent?.trim() || '';
+        const label = [numOut.textContent, titleOut.textContent].filter(Boolean).join('. ');
+        wrap.setAttribute('aria-label', label ? `Current topic: ${label}` : 'Current topic');
+      }
+
+      function bindTopicHeaderVisibilityObserver() {
+        topicHeaderIo?.disconnect();
+        topicHeaderIo = null;
+        const wrap = document.getElementById('topbar-topic');
+        const active = document.querySelector('.topic-card.active') as HTMLElement | null;
+        const header = active?.querySelector('.topic-header') as HTMLElement | null;
+        const topbar = document.querySelector('.topbar') as HTMLElement | null;
+        if (!wrap || !header || !topbar) {
+          if (wrap) wrap.hidden = true;
+          return;
+        }
+        const inset = -Math.ceil(topbar.getBoundingClientRect().height);
+        topicHeaderIo = new IntersectionObserver(
+          (entries) => {
+            const e = entries[0];
+            // Header visible in the band below the sticky top bar → hide duplicate title.
+            wrap.hidden = Boolean(e?.isIntersecting);
+          },
+          { root: null, threshold: 0, rootMargin: `${inset}px 0px 0px 0px` },
+        );
+        topicHeaderIo.observe(header);
+      }
+
+      function syncMobileSidebarUi() {
+        const sb = document.getElementById('sidebar')!;
+        const open = sb.classList.contains('open');
+        const mob = document.getElementById('mob-nav-btn');
+        const scrim = document.getElementById('sidebar-scrim');
+        mob?.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (!scrim) return;
+        const narrow = window.matchMedia('(max-width: 768px)').matches;
+        if (narrow && open) {
+          scrim.hidden = false;
+          scrim.setAttribute('aria-hidden', 'false');
+        } else {
+          scrim.hidden = true;
+          scrim.setAttribute('aria-hidden', 'true');
+        }
+      }
 
       function show(topicNum: number, clickedItem: Element) {
-        navItems.forEach((item) => item.classList.remove('active'));
+        navItems.forEach((item) => {
+          item.classList.remove('active');
+          item.removeAttribute('aria-current');
+        });
         clickedItem.classList.add('active');
+        clickedItem.setAttribute('aria-current', 'page');
         topicCards.forEach((card) => card.classList.remove('active'));
         const activeCard = document.getElementById(`tp${topicNum}`);
         if (activeCard) activeCard.classList.add('active');
-        // Avoid duplicating the topic title (it already appears in the topic card header).
-        // Topbar shows only higher-level context.
-        topbarTitle.textContent = topicMetas[topicNum] || '';
-        topbarMeta.textContent = '';
         const sb = document.getElementById('sidebar')!;
         if (sb.classList.contains('open')) sb.classList.remove('open');
+        syncMobileSidebarUi();
         try { localStorage.setItem('lastTopic', String(topicNum)); } catch (e) {}
+
+        syncTopbarTopicTitle(activeCard);
+        bindTopicHeaderVisibilityObserver();
 
         // Jump user directly to the questions table (first problem set) to reduce bloat.
         if (activeCard) {
@@ -2535,8 +2645,11 @@ import LogoMark from '../components/LogoMark.astro';
         document.querySelectorAll('td.insight-clickable').forEach((cell) => {
           const text = cell.textContent?.trim();
           if (!text) return;
-          (cell as HTMLElement).title = isPaid ? 'Open walkthrough' : 'Pro: full walkthrough';
-          cell.addEventListener('click', () => {
+          const el = cell as HTMLElement;
+          el.setAttribute('role', 'button');
+          el.setAttribute('tabindex', '0');
+          el.title = isPaid ? 'Open walkthrough (Enter or Space)' : 'Pro: full walkthrough';
+          const open = () => {
             const row = cell.closest('tr')!;
             const lcNum = (row.querySelector('.lc-link')?.textContent || '').match(/\d+/)?.[0] || '';
             const title = row.querySelector('.prob-name')?.textContent?.replace(/^⚠️\s*/, '').trim() || '';
@@ -2546,6 +2659,12 @@ import LogoMark from '../components/LogoMark.astro';
             }
             const problemId = row.getAttribute('data-problem-id') || '';
             openOverlay(lcNum, title, text, problemId);
+          };
+          cell.addEventListener('click', open);
+          el.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            open();
           });
         });
       })();
@@ -2553,6 +2672,31 @@ import LogoMark from '../components/LogoMark.astro';
       // ── Mobile Nav ──
       document.getElementById('mob-nav-btn')!.addEventListener('click', () => {
         document.getElementById('sidebar')!.classList.toggle('open');
+        syncMobileSidebarUi();
+      });
+      document.getElementById('sidebar-scrim')!.addEventListener('click', () => {
+        document.getElementById('sidebar')!.classList.remove('open');
+        syncMobileSidebarUi();
+        document.getElementById('mob-nav-btn')!.focus();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('insight-overlay')?.classList.contains('active')) return;
+        if (document.getElementById('insight-pro-gate')?.classList.contains('active')) return;
+        const hm = document.getElementById('heatmap-modal');
+        if (hm && !hm.hasAttribute('hidden')) return;
+        const sb = document.getElementById('sidebar');
+        if (!sb?.classList.contains('open')) return;
+        e.preventDefault();
+        sb.classList.remove('open');
+        syncMobileSidebarUi();
+      });
+      window.addEventListener('resize', () => {
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+          document.getElementById('sidebar')?.classList.remove('open');
+        }
+        syncMobileSidebarUi();
+        bindTopicHeaderVisibilityObserver();
       });
 
       // ── Show first topic ──
