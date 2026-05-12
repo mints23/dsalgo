@@ -8,6 +8,9 @@ async function main() {
   // Total rows
   const { count: total } = await sb.from('problems').select('*', { count: 'exact', head: true });
   console.log('Total problem rows:', total);
+  if (total != null) {
+    console.log(`\n→ Set src/data/site-stats.ts GUIDE_PROBLEM_ROW_COUNT = ${total}\n`);
+  }
 
   // Unique LC numbers (non-null)
   const { data: lcRows } = await sb.from('problems').select('lc_number').not('lc_number', 'is', null);

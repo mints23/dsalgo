@@ -86,7 +86,8 @@ html {
   /* Sticky topbar + anchor jumps (e.g. to problem tables) + notched devices */
   scroll-padding-top: calc(4.5rem + env(safe-area-inset-top, 0px));
 }
-@media (max-width: 768px) {
+/* Taller scroll offset under compact topbar */
+@media (max-width: 1024px) {
   html {
     scroll-padding-top: calc(4.85rem + env(safe-area-inset-top, 0px));
   }
@@ -180,6 +181,13 @@ summary:focus-visible {
   height: 100dvh;
   overflow-y: auto;
 }
+@media (min-width: 1025px) {
+  .sidebar {
+    transition:
+      width 0.22s ease,
+      min-width 0.22s ease;
+  }
+}
 [data-theme='dark'] .sidebar {
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
 }
@@ -210,6 +218,95 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+.logo-copy {
+  min-width: 0;
+  flex: 1;
+}
+.sidebar-collapse-btn {
+  display: none;
+}
+@media (min-width: 1025px) {
+  .sidebar-collapse-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    margin-left: auto;
+    min-height: 2.2rem;
+    padding: 0.4rem 1.05rem 0.4rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.006em;
+    color: color-mix(in oklab, var(--muted) 78%, var(--text));
+    background: color-mix(in oklab, var(--offset) 38%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--divider) 55%, transparent);
+    box-shadow: none;
+    transition:
+      background 0.28s ease,
+      color 0.28s ease,
+      border-color 0.28s ease,
+      box-shadow 0.28s ease,
+      transform 0.22s ease;
+  }
+  .sidebar-collapse-btn svg {
+    flex-shrink: 0;
+    opacity: 0.72;
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+  .sidebar-collapse-btn:hover {
+    color: color-mix(in oklab, var(--primary) 72%, var(--text));
+    border-color: color-mix(in oklab, var(--primary) 22%, var(--divider));
+    background: color-mix(in oklab, var(--primary) 7%, var(--surface));
+    box-shadow: 0 2px 16px color-mix(in oklab, var(--primary) 9%, transparent);
+  }
+  .sidebar-collapse-btn:hover svg {
+    opacity: 0.95;
+  }
+  .sidebar-collapse-btn:active {
+    transform: scale(0.985);
+  }
+  .sidebar-collapse-label {
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+  [data-theme='dark'] .sidebar-collapse-btn {
+    color: color-mix(in oklab, var(--muted) 82%, var(--text));
+    background: color-mix(in oklab, var(--surface2) 55%, var(--surface));
+    border-color: color-mix(in oklab, var(--border) 35%, transparent);
+  }
+  [data-theme='dark'] .sidebar-collapse-btn:hover {
+    color: color-mix(in oklab, var(--primary) 88%, var(--text));
+    border-color: color-mix(in oklab, var(--primary) 26%, var(--border));
+    background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+    box-shadow: 0 3px 20px color-mix(in oklab, var(--primary) 11%, transparent);
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-collapse-btn {
+    position: relative;
+    margin-left: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    min-height: 0;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-collapse-btn .sidebar-collapse-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-collapse-btn svg {
+    transform: scaleX(-1);
+  }
 }
 .logo svg {
   flex-shrink: 0;
@@ -2161,6 +2258,58 @@ th.th-insight-walkthrough:hover::after {
   color: var(--muted);
 }
 
+/* ── DESKTOP: collapsible topic rail ── */
+@media (min-width: 1025px) {
+  html[data-sidebar-collapsed='1'] .sidebar {
+    width: 3.35rem;
+    min-width: 3.35rem;
+    overflow-x: hidden;
+  }
+  html[data-sidebar-collapsed='1'] .logo {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.85rem 0.35rem 0.65rem;
+  }
+  html[data-sidebar-collapsed='1'] .logo-copy {
+    display: none;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-purpose {
+    display: none;
+  }
+  html[data-sidebar-collapsed='1'] .nav-section {
+    display: none;
+  }
+  html[data-sidebar-collapsed='1'] .nav-item {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    margin: 2px auto;
+    padding: 0.38rem 0.12rem;
+    justify-content: center;
+  }
+  html[data-sidebar-collapsed='1'] .nav-item .nav-label,
+  html[data-sidebar-collapsed='1'] .nav-item .tier-dot {
+    display: none;
+  }
+  html[data-sidebar-collapsed='1'] .nav-item .num {
+    min-width: 0;
+    font-size: 0.65rem;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-footer {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.55rem 0.3rem;
+    gap: 0.35rem;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-footer .theme-btn-label,
+  html[data-sidebar-collapsed='1'] .sidebar-footer .progress-summary {
+    display: none;
+  }
+  html[data-sidebar-collapsed='1'] .sidebar-footer .theme-btn {
+    padding: 0.35rem;
+  }
+}
+
 /* ── MOBILE ── */
 /* Dim main content when topic drawer is open (tap outside to close) */
 .sidebar-scrim {
@@ -2181,7 +2330,7 @@ th.th-insight-walkthrough:hover::after {
   outline: none;
   box-shadow: inset 0 0 0 3px var(--primary);
 }
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .sidebar-scrim {
     display: none !important;
   }
@@ -2207,7 +2356,8 @@ th.th-insight-walkthrough:hover::after {
   outline: 3px solid color-mix(in oklab, var(--primary) 40%, #fff);
   outline-offset: 3px;
 }
-@media (max-width: 768px) {
+/* ≤1024px: drawer sidebar + hamburger (not 768 — scaled “desktop” viewports often sit 800–1024 CSS px). */
+@media (max-width: 1024px) {
   .sidebar {
     position: fixed;
     width: min(300px, 88vw);
@@ -2760,7 +2910,8 @@ tr.row-done .insight {
 .heatmap-l3 { background: var(--gh3); border-color: color-mix(in oklab, var(--gh3) 65%, var(--border)); }
 .heatmap-l4 { background: var(--gh4); border-color: color-mix(in oklab, var(--gh4) 65%, var(--border)); }
 
-@media (max-width: 768px) {
+/* Compact heatmap / streak on narrow viewports */
+@media (max-width: 1024px) {
   .streak-mini {
     display: none;
   }

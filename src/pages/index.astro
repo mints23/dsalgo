@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import LogoMark from '../components/LogoMark.astro';
+import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +18,16 @@ import LogoMark from '../components/LogoMark.astro';
           document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
+      // Sidebar rail collapsed (desktop only — CSS applies ≥1025px)
+      (function () {
+        try {
+          if (localStorage.getItem('sidebarCollapsed') === '1') {
+            document.documentElement.dataset.sidebarCollapsed = '1';
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="manifest" href="/manifest.json" />
@@ -24,14 +35,14 @@ import LogoMark from '../components/LogoMark.astro';
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Questions by topic — DSA Mastery Guide</title>
-    <meta name="description" content="Interview prep built around problem tables: 1150+ questions across 43 topics, each row in teaching order. Pick a topic, work the list." />
+    <meta name="description" content={`Interview prep built around problem tables: ${GUIDE_PROBLEM_ROW_COUNT} questions across ${GUIDE_TOPIC_COUNT} topics, each row in teaching order. Pick a topic, work the list.`} />
     <meta property="og:title" content="Questions by topic — DSA Mastery Guide · algofrog.in" />
-    <meta property="og:description" content="Problem tables in teaching order — 1150+ questions across 43 DSA topics." />
+    <meta property="og:description" content={`Problem tables in teaching order — ${GUIDE_PROBLEM_ROW_COUNT} questions across ${GUIDE_TOPIC_COUNT} DSA topics.`} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://algofrog.in" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="DSA Mastery Guide — algofrog.in" />
-    <meta name="twitter:description" content="1150+ questions in ordered tables — 43 DSA topics for interview prep." />
+    <meta name="twitter:description" content={`${GUIDE_PROBLEM_ROW_COUNT} questions in ordered tables — ${GUIDE_TOPIC_COUNT} DSA topics for interview prep.`} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Google tag (gtag.js) -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-RKMP4BG1N2"></script>
@@ -56,10 +67,24 @@ import LogoMark from '../components/LogoMark.astro';
       <nav class="sidebar" id="sidebar" aria-label="Topics">
         <div class="logo">
           <LogoMark width={28} height={28} />
-          <div>
+          <div class="logo-copy">
             <div class="logo-text">DSA Mastery</div>
             <div class="logo-sub">Problem tables · one topic at a time</div>
           </div>
+          <button
+            type="button"
+            class="sidebar-collapse-btn"
+            id="sidebar-collapse-btn"
+            aria-expanded="true"
+            aria-controls="sidebar"
+            aria-label="Collapse topic list"
+            title="Collapse topic list"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span class="sidebar-collapse-label">Hide list</span>
+          </button>
         </div>
         <p class="sidebar-purpose">Pick a topic here — the main column is always the question list.</p>
         <div id="nav-list"></div>
@@ -68,7 +93,7 @@ import LogoMark from '../components/LogoMark.astro';
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-            Theme
+            <span class="theme-btn-label">Theme</span>
           </button>
           <span class="progress-summary" id="topic-count"></span>
         </div>
@@ -162,7 +187,7 @@ import LogoMark from '../components/LogoMark.astro';
                 <div class="pro-benefit-point" role="listitem">
                   <span class="pro-benefit-icon pro-benefit-icon--c" aria-hidden="true">3</span>
                   <div class="pro-benefit-copy">
-                    <span class="pro-benefit-title">The whole 43-topic path stays open</span>
+                    <span class="pro-benefit-title" id="pro-benefits-topic-count-title">The whole {GUIDE_TOPIC_COUNT}-topic path stays open</span>
                     <p class="pro-benefit-desc">Trial ends or access lapses — without Pro you drop to free chapters only. Pro keeps the full structured guide (tables, layers, and every problem row) so your prep isn’t fragmented.</p>
                   </div>
                 </div>
@@ -376,6 +401,7 @@ import LogoMark from '../components/LogoMark.astro';
       import { supabase } from '../lib/supabase';
       import { getStepExplain, stepHasProseAside } from '../data/step-explain';
       import { resolvePlaybackComplexity } from '../data/playback-complexity';
+      import { resolveTrialContentTopicIds } from '../data/trial-preview-topic-ids';
 
       // ── Auth Gate ──
       const { data: { session } } = await supabase.auth.getSession();
@@ -403,6 +429,8 @@ import LogoMark from '../components/LogoMark.astro';
       const isTrialActive = sub?.status === 'trial' && new Date(sub.trial_ends_at) > now;
       const isPaid = sub?.status === 'active' && sub.paid_until && new Date(sub.paid_until) > now;
       const isExpired = !isTrialActive && !isPaid;
+      /** Paid Pro or active trial: problem checkboxes, heatmap, insight walkthrough, study toggles (trial prefs use localStorage). */
+      const hasProFeatures = isPaid || isTrialActive;
 
       type PayPlan = 'monthly' | 'quarterly';
 
@@ -572,21 +600,106 @@ import LogoMark from '../components/LogoMark.astro';
         if (event === 'SIGNED_OUT') window.location.href = '/login';
       });
 
-      // ── Fetch topics from Supabase (RLS: auth only) ──
-      const { data: topics, error } = await supabase
-        .from('topics')
-        // Explicitly exclude body_html from topics — content lives in topic_content now.
-        // RLS on topic_content and problems restricts what expired users receive.
-        .select('id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)')
-        .order('id');
-      if (error || !topics?.length) {
-        document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
-        throw new Error(error?.message || 'No topics');
+      // ── Fetch topics from Supabase ──
+      // List fields only for every topic (nav + headers). Nested `topic_content` / `problems`
+      // are requested only for IDs the user is allowed to load — avoids pulling heavy rows
+      // over the wire for ineligible topics (trial preview set, or is_free when expired).
+      const TOPIC_LIST_SELECT =
+        'id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta';
+      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)`;
+
+      function mergeTopicShellWithEmbeds(shellRows: any[], fullById: Map<number, any>): any[] {
+        return shellRows.map((row: any) => {
+          const full = fullById.get(Number(row.id));
+          if (!full) {
+            return { ...row, topic_content: null, problems: [] };
+          }
+          return {
+            ...row,
+            topic_content: full.topic_content ?? null,
+            problems: Array.isArray(full.problems) ? full.problems : [],
+          };
+        });
       }
+
+      let topics: any[] = [];
+      let error: any = null;
+
+      if (isTrialActive) {
+        const shellRes = await supabase.from('topics').select(TOPIC_LIST_SELECT).order('id');
+        error = shellRes.error;
+        if (error || !shellRes.data?.length) {
+          document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
+          throw new Error(error?.message || 'No topics');
+        }
+        const previewIds = resolveTrialContentTopicIds(shellRes.data);
+        const fullRes = await supabase.from('topics').select(TOPIC_EMBED_SELECT).in('id', previewIds).order('id');
+        error = fullRes.error || error;
+        if (error) {
+          document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
+          throw new Error(error?.message || 'No topics');
+        }
+        const fullById = new Map((fullRes.data || []).map((t: any) => [Number(t.id), t]));
+        topics = mergeTopicShellWithEmbeds(shellRes.data, fullById);
+      } else if (isExpired) {
+        const shellRes = await supabase
+          .from('topics')
+          .select(`${TOPIC_LIST_SELECT}, is_free`)
+          .order('id');
+        error = shellRes.error;
+        if (error || !shellRes.data?.length) {
+          document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
+          throw new Error(error?.message || 'No topics');
+        }
+        const eligibleIds = shellRes.data.filter((t: any) => t.is_free === true).map((t: any) => t.id);
+        let fullById = new Map<number, any>();
+        if (eligibleIds.length) {
+          const fullRes = await supabase.from('topics').select(TOPIC_EMBED_SELECT).in('id', eligibleIds).order('id');
+          error = fullRes.error;
+          if (error) {
+            document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
+            throw new Error(error?.message || 'No topics');
+          }
+          fullById = new Map((fullRes.data || []).map((t: any) => [Number(t.id), t]));
+        }
+        topics = mergeTopicShellWithEmbeds(shellRes.data, fullById);
+      } else {
+        const res = await supabase.from('topics').select(TOPIC_EMBED_SELECT).order('id');
+        topics = res.data || [];
+        error = res.error;
+        if (error || !topics?.length) {
+          document.body.innerHTML = `<p style="padding:2rem;color:var(--error)">Failed to load content. ${error?.message || 'No topics returned.'}</p>`;
+          throw new Error(error?.message || 'No topics');
+        }
+      }
+
+      const guideProblemRowCount = (topics as any[]).reduce(
+        (n, t) => n + (Array.isArray(t.problems) ? t.problems.length : 0),
+        0,
+      );
+      (function syncGuideStatsDom() {
+        const tc = topics.length;
+        const pc = guideProblemRowCount;
+        document.querySelector('meta[name="description"]')?.setAttribute(
+          'content',
+          `Interview prep built around problem tables: ${pc} questions across ${tc} topics, each row in teaching order. Pick a topic, work the list.`,
+        );
+        document.querySelector('meta[property="og:description"]')?.setAttribute(
+          'content',
+          `Problem tables in teaching order — ${pc} questions across ${tc} DSA topics.`,
+        );
+        document.querySelector('meta[name="twitter:description"]')?.setAttribute(
+          'content',
+          `${pc} questions in ordered tables — ${tc} DSA topics for interview prep.`,
+        );
+        const proTitle = document.getElementById('pro-benefits-topic-count-title');
+        if (proTitle) proTitle.textContent = `The whole ${tc}-topic path stays open`;
+      })();
 
       // ── Study preferences: Pro loads/saves to Supabase; non-Pro sees toggles disabled (no effect) ──
       const LS_STUDY_MIN = 'study_min_by_topic';
       const LS_STUDY_REV = 'study_rev_only_by_topic';
+      const LS_STUDY_PO = 'study_problems_only_global';
 
       let studyProblemsOnlyPref = false;
       let studyMinByTopic: Record<string, boolean> = {};
@@ -666,6 +779,13 @@ import LogoMark from '../components/LogoMark.astro';
           studyProblemsOnlyPref = false;
           loadMinRevPrefsFromLocal();
         }
+      } else if (isTrialActive) {
+        try {
+          studyProblemsOnlyPref = localStorage.getItem(LS_STUDY_PO) === '1';
+        } catch (_) {
+          studyProblemsOnlyPref = false;
+        }
+        loadMinRevPrefsFromLocal();
       } else {
         studyProblemsOnlyPref = false;
         studyMinByTopic = {};
@@ -674,37 +794,49 @@ import LogoMark from '../components/LogoMark.astro';
 
       let persistStudyTimer = 0;
       async function persistStudyPrefsNow() {
-        if (!isPaid) return;
-        const args = {
-          p_problems_only: w98Active,
-          p_min: studyMinByTopic,
-          p_rev: studyRevOnlyByTopic,
-        };
-        let { error: pe } = await supabase.rpc('upsert_user_study_preferences', args);
-        if (pe) {
-          console.warn('study preferences RPC save failed, trying table upsert:', pe.message);
-          ({ error: pe } = await supabase.from('user_study_preferences').upsert(
-            {
-              user_id: session.user.id,
-              problems_only: w98Active,
-              min_coverage_by_topic: studyMinByTopic,
-              revision_only_by_topic: studyRevOnlyByTopic,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'user_id' },
-          ));
+        if (isPaid) {
+          const args = {
+            p_problems_only: w98Active,
+            p_min: studyMinByTopic,
+            p_rev: studyRevOnlyByTopic,
+          };
+          let { error: pe } = await supabase.rpc('upsert_user_study_preferences', args);
+          if (pe) {
+            console.warn('study preferences RPC save failed, trying table upsert:', pe.message);
+            ({ error: pe } = await supabase.from('user_study_preferences').upsert(
+              {
+                user_id: session.user.id,
+                problems_only: w98Active,
+                min_coverage_by_topic: studyMinByTopic,
+                revision_only_by_topic: studyRevOnlyByTopic,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id' },
+            ));
+          }
+          if (pe) console.error('Failed to save study preferences:', pe);
+          return;
         }
-        if (pe) console.error('Failed to save study preferences:', pe);
+        if (isTrialActive) {
+          try {
+            localStorage.setItem(LS_STUDY_PO, w98Active ? '1' : '0');
+            localStorage.setItem(LS_STUDY_MIN, JSON.stringify(studyMinByTopic));
+            localStorage.setItem(LS_STUDY_REV, JSON.stringify(studyRevOnlyByTopic));
+          } catch (_) {
+            /* ignore */
+          }
+        }
       }
       function schedulePersistStudyPrefs() {
-        if (!isPaid) return;
+        if (!isPaid && !isTrialActive) return;
         window.clearTimeout(persistStudyTimer);
         persistStudyTimer = window.setTimeout(() => {
           void persistStudyPrefsNow();
         }, 450);
       }
 
-      // Lock detection is DB-driven: topic_content is null when RLS withheld it (expired user, non-free topic).
+      // Lock / empty state is DB-driven: `topic_content` is null when RLS withheld it
+      // (expired on non-free topics, or trial outside the preview topic set, etc.).
 
       /** Plain text for heuristics (topic meta is usually plain; tolerate simple HTML). */
       function metaPlainForTags(s: string): string {
@@ -767,15 +899,25 @@ import LogoMark from '../components/LogoMark.astro';
       const sections = sectionOrder.filter((s) => grouped.has(s)).concat(
         [...grouped.keys()].filter((s) => !sectionOrder.includes(s))
       );
+      function escAttr(s: string): string {
+        return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      }
       let navHtml = '';
       for (const section of sections) {
         navHtml += `<div class="nav-section">${section}</div>`;
         for (const t of grouped.get(section)!) {
-          const navLocked = isExpired && !t.topic_content;
+          const navLocked = !t.topic_content;
           const navLabel =
             section === 'Dynamic Programming' ? stripDpNavSectionNoiseDeep(t.nav_label || '') : t.nav_label;
-          navHtml += `<button class="nav-item${navLocked ? ' nav-locked' : ''}" data-topic-id="${t.id}" title="${navLocked ? 'Upgrade to Pro to access this topic' : ''}">`
-            + `<span class="num">${t.display_number}</span>${navLabel}`
+          const navTitle = navLocked
+            ? escAttr(
+                isTrialActive
+                  ? 'Not in the trial preview — Pro unlocks every topic'
+                  : 'Upgrade to Pro to access this topic',
+              )
+            : escAttr(navLabel);
+          navHtml += `<button class="nav-item${navLocked ? ' nav-locked' : ''}" data-topic-id="${t.id}" title="${navTitle}">`
+            + `<span class="num">${t.display_number}</span><span class="nav-label">${navLabel}</span>`
             + `<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>`
             + `</button>`;
         }
@@ -956,12 +1098,16 @@ import LogoMark from '../components/LogoMark.astro';
 
         let bodyHtml: string;
         if (isLocked) {
+          const lockHead = isTrialActive ? 'Not included in your trial preview' : 'Your free trial has ended';
+          const lockSub = isTrialActive
+            ? `Your trial includes every Pro feature on a curated topic set. Subscribe to unlock all ${topics.length} topics and ${guideProblemRowCount} problems — including ${esc(t.title)}.`
+            : `Upgrade to unlock all ${topics.length} topics and ${guideProblemRowCount} problems — includes ${esc(t.title)} and everything beyond.`;
           bodyHtml = `<div class="locked-body">
             <div class="locked-icon-wrap">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
             </div>
-            <div class="locked-msg">Your free trial has ended</div>
-            <div class="locked-sub">Upgrade to unlock all 43 topics and 1150+ problems — includes ${t.title} and everything beyond.</div>
+            <div class="locked-msg">${lockHead}</div>
+            <div class="locked-sub">${lockSub}</div>
             <div class="locked-price-options">
               <div><span class="locked-price-amt">₹149</span><span class="locked-price-period">/ month</span></div>
               <div><span class="locked-price-amt">₹299</span><span class="locked-price-period">/ 3 months</span></div>
@@ -1142,17 +1288,19 @@ import LogoMark from '../components/LogoMark.astro';
 
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
         const lab = document.createElement('label');
-        lab.className = 'w98-switch w98-switch--inline study-toggle study-toggle--problems' + (isPaid ? '' : ' study-pref--locked');
-        lab.title = isPaid
-          ? 'Problems only: hide explanations and extra sections (saved to your Pro profile)'
-          : 'Pro only — upgrade to filter the guide down to problem tables and sync this preference.';
+        lab.className = 'w98-switch w98-switch--inline study-toggle study-toggle--problems' + (hasProFeatures ? '' : ' study-pref--locked');
+        lab.title = !hasProFeatures
+          ? 'Pro only — upgrade to filter the guide down to problem tables and sync this preference.'
+          : isPaid
+            ? 'Problems only: hide explanations and extra sections (saved to your Pro profile)'
+            : 'Problems only: hide explanations and extra sections (saved in this browser during your trial)';
         lab.innerHTML =
           '<input type="checkbox" class="w98-topic-toggle" /><span class="w98-slider"></span>'
           + '<span class="w98-label">Just problems</span>';
         titleRow.appendChild(lab);
         const inp = lab.querySelector('.w98-topic-toggle') as HTMLInputElement;
-        inp.checked = isPaid && w98Active;
-        inp.disabled = !isPaid;
+        inp.checked = hasProFeatures && w98Active;
+        inp.disabled = !hasProFeatures;
       }
 
       // ── Per-topic Core set + Problems only (Pro: both sync to profile) ──
@@ -1181,21 +1329,23 @@ import LogoMark from '../components/LogoMark.astro';
             });
             if (inMinCount) {
               const toggle = document.createElement('label');
-              toggle.className = 'min-switch study-toggle study-toggle--core' + (isPaid ? '' : ' study-pref--locked');
-              toggle.title = isPaid
-                ? `Core set: show only the ${inMinCount} minimum coverage problems (saved per topic in your Pro profile)`
-                : `Pro only — upgrade to show only these ${inMinCount} core coverage problems and save per topic.`;
+              toggle.className = 'min-switch study-toggle study-toggle--core' + (hasProFeatures ? '' : ' study-pref--locked');
+              toggle.title = !hasProFeatures
+                ? `Pro only — upgrade to show only these ${inMinCount} core coverage problems and save per topic.`
+                : isPaid
+                  ? `Core set: show only the ${inMinCount} minimum coverage problems (saved per topic in your Pro profile)`
+                  : `Core set: show only these ${inMinCount} minimum coverage problems (saved in this browser during your trial)`;
               toggle.innerHTML =
                 '<input type="checkbox" class="min-toggle" /><span class="min-slider"></span>'
                 + '<span class="min-label">Core bites</span>';
               titleRow.appendChild(toggle);
               const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
-              if (isPaid && studyMinByTopic[topicIdStr]) {
+              if (hasProFeatures && studyMinByTopic[topicIdStr]) {
                 checkbox.checked = true;
                 card.classList.add('min-active');
               }
-              checkbox.disabled = !isPaid;
-              if (isPaid) {
+              checkbox.disabled = !hasProFeatures;
+              if (hasProFeatures) {
                 checkbox.addEventListener('change', () => {
                   card.classList.toggle('min-active', checkbox.checked);
                   if (checkbox.checked) studyMinByTopic[topicIdStr] = true;
@@ -1211,21 +1361,23 @@ import LogoMark from '../components/LogoMark.astro';
         // that this topic has a problem set, so we can still show the filter UI.
         if (card.querySelector('.lc-link')) {
           const revToggle = document.createElement('label');
-          revToggle.className = 'rev-switch study-toggle study-toggle--rev' + (isPaid ? '' : ' study-pref--locked');
-          revToggle.title = isPaid
-            ? 'Revision only: hide everything except the problem table, and show only rows marked for revision (saved per topic in your Pro profile)'
-            : 'Pro only — upgrade to filter by revision marks and save per topic.';
+          revToggle.className = 'rev-switch study-toggle study-toggle--rev' + (hasProFeatures ? '' : ' study-pref--locked');
+          revToggle.title = !hasProFeatures
+            ? 'Pro only — upgrade to filter by revision marks and save per topic.'
+            : isPaid
+              ? 'Revision only: hide everything except the problem table, and show only rows marked for revision (saved per topic in your Pro profile)'
+              : 'Revision only: hide everything except the problem table, and show only rows marked for revision (saved in this browser during your trial)';
           revToggle.innerHTML =
             '<input type="checkbox" class="rev-only-toggle" /><span class="rev-slider"></span>'
             + '<span class="rev-label">Redo queue</span>';
           titleRow.appendChild(revToggle);
           const revCb = revToggle.querySelector('.rev-only-toggle') as HTMLInputElement;
-          if (isPaid && studyRevOnlyByTopic[topicIdStr]) {
+          if (hasProFeatures && studyRevOnlyByTopic[topicIdStr]) {
             revCb.checked = true;
             card.classList.add('rev-only-active');
           }
-          revCb.disabled = !isPaid;
-          if (isPaid) {
+          revCb.disabled = !hasProFeatures;
+          if (hasProFeatures) {
             revCb.addEventListener('change', () => {
               card.classList.toggle('rev-only-active', revCb.checked);
               if (revCb.checked) studyRevOnlyByTopic[topicIdStr] = true;
@@ -1244,7 +1396,7 @@ import LogoMark from '../components/LogoMark.astro';
       let completedSet = new Set<string>();
       let revisionSet = new Set<string>();
       let dailySolvedMap: Record<string, number> = {};
-      if (isPaid) {
+      if (hasProFeatures) {
         const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
         completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
         const { data: revRows } = await supabase.from('user_revision').select('topic_id, problem_num').eq('user_id', userId);
@@ -1311,7 +1463,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       function renderHeatmap(map: Record<string, number>, rangeStart: Date) {
-        if (!isPaid || !heatmapGrid || !heatmapMeta) return;
+        if (!hasProFeatures || !heatmapGrid || !heatmapMeta) return;
         heatmapGrid.innerHTML = '';
         if (heatmapMonths) heatmapMonths.innerHTML = '';
 
@@ -1372,7 +1524,7 @@ import LogoMark from '../components/LogoMark.astro';
           cell.title = `${dayLbl}: ${count} solved`;
           cell.setAttribute('aria-label', `${dayLbl}: ${count} solved`);
           cell.addEventListener('click', async () => {
-            if (!isPaid) return openRazorpay('monthly');
+            if (!hasProFeatures) return openRazorpay('monthly');
             // Heatmap is DB-derived; update it by solving problems (checkboxes).
           });
           heatmapGrid.appendChild(cell);
@@ -1398,7 +1550,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       function renderStreak(map: Record<string, number>) {
-        if (!isPaid || !streakCard || !streakRow || !streakMeta) return;
+        if (!hasProFeatures || !streakCard || !streakRow || !streakMeta) return;
         streakRow.innerHTML = '';
         const today = startOfDay(new Date());
         const fmtCell = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
@@ -1430,7 +1582,7 @@ import LogoMark from '../components/LogoMark.astro';
           cell.setAttribute('aria-label', `${fmtCell.format(d)}: ${c} solved`);
           appendCellSolveCount(cell, c);
           cell.addEventListener('click', () => {
-            if (!isPaid) return openRazorpay('monthly');
+            if (!hasProFeatures) return openRazorpay('monthly');
             openYearView();
           });
           streakRow.appendChild(cell);
@@ -1444,7 +1596,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       function openYearView() {
-        if (!isPaid || !heatmapModal) return;
+        if (!hasProFeatures || !heatmapModal) return;
         heatmapModal.hidden = false;
         heatmapModal.classList.add('open');
       }
@@ -1455,7 +1607,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       async function fetchDailySolved() {
-        if (!isPaid) return;
+        if (!hasProFeatures) return;
         const today = startOfDay(new Date());
         const createdAt = startOfDay(new Date((session.user as any).created_at || Date.now()));
         const sixMonthsBack = startOfDay(addMonths(today, -6));
@@ -1480,13 +1632,13 @@ import LogoMark from '../components/LogoMark.astro';
 
       if (streakMeta) {
         streakMeta.addEventListener('click', async () => {
-          if (!isPaid) return openRazorpay('monthly');
+          if (!hasProFeatures) return openRazorpay('monthly');
           await fetchDailySolved();
         });
       }
       if (streakOpenYear) {
         streakOpenYear.addEventListener('click', () => {
-          if (!isPaid) return openRazorpay('monthly');
+          if (!hasProFeatures) return openRazorpay('monthly');
           openYearView();
         });
       }
@@ -1502,7 +1654,7 @@ import LogoMark from '../components/LogoMark.astro';
         });
       }
 
-      if (isPaid) {
+      if (hasProFeatures) {
         // Don’t block the rest of the UI; render when ready.
         fetchDailySolved();
       } else {
@@ -1522,14 +1674,14 @@ import LogoMark from '../components/LogoMark.astro';
           const probNum = parseInt(numCell.textContent?.trim() || '0');
           if (!probNum) return;
           const key = `${topicId}-${probNum}`;
-          const isComplete = isPaid && completedSet.has(key);
-          const isRevision = isPaid && revisionSet.has(key);
+          const isComplete = hasProFeatures && completedSet.has(key);
+          const isRevision = hasProFeatures && revisionSet.has(key);
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.checked = isComplete;
-          cb.className = 'progress-cb' + (isPaid ? '' : ' progress-cb--locked');
-          cb.disabled = !isPaid;
-          if (isPaid) {
+          cb.className = 'progress-cb' + (hasProFeatures ? '' : ' progress-cb--locked');
+          cb.disabled = !hasProFeatures;
+          if (hasProFeatures) {
             cb.title = isComplete ? 'Mark incomplete' : 'Mark complete';
             cb.setAttribute('aria-label', cb.title);
           } else {
@@ -1557,7 +1709,7 @@ import LogoMark from '../components/LogoMark.astro';
           revBtn.className = 'rev-pin';
           revBtn.innerHTML = REV_PIN_SVG;
           revBtn.setAttribute('aria-pressed', isRevision ? 'true' : 'false');
-          if (isPaid) {
+          if (hasProFeatures) {
             revBtn.title = isRevision ? 'Remove from revision' : 'Mark for revision';
             revBtn.setAttribute('aria-label', revBtn.title);
           } else {
@@ -1574,7 +1726,7 @@ import LogoMark from '../components/LogoMark.astro';
           inner.appendChild(numText);
           numCell.appendChild(inner);
 
-          if (isPaid) {
+          if (hasProFeatures) {
             cb.addEventListener('change', async () => {
               cb.disabled = true;
               if (cb.checked) {
@@ -1676,7 +1828,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
 
       updateSidebarProgress();
-      if (isPaid) {
+      if (hasProFeatures) {
         updateOverallProgress();
         document.querySelectorAll('.progress-cb:not(:disabled)').forEach((cb) => {
           cb.addEventListener('change', () => setTimeout(() => { updateSidebarProgress(); updateOverallProgress(); }, 100));
@@ -1747,7 +1899,7 @@ import LogoMark from '../components/LogoMark.astro';
       }
       syncW98TopicToggles();
       applyW98();
-      if (isPaid) {
+      if (hasProFeatures) {
         document.querySelectorAll('.w98-topic-toggle').forEach((el) => {
           el.addEventListener('change', () => {
             w98Active = (el as HTMLInputElement).checked;
@@ -1760,19 +1912,44 @@ import LogoMark from '../components/LogoMark.astro';
 
       document.getElementById('logout-btn')!.addEventListener('click', async () => {
         window.clearTimeout(persistStudyTimer);
-        if (isPaid) await persistStudyPrefsNow();
+        if (hasProFeatures) await persistStudyPrefsNow();
         await supabase.auth.signOut();
         window.location.href = '/login';
       });
       window.addEventListener('pagehide', () => {
         window.clearTimeout(persistStudyTimer);
-        if (isPaid) void persistStudyPrefsNow();
+        if (hasProFeatures) void persistStudyPrefsNow();
       });
 
       // ── Topic Switching ──
       const navItems = document.querySelectorAll('.nav-item');
       const topicCards = document.querySelectorAll('.topic-card');
       let topicHeaderIo: IntersectionObserver | null = null;
+
+      const LS_SIDEBAR_COLLAPSED = 'sidebarCollapsed';
+      const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn') as HTMLButtonElement | null;
+      function syncSidebarCollapsedUi(collapsed: boolean) {
+        const root = document.documentElement;
+        if (collapsed) root.dataset.sidebarCollapsed = '1';
+        else delete root.dataset.sidebarCollapsed;
+        try {
+          localStorage.setItem(LS_SIDEBAR_COLLAPSED, collapsed ? '1' : '0');
+        } catch (_) {
+          /* ignore */
+        }
+        if (sidebarCollapseBtn) {
+          sidebarCollapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          const lab = collapsed ? 'Expand topic list' : 'Collapse topic list';
+          sidebarCollapseBtn.setAttribute('aria-label', lab);
+          sidebarCollapseBtn.title = lab;
+          const vis = sidebarCollapseBtn.querySelector('.sidebar-collapse-label');
+          if (vis) vis.textContent = collapsed ? 'Show list' : 'Hide list';
+        }
+      }
+      syncSidebarCollapsedUi(document.documentElement.dataset.sidebarCollapsed === '1');
+      sidebarCollapseBtn?.addEventListener('click', () => {
+        syncSidebarCollapsedUi(document.documentElement.dataset.sidebarCollapsed !== '1');
+      });
 
       function syncTopbarTopicTitle(activeCard: HTMLElement | null) {
         const wrap = document.getElementById('topbar-topic');
@@ -1823,7 +2000,7 @@ import LogoMark from '../components/LogoMark.astro';
         const scrim = document.getElementById('sidebar-scrim');
         mob?.setAttribute('aria-expanded', open ? 'true' : 'false');
         if (!scrim) return;
-        const narrow = window.matchMedia('(max-width: 768px)').matches;
+        const narrow = window.matchMedia('(max-width: 1024px)').matches;
         if (narrow && open) {
           scrim.hidden = false;
           scrim.setAttribute('aria-hidden', 'false');
@@ -2675,12 +2852,12 @@ import LogoMark from '../components/LogoMark.astro';
           const el = cell as HTMLElement;
           el.setAttribute('role', 'button');
           el.setAttribute('tabindex', '0');
-          el.title = isPaid ? 'Open walkthrough (Enter or Space)' : 'Pro: full walkthrough';
+          el.title = hasProFeatures ? 'Open walkthrough (Enter or Space)' : 'Pro: full walkthrough';
           const open = () => {
             const row = cell.closest('tr')!;
             const lcNum = (row.querySelector('.lc-link')?.textContent || '').match(/\d+/)?.[0] || '';
             const title = row.querySelector('.prob-name')?.textContent?.replace(/^⚠️\s*/, '').trim() || '';
-            if (!isPaid) {
+            if (!hasProFeatures) {
               openInsightProGate(lcNum, title);
               return;
             }
@@ -2719,7 +2896,7 @@ import LogoMark from '../components/LogoMark.astro';
         syncMobileSidebarUi();
       });
       window.addEventListener('resize', () => {
-        if (!window.matchMedia('(max-width: 768px)').matches) {
+        if (!window.matchMedia('(max-width: 1024px)').matches) {
           document.getElementById('sidebar')?.classList.remove('open');
         }
         syncMobileSidebarUi();
