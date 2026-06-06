@@ -17,7 +17,7 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '03', navSection: 'Algorithms', navLabel: 'Binary Search', navTierDotColor: '#01696f' },
   { displayNumber: '04', navSection: 'Algorithms', navLabel: 'Sliding Window', navTierDotColor: '#01696f' },
   { displayNumber: '05', navSection: 'Algorithms', navLabel: "Kadane's Algorithm", navTierDotColor: '#01696f' },
-  { displayNumber: '06', navSection: 'Algorithms', navLabel: 'Merge Intervals', navTierDotColor: '#01696f' },
+  { displayNumber: '06', navSection: 'Algorithms', navLabel: 'Intervals', navTierDotColor: '#01696f' },
   { displayNumber: '07', navSection: 'Algorithms', navLabel: 'Prefix Sums', navTierDotColor: '#01696f' },
   { displayNumber: '08', navSection: 'Algorithms', navLabel: 'Backtracking', navTierDotColor: '#01696f' },
   { displayNumber: '09', navSection: 'Algorithms', navLabel: 'Greedy', navTierDotColor: '#01696f' },
