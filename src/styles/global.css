@@ -384,21 +384,17 @@ summary:focus-visible {
   color: var(--primary);
 }
 .nav-item .tier-dot {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
   flex-shrink: 0;
   margin-left: auto;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.3s;
+  letter-spacing: 0.01em;
 }
-.nav-item .tier-dot .bar {
-  width: 3px;
-  height: 10px;
-  border-radius: 1.5px;
-  background: var(--divider);
-  transition: background 0.3s, box-shadow 0.3s;
-}
-.nav-item .tier-dot .bar:nth-child(2) { height: 14px; }
-.nav-item .tier-dot .bar:nth-child(3) { height: 18px; }
 .sidebar-footer {
   margin-top: auto;
   padding: 0.8rem;
@@ -1996,7 +1992,7 @@ table tbody tr:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.28rem;
-  width: 36px; /* fixed so all rows align */
+  width: 42px; /* fixed so all rows align */
   flex-shrink: 0;
 }
 .num-text {
@@ -2921,13 +2917,13 @@ tr.row-done .insight {
   }
 }
 
-/* Revision pin — icon-only, sits beside progress checkbox in # column */
+/* Revision star — icon-only, sits beside progress checkbox in # column */
 .rev-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   margin: 0;
   border: none;
@@ -2962,10 +2958,12 @@ tr.row-done .insight {
 }
 .rev-pin svg {
   display: block;
+  width: 16px;
+  height: 16px;
 }
 .rev-pin[aria-pressed='true'] .rev-pin-shape {
   fill: currentColor;
-  fill-opacity: 0.22;
+  stroke: currentColor;
 }
 
 tr.row-revision {

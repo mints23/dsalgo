@@ -918,7 +918,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
             : escAttr(navLabel);
           navHtml += `<button class="nav-item${navLocked ? ' nav-locked' : ''}" data-topic-id="${t.id}" title="${navTitle}">`
             + `<span class="num">${t.display_number}</span><span class="nav-label">${navLabel}</span>`
-            + `<span class="tier-dot"><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>`
+            + `<span class="tier-dot"></span>`
             + `</button>`;
         }
       }
@@ -1665,7 +1665,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
         closeYearView();
       }
       const REV_PIN_SVG =
-        '<svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path class="rev-pin-shape" d="M1.75 1.25h7.5v9.35L5.5 8.05 1.75 10.6V1.25z" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linejoin="round"/></svg>';
+        '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path class="rev-pin-shape" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
       document.querySelectorAll('.topic-card').forEach((card) => {
         const topicId = parseInt(card.id.replace('tp', ''));
         card.querySelectorAll('tbody tr').forEach((row) => {
@@ -1789,29 +1789,17 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           });
           const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
           if (!indicator) return;
-          const bars = indicator.querySelectorAll('.bar') as NodeListOf<HTMLElement>;
-          const ratio = doneCount / totalRows;
           let color: string;
-          let glow: string;
           let label: string;
           if (doneCount === 0) {
-            color = 'var(--divider)'; glow = 'none'; label = 'Not started';
+            color = 'var(--faint)'; label = `0 / ${totalRows} solved`;
           } else if (doneCount === totalRows) {
-            color = '#22c55e'; glow = '0 0 4px rgba(34,197,94,0.5)'; label = `Completed (${doneCount}/${totalRows})`;
+            color = '#22c55e'; label = `Completed (${doneCount}/${totalRows})`;
           } else {
-            color = '#f59e0b'; glow = '0 0 4px rgba(245,158,11,0.4)'; label = `In progress (${doneCount}/${totalRows})`;
+            color = '#f59e0b'; label = `${doneCount} / ${totalRows} solved`;
           }
-          // Light up bars based on progress ratio
-          const litBars = doneCount === 0 ? 0 : doneCount === totalRows ? 3 : ratio > 0.5 ? 2 : 1;
-          bars.forEach((bar, i) => {
-            if (i < litBars) {
-              bar.style.background = color;
-              bar.style.boxShadow = glow;
-            } else {
-              bar.style.background = 'var(--divider)';
-              bar.style.boxShadow = 'none';
-            }
-          });
+          indicator.textContent = `${doneCount}/${totalRows}`;
+          indicator.style.color = color;
           indicator.title = label;
         });
       }
