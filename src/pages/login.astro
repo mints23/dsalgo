@@ -4,6 +4,7 @@
  */
 import '../styles/global.css';
 import LogoMark from '../components/LogoMark.astro';
+import ConnectFloat from '../components/ConnectFloat.astro';
 import {
   LOGIN_SNEAK_NAV,
   LOGIN_SNEAK_SAMPLE_TOPIC,
@@ -787,6 +788,12 @@ const tableStaggerBase = 26;
         color: var(--primary);
         border: 1px solid color-mix(in oklab, var(--primary) 25%, var(--border));
       }
+      .login-top-bar-left {
+        position: fixed;
+        top: max(0.85rem, env(safe-area-inset-top, 0px));
+        left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
+        z-index: 55;
+      }
       .login-top-bar-right {
         position: fixed;
         top: max(0.85rem, env(safe-area-inset-top, 0px));
@@ -1064,6 +1071,9 @@ const tableStaggerBase = 26;
   </head>
   <body>
     <div class="login-page" id="login-page-root">
+      <div class="login-top-bar-left">
+        <ConnectFloat topbar />
+      </div>
       <div class="login-top-bar-right">
         <button
           type="button"

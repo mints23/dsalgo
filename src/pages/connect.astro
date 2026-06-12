@@ -1,0 +1,1182 @@
+---
+import '../styles/global.css';
+import LogoMark from '../components/LogoMark.astro';
+
+const SUPPORT_EMAIL = 'algofrog07@gmail.com';
+const mailto = (subject: string, body?: string) => {
+  const params = new URLSearchParams();
+  params.set('subject', subject);
+  if (body) params.set('body', body);
+  return `mailto:${SUPPORT_EMAIL}?${params.toString()}`;
+};
+
+const sessionFootnote =
+  'One session is 30 to 60 minutes, depending on what you need covered. Monthly plans include live sessions scheduled each month.';
+
+const urgentService = {
+  id: 'urgent',
+  title: 'Urgent Connect',
+  benefit: 'Stuck right now?',
+  hook: 'Priority 1:1 session when you need answers fast — interview tomorrow, blocker today.',
+  icon: '⚡',
+  subject: 'Connect — Urgent Connect',
+  accent: '#dc2626',
+  price: '₹599',
+  pricePeriod: '· 1 session',
+  mailBody:
+    'Hi,\n\nI need an urgent connect session.\n\nMy blocker:\nCurrent level:\nHow soon I need help:\n\nThanks!',
+} as const;
+
+const services = [
+  {
+    id: 'system-design',
+    title: 'System Design',
+    benefit: 'Think like a senior engineer',
+    hook: 'Trade-offs, scale narratives, and interview-ready design stories.',
+    icon: '🏗️',
+    subject: 'Connect — System Design',
+    accent: '#0f766e',
+    price: '₹1499',
+    pricePeriod: '/ month · 4 sessions',
+    mailBody:
+      'Hi,\n\nI need help with: System Design\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+  {
+    id: 'dsa-classes',
+    title: 'DSA Classes',
+    benefit: 'Learn patterns live',
+    hook: 'Topic-focused sessions — when to use it, how to code it, and what interviewers actually test.',
+    icon: '📚',
+    subject: 'Connect — DSA Classes',
+    accent: '#6d28d9',
+    price: '₹990',
+    pricePeriod: '/ month · 4 sessions',
+    mailBody:
+      'Hi,\n\nI need help with: DSA Classes\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+  {
+    id: 'roadmap',
+    title: 'Road Map for High CTC',
+    benefit: 'Stop guessing what’s next',
+    hook: 'Phased plan: what to solve, when, and in what order for top offers.',
+    icon: '🗺️',
+    subject: 'Connect — Road Map for High CTC',
+    accent: '#0369a1',
+    price: '₹599',
+    pricePeriod: '· 1 session',
+    mailBody:
+      'Hi,\n\nI need help with: Road Map for High CTC\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+  {
+    id: 'cv-review',
+    title: 'CV Review',
+    benefit: 'Get past the resume screen',
+    hook: 'Impact bullets, ATS layout, and the story recruiters actually read.',
+    icon: '📄',
+    subject: 'Connect — CV Review',
+    accent: '#01696f',
+    price: '₹399',
+    mailBody:
+      'Hi,\n\nI need help with: CV Review\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+  {
+    id: 'mentorship',
+    title: '1:1 Mentorship',
+    benefit: 'Ongoing coach in your corner',
+    hook: 'Regular check-ins, accountability, and direction across your full prep journey.',
+    icon: '🤝',
+    subject: 'Connect — 1:1 Mentorship',
+    accent: '#b45309',
+    price: '₹799',
+    pricePeriod: '/ month · 1 connect',
+    mailBody:
+      'Hi,\n\nI need help with: 1:1 Mentorship\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+  {
+    id: 'motivation',
+    title: 'Motivation',
+    benefit: 'Stay in the game',
+    hook: 'Burnout, consistency, and mindset for a 6–12 month grind.',
+    icon: '🔥',
+    subject: 'Connect — Motivation',
+    accent: '#c2410c',
+    price: '₹199',
+    pricePeriod: '· 1 session',
+    mailBody:
+      'Hi,\n\nI need help with: Motivation\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
+  },
+] as const;
+
+const connectOfferings = [...services, urgentService];
+
+const introBody =
+  'Hi,\n\nI am interested in mentoring. My goal:\n\nCurrent level (student / 0–2 YOE / 2+ YOE):\nTarget companies / CTC:\nTimeline:\n\nService I need:\n\nThanks!';
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect — 1:1 Mentoring · algofrog.in</title>
+    <meta
+      name="description"
+      content="Personal mentoring for high-CTC prep — system design, roadmaps, CV review, DSA classes, 1:1 mentorship, and motivation. From the team behind DSA Mastery."
+    />
+    <meta name="theme-color" content="#1f5c61" />
+    <link rel="canonical" href="https://algofrog.in/connect" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .connect-page {
+        --connect-glow: color-mix(in oklab, var(--primary) 22%, transparent);
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        padding: clamp(1rem, 3vw, 2rem);
+        position: relative;
+        overflow-x: hidden;
+        background:
+          radial-gradient(ellipse 90% 55% at 50% -8%, var(--connect-glow), transparent 62%),
+          radial-gradient(ellipse 50% 40% at 100% 50%, color-mix(in oklab, #6d28d9 8%, transparent), transparent),
+          radial-gradient(ellipse 45% 35% at 0% 80%, color-mix(in oklab, var(--primary) 10%, transparent), transparent),
+          var(--bg);
+      }
+      .connect-page::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.35;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        z-index: 0;
+      }
+      [data-theme='dark'] .connect-page::before {
+        opacity: 0.2;
+      }
+      .connect-shell {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .connect-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: clamp(1.25rem, 3vh, 2rem);
+      }
+      .connect-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        text-decoration: none;
+        color: var(--text);
+      }
+      .connect-brand-text {
+        font-weight: 700;
+        font-size: 0.95rem;
+        line-height: 1.2;
+      }
+      .connect-brand-sub {
+        font-size: 0.68rem;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .connect-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+      .connect-top-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--border) 70%, var(--primary));
+        background: color-mix(in oklab, var(--surface) 88%, var(--bg));
+        white-space: nowrap;
+        transition:
+          color 0.15s,
+          background 0.15s,
+          border-color 0.15s,
+          box-shadow 0.15s,
+          transform 0.15s;
+      }
+      .connect-top-link:hover {
+        color: var(--primary);
+        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+      }
+      .connect-pill--primary {
+        color: #fff;
+        font-weight: 700;
+        border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
+        background: linear-gradient(
+          128deg,
+          color-mix(in oklab, var(--primary) 88%, #fff) 0%,
+          var(--primary) 48%,
+          color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
+        );
+        box-shadow:
+          inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+          0 2px 10px color-mix(in oklab, var(--primary) 35%, transparent);
+      }
+      .connect-pill--primary:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        background: linear-gradient(
+          128deg,
+          color-mix(in oklab, var(--primary) 75%, #fff) 0%,
+          color-mix(in oklab, var(--primary) 95%, #02b8b0) 50%,
+          color-mix(in oklab, var(--primary) 70%, #065a60) 100%
+        );
+        border-color: color-mix(in oklab, var(--primary) 65%, #f0c96a);
+        box-shadow:
+          inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent),
+          0 4px 16px color-mix(in oklab, var(--primary) 42%, transparent);
+      }
+      .connect-top-link:focus-visible,
+      .connect-pill:focus-visible {
+        outline: 2px solid color-mix(in oklab, var(--primary) 50%, transparent);
+        outline-offset: 2px;
+      }
+      .connect-theme-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        background: var(--surface);
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .connect-theme-btn:hover {
+        color: var(--primary);
+        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+      }
+
+      /* Deck */
+      .connect-deck-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--faint);
+        margin-bottom: 0.65rem;
+        text-align: center;
+      }
+      .connect-deck-layout {
+        display: grid;
+        grid-template-columns: 1fr minmax(7rem, 9.25rem);
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 1.75rem;
+      }
+      .connect-urgent-glow {
+        position: relative;
+        width: 100%;
+        border-radius: 0.88rem;
+        isolation: isolate;
+      }
+      .connect-urgent-glow::before,
+      .connect-urgent-glow::after {
+        content: '';
+        position: absolute;
+        border-radius: inherit;
+        pointer-events: none;
+        animation: connect-urgent-spin 7s linear infinite;
+      }
+      .connect-urgent-glow::before {
+        inset: -3px;
+        background: conic-gradient(
+          from 0deg,
+          transparent 0%,
+          color-mix(in oklab, #be123c 55%, transparent) 18%,
+          #fda4af 35%,
+          #be123c 50%,
+          color-mix(in oklab, #be123c 40%, transparent) 68%,
+          transparent 100%
+        );
+        filter: blur(9px);
+        opacity: 0.42;
+        z-index: 0;
+      }
+      .connect-urgent-glow::after {
+        inset: -1px;
+        background: conic-gradient(
+          from 0deg,
+          color-mix(in oklab, #fda4af 70%, var(--surface)) 0%,
+          #be123c 25%,
+          #e11d48 50%,
+          #fb7185 75%,
+          color-mix(in oklab, #fda4af 70%, var(--surface)) 100%
+        );
+        opacity: 0.55;
+        z-index: 0;
+      }
+      @keyframes connect-urgent-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .connect-deck {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 0;
+      }
+      .connect-card--urgent {
+        --card-accent: #be123c;
+        position: relative;
+        z-index: 1;
+        aspect-ratio: 1;
+        width: 100%;
+        gap: 0.3rem;
+        padding: 0.75rem 0.5rem 0.65rem;
+        background: color-mix(in oklab, #be123c 5%, var(--surface));
+        border: 1px solid color-mix(in oklab, #be123c 22%, var(--border));
+        border-radius: 0.82rem;
+        box-shadow: var(--shadow);
+      }
+      .connect-card--urgent::before {
+        background: linear-gradient(
+          145deg,
+          color-mix(in oklab, #be123c 10%, transparent) 0%,
+          transparent 55%
+        );
+        opacity: 1;
+      }
+      .connect-card--urgent::after {
+        display: block;
+        height: 3px;
+        background: #be123c;
+        opacity: 0.85;
+      }
+      .connect-card--urgent:hover {
+        border-color: color-mix(in oklab, #be123c 38%, var(--border));
+        transform: translateY(-2px);
+      }
+      .connect-card--urgent:hover::after {
+        opacity: 1;
+      }
+      .connect-urgent-glow:hover::before {
+        opacity: 0.55;
+      }
+      .connect-urgent-glow:hover::after {
+        opacity: 0.68;
+      }
+      .connect-urgent-badge {
+        position: absolute;
+        top: 0.42rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        font-size: 0.48rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #9f1239;
+        background: color-mix(in oklab, #be123c 9%, var(--surface));
+        border: 1px solid color-mix(in oklab, #be123c 22%, var(--border));
+        padding: 0.16rem 0.38rem;
+        border-radius: 999px;
+        line-height: 1;
+      }
+      [data-theme='dark'] .connect-urgent-badge {
+        color: #fda4af;
+      }
+      .connect-card--urgent .connect-card-icon {
+        font-size: 1.55rem;
+        margin-top: 0.65rem;
+        margin-bottom: 0;
+        filter: none;
+      }
+      .connect-card--urgent .connect-card-benefit {
+        color: #be123c;
+        font-size: 0.58rem;
+      }
+      [data-theme='dark'] .connect-card--urgent .connect-card-benefit {
+        color: #fb7185;
+      }
+      .connect-card--urgent .connect-card-title {
+        color: var(--text);
+        font-size: 0.74rem;
+        line-height: 1.2;
+        max-width: 100%;
+        text-shadow: none;
+      }
+      .connect-card--urgent .connect-card-hint {
+        display: none;
+      }
+      .connect-card--urgent .connect-card-price-amt {
+        color: #be123c;
+        font-size: 0.88rem;
+        text-shadow: none;
+      }
+      [data-theme='dark'] .connect-card--urgent .connect-card-price-amt {
+        color: #fb7185;
+      }
+      .connect-card--urgent .connect-card-price-period {
+        color: var(--muted);
+        font-size: 0.54rem;
+      }
+      .connect-card--urgent .connect-card-cta {
+        color: #be123c;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        margin-top: 0.25rem;
+        font-size: 0.6rem;
+        font-weight: 700;
+        opacity: 0.88;
+        transform: none;
+        border: none;
+        box-shadow: none;
+      }
+      .connect-card--urgent:hover .connect-card-cta,
+      .connect-card--urgent:focus-visible .connect-card-cta {
+        opacity: 1;
+      }
+      .connect-card {
+        --card-accent: var(--primary);
+        appearance: none;
+        width: 100%;
+        font: inherit;
+        cursor: pointer;
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 0.35rem;
+        padding: 0.9rem 0.6rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        box-shadow:
+          var(--shadow),
+          inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+        animation: connect-rise 0.65s ease both;
+        animation-delay: calc(var(--i, 0) * 0.07s + 0.15s);
+        transition:
+          border-color 0.22s ease,
+          box-shadow 0.22s ease,
+          transform 0.22s ease;
+      }
+      [data-theme='dark'] .connect-card {
+        box-shadow: var(--shadow);
+      }
+      .connect-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          145deg,
+          color-mix(in srgb, var(--card-accent) 14%, transparent) 0%,
+          transparent 55%
+        );
+        opacity: 0.85;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+      }
+      .connect-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--card-accent);
+        opacity: 0.7;
+        transition: height 0.22s ease, opacity 0.22s ease;
+      }
+      .connect-card:hover {
+        border-color: color-mix(in srgb, var(--card-accent) 45%, var(--border));
+        box-shadow:
+          0 10px 28px color-mix(in srgb, var(--card-accent) 18%, transparent),
+          inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
+        transform: translateY(-3px) scale(1.02);
+      }
+      .connect-card:hover::after {
+        height: 4px;
+        opacity: 1;
+      }
+      .connect-card:focus-visible {
+        outline: 2px solid var(--card-accent);
+        outline-offset: 2px;
+      }
+      .connect-card > * {
+        position: relative;
+        z-index: 1;
+      }
+      .connect-card-icon {
+        font-size: 1.75rem;
+        line-height: 1;
+        margin-bottom: 0.15rem;
+        filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--card-accent) 25%, transparent));
+      }
+      .connect-card-benefit {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--card-accent);
+        line-height: 1.2;
+      }
+      .connect-card-title {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1.2;
+        max-width: 9.5rem;
+      }
+      .connect-card-price {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 0.15rem;
+        margin-top: 0.15rem;
+        line-height: 1;
+      }
+      .connect-card-price-amt {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--card-accent);
+        letter-spacing: -0.02em;
+      }
+      .connect-card-price-period {
+        font-size: 0.58rem;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .connect-card-hint {
+        font-size: 0.6rem;
+        font-weight: 600;
+        color: var(--muted);
+        line-height: 1.35;
+        max-width: 10rem;
+        opacity: 0.85;
+        margin-top: 0.1rem;
+      }
+      .connect-card-cta {
+        margin-top: 0.35rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--card-accent);
+        opacity: 0.82;
+        transform: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      .connect-card:hover .connect-card-cta,
+      .connect-card:focus-visible .connect-card-cta {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Closing CTA */
+      .connect-cta {
+        padding: clamp(1.15rem, 3vw, 1.5rem);
+        border-radius: 0.85rem;
+        background: linear-gradient(
+          135deg,
+          color-mix(in oklab, var(--primary) 12%, var(--surface)),
+          color-mix(in oklab, var(--primary) 4%, var(--surface))
+        );
+        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        text-align: center;
+        box-shadow: 0 8px 32px color-mix(in oklab, var(--primary) 14%, transparent);
+        animation: connect-rise 0.7s ease 0.6s both;
+      }
+      .connect-cta-headline {
+        font-size: clamp(1rem, 2.5vw, 1.15rem);
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.4rem;
+        letter-spacing: -0.01em;
+      }
+      .connect-cta-text {
+        font-size: 0.82rem;
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        max-width: 28rem;
+        margin-inline: auto;
+      }
+      .connect-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 0.72rem 1.35rem;
+        border-radius: 0.55rem;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--inv);
+        background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 75%, #02a6a0));
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        box-shadow:
+          0 4px 14px color-mix(in oklab, var(--primary) 35%, transparent),
+          inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+      .connect-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px color-mix(in oklab, var(--primary) 40%, transparent);
+      }
+      .connect-cta-btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+      .connect-cta-sub {
+        margin-top: 0.75rem;
+        font-size: 0.72rem;
+        color: var(--faint);
+      }
+
+      /* Service detail modal */
+      .connect-detail {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.75rem, env(safe-area-inset-right, 0px))
+          max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px));
+        box-sizing: border-box;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+      }
+      .connect-detail.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .connect-detail-backdrop {
+        position: absolute;
+        inset: 0;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        background: color-mix(in oklab, var(--text) 52%, transparent);
+      }
+      [data-theme='dark'] .connect-detail-backdrop {
+        background: rgba(0, 0, 0, 0.72);
+      }
+      .connect-detail-panel {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 24rem);
+        max-height: min(88vh, 34rem);
+        overflow: auto;
+        padding: 1.35rem 1.25rem 1.2rem;
+        border-radius: 1rem;
+        background: var(--surface);
+        border: 1px solid color-mix(in oklab, var(--border) 80%, var(--detail-accent, var(--primary)));
+        box-shadow:
+          var(--shadow),
+          0 18px 48px color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, transparent);
+        transform: translateY(12px) scale(0.98);
+        transition: transform 0.2s ease;
+      }
+      .connect-detail.active .connect-detail-panel {
+        transform: translateY(0) scale(1);
+      }
+      .connect-detail-close {
+        position: absolute;
+        top: 0.65rem;
+        right: 0.65rem;
+        width: 2rem;
+        height: 2rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 0.45rem;
+        background: var(--surface2);
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s, background 0.15s;
+      }
+      .connect-detail-close:hover {
+        color: var(--text);
+        border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 35%, var(--border));
+      }
+      .connect-detail-icon {
+        font-size: 2rem;
+        line-height: 1;
+        margin-bottom: 0.35rem;
+      }
+      .connect-detail-benefit {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--detail-accent, var(--primary));
+        margin-bottom: 0.25rem;
+      }
+      .connect-detail-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        margin-bottom: 0.55rem;
+        padding-right: 1.75rem;
+        line-height: 1.25;
+      }
+      .connect-detail-hook {
+        font-size: 0.84rem;
+        line-height: 1.55;
+        color: var(--muted);
+        margin-bottom: 0.9rem;
+      }
+      .connect-detail-price {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.2rem 0.35rem;
+        margin-bottom: 0.55rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.65rem;
+        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 9%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 22%, var(--border));
+      }
+      .connect-detail-price-amt {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--detail-accent, var(--primary));
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .connect-detail-price-period {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--muted);
+        line-height: 1.2;
+      }
+      .connect-detail-note {
+        font-size: 0.68rem;
+        line-height: 1.5;
+        color: var(--faint);
+        margin-bottom: 1rem;
+      }
+      .connect-detail-book {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .connect-email-link {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .connect-email-link:hover {
+        text-decoration: underline;
+      }
+      .connect-footer {
+        margin-top: 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        justify-content: center;
+        font-size: 0.76rem;
+      }
+      .connect-footer a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.76rem;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--border) 70%, var(--primary));
+        background: color-mix(in oklab, var(--surface) 88%, var(--bg));
+        transition:
+          color 0.15s,
+          background 0.15s,
+          border-color 0.15s,
+          box-shadow 0.15s,
+          transform 0.15s;
+      }
+      .connect-footer a:hover {
+        color: var(--primary);
+        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+      }
+      .connect-footer a.connect-pill--primary:hover {
+        color: #fff;
+      }
+      .connect-footnote {
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--divider);
+        text-align: center;
+        font-size: 0.68rem;
+        line-height: 1.55;
+        color: var(--faint);
+      }
+      .connect-footnote-star {
+        color: var(--primary);
+        font-weight: 700;
+        margin-right: 0.2rem;
+      }
+
+      @keyframes connect-rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 560px) {
+        .connect-deck-layout {
+          grid-template-columns: 1fr;
+        }
+        .connect-urgent-glow {
+          order: -1;
+          max-width: 10.5rem;
+          margin-inline: auto;
+        }
+        .connect-card--urgent .connect-card-cta {
+          opacity: 1;
+          transform: none;
+        }
+        .connect-deck {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.65rem;
+        }
+        .connect-card-title {
+          font-size: 0.74rem;
+        }
+        .connect-card-hint {
+          display: none;
+        }
+        .connect-card-cta {
+          opacity: 1;
+          transform: none;
+        }
+        .connect-card-icon {
+          font-size: 1.45rem;
+        }
+      }
+      @media (max-width: 360px) {
+        .connect-deck {
+          gap: 0.5rem;
+        }
+        .connect-card {
+          padding: 0.65rem 0.45rem;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .connect-card,
+        .connect-card--urgent,
+        .connect-cta {
+          animation: none;
+        }
+        .connect-urgent-glow::before,
+        .connect-urgent-glow::after {
+          animation: none;
+        }
+        .connect-card:hover,
+        .connect-card--urgent:hover {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="connect-page">
+      <div class="connect-shell">
+        <header class="connect-top">
+          <a class="connect-brand" href="/">
+            <LogoMark width={28} height={28} />
+            <div>
+              <div class="connect-brand-text">DSA Mastery</div>
+              <div class="connect-brand-sub">algofrog.in</div>
+            </div>
+          </a>
+          <div class="connect-top-actions">
+            <a class="connect-top-link connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
+            <a class="connect-top-link connect-pill" href="/login" id="connect-nav-auth">Sign in</a>
+            <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="5"></circle>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <main>
+          <p class="connect-deck-label">What do you need help with?</p>
+          <div class="connect-deck-layout">
+            <div class="connect-deck" role="list">
+              {
+                services.map((s, i) => (
+                  <button
+                    type="button"
+                    class="connect-card"
+                    role="listitem"
+                    style={`--card-accent: ${s.accent}; --i: ${i}`}
+                    data-connect-id={s.id}
+                    title={s.hook}
+                  >
+                    <span class="connect-card-icon" aria-hidden="true">{s.icon}</span>
+                    <span class="connect-card-benefit">{s.benefit}</span>
+                    <span class="connect-card-title">{s.title}</span>
+                    <span class="connect-card-hint">{s.hook}</span>
+                    <span class="connect-card-cta">View details →</span>
+                  </button>
+                ))
+              }
+            </div>
+            <div class="connect-urgent-glow">
+              <button
+                type="button"
+                class="connect-card connect-card--urgent"
+                role="listitem"
+                style={`--card-accent: ${urgentService.accent}; --i: 6`}
+                data-connect-id={urgentService.id}
+                title={urgentService.hook}
+              >
+                <span class="connect-urgent-badge">Urgent</span>
+                <span class="connect-card-icon" aria-hidden="true">{urgentService.icon}</span>
+                <span class="connect-card-benefit">{urgentService.benefit}</span>
+                <span class="connect-card-title">{urgentService.title}</span>
+                <span class="connect-card-price">
+                  <span class="connect-card-price-amt">{urgentService.price}</span>
+                  <span class="connect-card-price-period">{urgentService.pricePeriod}</span>
+                </span>
+                <span class="connect-card-cta">View details →</span>
+              </button>
+            </div>
+          </div>
+
+          <section class="connect-cta">
+            <h2 class="connect-cta-headline">Not sure where to start?</h2>
+            <p class="connect-cta-text">
+              Send one email with your target CTC, current level, and biggest blocker. I’ll point you to the right service — no pressure, no spam.
+            </p>
+            <a
+              class="connect-cta-btn"
+              href={mailto('Connect — Intro call', introBody)}
+            >
+              Start with a free intro email
+              <span aria-hidden="true">→</span>
+            </a>
+            <p class="connect-cta-sub">
+              Or write directly: <a class="connect-email-link" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+            </p>
+          </section>
+
+          <nav class="connect-footer" aria-label="Site links">
+            <a class="connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
+            <a class="connect-pill" href="/login" id="connect-footer-auth">Sign in</a>
+          </nav>
+          <p class="connect-footnote">
+            <span class="connect-footnote-star" aria-hidden="true">*</span>
+            {sessionFootnote}
+          </p>
+        </main>
+      </div>
+    </div>
+
+    <div
+      id="connect-detail"
+      class="connect-detail"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="connect-detail-title"
+      aria-hidden="true"
+      hidden
+    >
+      <button type="button" class="connect-detail-backdrop" id="connect-detail-backdrop" aria-label="Close details"></button>
+      <div class="connect-detail-panel">
+        <button type="button" class="connect-detail-close" id="connect-detail-close" aria-label="Close">✕</button>
+        <div class="connect-detail-icon" id="connect-detail-icon" aria-hidden="true"></div>
+        <p class="connect-detail-benefit" id="connect-detail-benefit"></p>
+        <h2 class="connect-detail-title" id="connect-detail-title"></h2>
+        <p class="connect-detail-hook" id="connect-detail-hook"></p>
+        <div class="connect-detail-price">
+          <span class="connect-detail-price-amt" id="connect-detail-price-amt"></span>
+          <span class="connect-detail-price-period" id="connect-detail-price-period"></span>
+        </div>
+        <p class="connect-detail-note">{sessionFootnote}</p>
+        <a class="connect-cta-btn connect-detail-book" id="connect-detail-book" href="#">Book via email →</a>
+      </div>
+    </div>
+
+    <script id="connect-offerings-data" type="application/json" set:html={JSON.stringify(connectOfferings)} />
+
+    <script>
+      import { supabase } from '../lib/supabase';
+
+      type ConnectOffering = {
+        id: string;
+        title: string;
+        benefit: string;
+        hook: string;
+        icon: string;
+        subject: string;
+        accent: string;
+        price: string;
+        pricePeriod?: string;
+        mailBody: string;
+      };
+
+      const SUPPORT_EMAIL = 'algofrog07@gmail.com';
+      const offeringsEl = document.getElementById('connect-offerings-data');
+      const offerings: ConnectOffering[] = offeringsEl?.textContent
+        ? JSON.parse(offeringsEl.textContent)
+        : [];
+
+      const detailRoot = document.getElementById('connect-detail');
+      const detailBackdrop = document.getElementById('connect-detail-backdrop');
+      const detailClose = document.getElementById('connect-detail-close');
+      const detailBook = document.getElementById('connect-detail-book') as HTMLAnchorElement | null;
+
+      function mailtoLink(subject: string, body: string) {
+        const params = new URLSearchParams();
+        params.set('subject', subject);
+        params.set('body', body);
+        return `mailto:${SUPPORT_EMAIL}?${params.toString()}`;
+      }
+
+      function openConnectDetail(id: string) {
+        const item = offerings.find((o) => o.id === id);
+        if (!item || !detailRoot) return;
+
+        detailRoot.style.setProperty('--detail-accent', item.accent);
+        const iconEl = document.getElementById('connect-detail-icon');
+        const benefitEl = document.getElementById('connect-detail-benefit');
+        const titleEl = document.getElementById('connect-detail-title');
+        const hookEl = document.getElementById('connect-detail-hook');
+        const priceAmtEl = document.getElementById('connect-detail-price-amt');
+        const pricePeriodEl = document.getElementById('connect-detail-price-period');
+
+        if (iconEl) iconEl.textContent = item.icon;
+        if (benefitEl) benefitEl.textContent = item.benefit;
+        if (titleEl) titleEl.textContent = item.title;
+        if (hookEl) hookEl.textContent = item.hook;
+        if (priceAmtEl) priceAmtEl.textContent = item.price;
+        if (pricePeriodEl) pricePeriodEl.textContent = item.pricePeriod ?? '';
+        if (detailBook) detailBook.href = mailtoLink(item.subject, item.mailBody);
+
+        detailRoot.hidden = false;
+        detailRoot.setAttribute('aria-hidden', 'false');
+        detailRoot.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        detailClose?.focus();
+      }
+
+      function closeConnectDetail() {
+        if (!detailRoot) return;
+        detailRoot.classList.remove('active');
+        detailRoot.setAttribute('aria-hidden', 'true');
+        detailRoot.hidden = true;
+        document.body.style.overflow = '';
+      }
+
+      document.querySelectorAll('[data-connect-id]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const id = el.getAttribute('data-connect-id');
+          if (id) openConnectDetail(id);
+        });
+      });
+
+      detailBackdrop?.addEventListener('click', closeConnectDetail);
+      detailClose?.addEventListener('click', closeConnectDetail);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && detailRoot && !detailRoot.hidden) closeConnectDetail();
+      });
+
+      function applyConnectAuthNav(signedIn: boolean) {
+        const navAuth = document.getElementById('connect-nav-auth');
+        const footerAuth = document.getElementById('connect-footer-auth');
+
+        if (signedIn) {
+          if (navAuth) {
+            navAuth.textContent = 'Sign out';
+            navAuth.href = '#';
+            navAuth.setAttribute('aria-label', 'Sign out of your account');
+            if (!navAuth.dataset.bound) {
+              navAuth.dataset.bound = '1';
+              navAuth.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await supabase.auth.signOut();
+                window.location.href = '/login';
+              });
+            }
+          }
+          if (footerAuth) footerAuth.hidden = true;
+        } else {
+          if (navAuth) {
+            navAuth.textContent = 'Sign in';
+            navAuth.href = '/login';
+            navAuth.setAttribute('aria-label', 'Sign in');
+          }
+          if (footerAuth) footerAuth.hidden = false;
+        }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      applyConnectAuthNav(!!session);
+
+      supabase.auth.onAuthStateChange((_event, nextSession) => {
+        applyConnectAuthNav(!!nextSession);
+      });
+
+      const themeBtn = document.getElementById('connect-theme');
+      themeBtn?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('theme', next);
+        } catch {
+          /* ignore */
+        }
+      });
+    </script>
+  </body>
+</html>

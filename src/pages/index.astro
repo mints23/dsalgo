@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import LogoMark from '../components/LogoMark.astro';
+import ConnectFloat from '../components/ConnectFloat.astro';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 ---
 <!DOCTYPE html>
@@ -109,9 +110,12 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 
       <main class="main" id="main-content">
         <div class="topbar" role="banner" aria-label="Progress and account">
-          <div class="topbar-topic" id="topbar-topic" hidden>
-            <span class="topbar-topic-num" id="topbar-topic-num" aria-hidden="true"></span>
-            <span class="topbar-topic-title" id="topbar-topic-title"></span>
+          <div class="topbar-lead">
+            <ConnectFloat topbar />
+            <div class="topbar-topic" id="topbar-topic" hidden>
+              <span class="topbar-topic-num" id="topbar-topic-num" aria-hidden="true"></span>
+              <span class="topbar-topic-title" id="topbar-topic-title"></span>
+            </div>
           </div>
           <div class="topbar-spacer" aria-hidden="true"></div>
           <div class="topbar-metrics">

@@ -466,6 +466,301 @@ summary:focus-visible {
     inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent),
     0 2px 14px -4px rgba(0, 0, 0, 0.4);
 }
+.topbar-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+/* ── Connect (wavy radiating) ── */
+.connect-float {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 4.25rem;
+  height: 4.25rem;
+  text-decoration: none;
+  color: var(--primary);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s ease;
+}
+.connect-float:hover {
+  transform: scale(1.06);
+}
+.connect-float--topbar {
+  width: auto;
+  min-width: 6rem;
+  height: 2.35rem;
+  margin: 0;
+  padding: 0 0.75rem 0 0.32rem;
+  color: #fff;
+}
+.connect-float-aura {
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in oklab, var(--primary) 55%, transparent),
+    color-mix(in oklab, var(--primary) 12%, transparent),
+    color-mix(in oklab, var(--primary) 40%, transparent),
+    color-mix(in oklab, var(--primary) 8%, transparent),
+    color-mix(in oklab, var(--primary) 55%, transparent)
+  );
+  opacity: 0.55;
+  filter: blur(5px);
+  animation: connect-float-aura-spin 9s linear infinite;
+}
+.connect-float--topbar .connect-float-aura {
+  inset: -3px;
+  clip-path: none;
+  border-radius: 999px;
+  opacity: 0.7;
+  background: conic-gradient(
+    from 0deg,
+    #f0c96a,
+    color-mix(in oklab, var(--primary) 70%, #fff),
+    #7ec8cf,
+    color-mix(in oklab, var(--primary) 85%, #000),
+    #f0c96a
+  );
+}
+.connect-float--topbar .connect-float-blob {
+  inset: 0;
+  clip-path: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    128deg,
+    color-mix(in oklab, var(--primary) 88%, #fff) 0%,
+    var(--primary) 42%,
+    color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 12%, transparent),
+    0 2px 10px color-mix(in oklab, var(--primary) 42%, transparent),
+    0 0 0 1px color-mix(in oklab, #e8b84a 38%, var(--primary));
+  animation: connect-float-pill-glow 4.5s ease-in-out infinite;
+}
+.connect-float--topbar .connect-float-outline {
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, #fff 55%, transparent);
+  animation: connect-float-pill-spin 20s linear infinite;
+}
+.connect-float--topbar .connect-float-rings span {
+  border-radius: 999px;
+  border-color: color-mix(in oklab, #f0c96a 55%, var(--primary));
+}
+.connect-float--topbar .connect-float-core {
+  flex-direction: row;
+  gap: 0.42rem;
+}
+.connect-float--topbar .connect-float-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 1px 2px color-mix(in srgb, #000 22%, transparent);
+}
+.connect-float--topbar .connect-float-logo {
+  border-radius: 0.35rem;
+  box-shadow: 0 1px 4px color-mix(in srgb, #000 18%, transparent);
+}
+.connect-float--topbar:hover {
+  transform: scale(1.04);
+}
+.connect-float--topbar:hover .connect-float-blob {
+  background: linear-gradient(
+    128deg,
+    color-mix(in oklab, var(--primary) 75%, #fff) 0%,
+    color-mix(in oklab, var(--primary) 95%, #02b8b0) 45%,
+    color-mix(in oklab, var(--primary) 70%, #065a60) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent),
+    0 4px 18px color-mix(in oklab, var(--primary) 52%, transparent),
+    0 0 0 1px color-mix(in oklab, #f0c96a 55%, var(--primary));
+}
+.connect-float--topbar:hover .connect-float-label {
+  color: #fff;
+}
+[data-theme='dark'] .connect-float--topbar .connect-float-blob {
+  background: linear-gradient(
+    128deg,
+    color-mix(in oklab, var(--primary) 80%, #fff) 0%,
+    var(--primary) 40%,
+    color-mix(in oklab, var(--primary) 65%, #1a4a50) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent),
+    0 2px 14px color-mix(in oklab, var(--primary) 48%, transparent),
+    0 0 0 1px color-mix(in oklab, #f0c96a 32%, var(--primary));
+}
+@keyframes connect-float-pill-glow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.08);
+  }
+}
+@keyframes connect-float-pill-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 420px) {
+  .connect-float--topbar {
+    min-width: 5.35rem;
+    padding: 0 0.6rem 0 0.28rem;
+  }
+  .connect-float--topbar .connect-float-label {
+    font-size: 0.66rem;
+  }
+}
+.connect-float:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--primary) 45%, transparent);
+  outline-offset: 4px;
+}
+.connect-float-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.connect-float-rings span {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--primary) 42%, transparent);
+  animation: connect-float-radiate 3.2s ease-out infinite;
+}
+.connect-float-rings span:nth-child(2) {
+  animation-delay: 1.05s;
+}
+.connect-float-rings span:nth-child(3) {
+  animation-delay: 2.1s;
+}
+@keyframes connect-float-radiate {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+.connect-float-blob {
+  position: absolute;
+  inset: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(50% 2%, 93% 27%, 93% 73%, 50% 98%, 7% 73%, 7% 27%);
+  background: color-mix(in oklab, var(--primary) 9%, var(--surface));
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--primary) 32%, var(--border)),
+    var(--shadow),
+    0 0 18px color-mix(in oklab, var(--primary) 18%, transparent);
+  animation: connect-float-hex-wobble 8s ease-in-out infinite;
+}
+.connect-float-hex {
+  width: 100%;
+  height: 100%;
+  animation: connect-float-hex-spin 16s linear infinite;
+}
+@keyframes connect-float-hex-wobble {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes connect-float-hex-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes connect-float-aura-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.connect-float-core {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  pointer-events: none;
+}
+.connect-float-logo {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0.28rem;
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--text) 12%, transparent);
+}
+.connect-float-label {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--primary);
+}
+.connect-float:hover .connect-float-blob {
+  background: color-mix(in oklab, var(--primary) 14%, var(--surface));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--primary) 45%, var(--border)),
+    var(--shadow),
+    0 0 22px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+.connect-float:hover .connect-float-label {
+  color: var(--primary-h, var(--primary));
+}
+.connect-float:hover .connect-float-logo {
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--primary) 28%, transparent);
+}
+html[data-connect-scroll-pause='1'] .connect-float-rings span,
+html[data-connect-scroll-pause='1'] .connect-float-blob,
+html[data-connect-scroll-pause='1'] .connect-float-hex,
+html[data-connect-scroll-pause='1'] .connect-float-outline,
+html[data-connect-scroll-pause='1'] .connect-float-aura {
+  animation-play-state: paused;
+}
+html[data-connect-scroll-pause='1'] .connect-float,
+html[data-connect-scroll-pause='1'] .connect-float:hover {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .connect-float-rings span,
+  .connect-float-blob,
+  .connect-float-hex,
+  .connect-float-outline,
+  .connect-float-aura {
+    animation: none;
+  }
+  .connect-float-rings span {
+    opacity: 0.2;
+    transform: scale(1.15);
+  }
+}
+
 .topbar-user {
   font-size: 0.72rem;
   color: color-mix(in oklab, var(--muted) 92%, var(--primary));
@@ -813,6 +1108,7 @@ summary:focus-visible {
   z-index: 10;
   display: flex;
   align-items: center;
+  overflow: visible;
   justify-content: space-between;
   gap: 0.85rem 1.35rem;
   flex-wrap: wrap;
