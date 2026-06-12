@@ -6,55 +6,58 @@ interface Props {
   topbar?: boolean;
 }
 const { topbar = false } = Astro.props;
-const logoSize = topbar ? 20 : 22;
+const logoSize = topbar ? 16 : 22;
 ---
-<a
-  href="/connect"
-  class:list={['connect-float', { 'connect-float--topbar': topbar }]}
-  title="1:1 mentoring — DSA classes, system design, CV review"
-  aria-label="Open Mentor — 1:1 mentoring, DSA, system design, CV review"
->
-  {topbar && <span class="connect-float-aura" aria-hidden="true"></span>}
-  <span class="connect-float-rings" aria-hidden="true">
-    <span></span>
-    <span></span>
-    <span></span>
-  </span>
-  <span class="connect-float-blob" aria-hidden="true">
-    {
-      topbar ? (
-        <svg class="connect-float-outline" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect
-            x="2"
-            y="2"
-            width="116"
-            height="36"
-            rx="18"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-dasharray="5 7"
-            opacity="0.65"></rect>
-        </svg>
-      ) : (
-        <svg class="connect-float-hex" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z"
-            stroke="currentColor"
-            stroke-width="1.25"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-dasharray="4 6"
-            opacity="0.5"></path>
-        </svg>
-      )
-    }
-  </span>
-  <span class="connect-float-core">
-    <LogoMark width={logoSize} height={logoSize} class="connect-float-logo" alt="" />
-    <span class="connect-float-label">Mentor</span>
-  </span>
-</a>
+
+<span class:list={['topbar-mentor-slot', !topbar && 'topbar-mentor-slot--plain']}>
+  <a
+    href="/connect"
+    class:list={['connect-float', { 'connect-float--topbar': topbar }]}
+    title="1:1 mentoring — DSA classes, system design, CV review"
+    aria-label="Open Mentor — 1:1 mentoring, DSA, system design, CV review"
+  >
+    {topbar && <span class="connect-float-aura" aria-hidden="true"></span>}
+    <span class="connect-float-rings" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+    <span class="connect-float-blob" aria-hidden="true">
+      {
+        topbar ? (
+          <svg class="connect-float-outline" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect
+              x="2"
+              y="2"
+              width="116"
+              height="36"
+              rx="18"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-dasharray="5 7"
+              opacity="0.65"></rect>
+          </svg>
+        ) : (
+          <svg class="connect-float-hex" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z"
+              stroke="currentColor"
+              stroke-width="1.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-dasharray="4 6"
+              opacity="0.5"></path>
+          </svg>
+        )
+      }
+    </span>
+    <span class="connect-float-core">
+      <LogoMark width={logoSize} height={logoSize} class="connect-float-logo" alt="" />
+      <span class="connect-float-label">Mentor</span>
+    </span>
+  </a>
+</span>
 
 <script>
   if (!(window as Window & { __connectScrollPause?: boolean }).__connectScrollPause) {
