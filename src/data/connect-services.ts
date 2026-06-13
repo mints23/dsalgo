@@ -128,9 +128,9 @@ export const connectServices: ConnectService[] = [
     icon: '🔥',
     subject: 'Connect — Motivation',
     accent: '#c2410c',
-    price: '₹10',
+    price: '₹200',
     pricePeriod: '· 1 session',
-    sessionPricePaise: 1000,
+    sessionPricePaise: 20000,
     mailBody:
       'Hi,\n\nI need help with: Motivation\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
   },

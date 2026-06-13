@@ -1,0 +1,50 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signing in…</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <p id="auth-callback-msg">Signing you in…</p>
+    <script>
+      import { supabase } from '../../lib/supabase';
+      import { getSafeRedirectPath, goToAppPath, readStoredAuthRedirect } from '../../lib/auth-redirect';
+
+      const msg = document.getElementById('auth-callback-msg')!;
+
+      async function finish() {
+        const params = new URLSearchParams(window.location.search);
+        const oauthErr = params.get('error_description') || params.get('error');
+        if (oauthErr) {
+          const text = decodeURIComponent(oauthErr.replace(/\+/g, ' '));
+          window.location.replace(`/login?error=${encodeURIComponent(text)}`);
+          return;
+        }
+
+        const code = params.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            window.location.replace(`/login?error=${encodeURIComponent(error.message)}`);
+            return;
+          }
+        }
+
+        const fromQuery = getSafeRedirectPath();
+        const target = fromQuery !== '/' ? fromQuery : readStoredAuthRedirect();
+        goToAppPath(target);
+      }
+
+      finish().catch((err) => {
+        msg.textContent = err instanceof Error ? err.message : 'Sign-in failed.';
+        window.setTimeout(() => {
+          window.location.replace('/login');
+        }, 2500);
+      });
+    </script>
+  </body>
+</html>

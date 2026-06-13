@@ -1186,7 +1186,7 @@ const tableStaggerBase = 26;
         </div>
 
         <p class="login-card-footer">
-          <a href="https://algofrog.in/">algofrog.in</a>
+          <a href="/">algofrog.in</a>
           · DSA Mastery Guide
           · © 2026
         </p>
@@ -1198,12 +1198,51 @@ const tableStaggerBase = 26;
 
     <script>
       import { supabase } from '../lib/supabase';
+      import {
+        getAuthCallbackUrl,
+        getLoginOAuthReturnUrl,
+        goToAppPath,
+        resolveLoginRedirectPath,
+        storeAuthRedirect,
+      } from '../lib/auth-redirect';
 
-      // If already logged in, redirect to home
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        window.location.href = '/';
+      const redirectPath = resolveLoginRedirectPath();
+      const msgEl = document.getElementById('login-msg')!;
+
+      function showMsg(text: string, type: 'error' | 'success') {
+        msgEl.textContent = text;
+        msgEl.className = `login-msg ${type}`;
       }
+      function clearMsg() {
+        msgEl.className = 'login-msg';
+        msgEl.textContent = '';
+      }
+
+      async function finishAuthEntry() {
+        const params = new URLSearchParams(window.location.search);
+        const oauthErr = params.get('error') || params.get('error_description');
+        if (oauthErr) {
+          showMsg(decodeURIComponent(oauthErr.replace(/\+/g, ' ')), 'error');
+          const clean =
+            redirectPath !== '/'
+              ? `${window.location.origin}/login?redirect=${encodeURIComponent(redirectPath)}`
+              : `${window.location.origin}/login`;
+          window.history.replaceState({}, '', clean);
+          return;
+        }
+
+        const {
+          data: { user },
+          error: userErr,
+        } = await supabase.auth.getUser();
+        if (user && !userErr) {
+          goToAppPath(redirectPath);
+        } else if (userErr) {
+          await supabase.auth.signOut();
+        }
+      }
+
+      void finishAuthEntry();
 
       /** Clears preview-only UI so it never leaves `body` locked or overlays active after navigation. */
       function resetLoginPreviewChrome() {
@@ -1283,16 +1322,6 @@ const tableStaggerBase = 26;
       const signupPanel = document.getElementById('signup-panel')!;
       const signinForm = document.getElementById('signin-form') as HTMLFormElement;
       const signupForm = document.getElementById('signup-form') as HTMLFormElement;
-      const msgEl = document.getElementById('login-msg')!;
-
-      function showMsg(text: string, type: 'error' | 'success') {
-        msgEl.textContent = text;
-        msgEl.className = `login-msg ${type}`;
-      }
-      function clearMsg() {
-        msgEl.className = 'login-msg';
-        msgEl.textContent = '';
-      }
 
       tabSignin.addEventListener('click', () => {
         tabSignin.classList.add('active');
@@ -1328,15 +1357,19 @@ const tableStaggerBase = 26;
         const email = (document.getElementById('signin-email') as HTMLInputElement).value;
         const password = (document.getElementById('signin-password') as HTMLInputElement).value;
 
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
           showMsg(error.message, 'error');
           btn.disabled = false;
           btn.textContent = 'Sign in';
+        } else if (!data.session) {
+          showMsg('Sign-in failed to create a session. Try again or clear site data for this origin.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Sign in';
         } else {
           resetLoginPreviewChrome();
-          window.location.href = '/';
+          goToAppPath(redirectPath);
         }
       });
 
@@ -1356,7 +1389,10 @@ const tableStaggerBase = 26;
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } },
+          options: {
+            data: { full_name: name },
+            emailRedirectTo: getLoginOAuthReturnUrl(redirectPath),
+          },
         });
 
         if (error) {
@@ -1372,22 +1408,26 @@ const tableStaggerBase = 26;
 
       // Google OAuth
       document.getElementById('google-btn')!.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
+        storeAuthRedirect(redirectPath);
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin + '/',
+            redirectTo: getAuthCallbackUrl(),
             queryParams: { prompt: 'select_account' },
           },
         });
+        if (error) showMsg(error.message, 'error');
       });
 
 
       // GitHub OAuth
       document.getElementById('github-btn')!.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
+        storeAuthRedirect(redirectPath);
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'github',
-          options: { redirectTo: window.location.origin + '/' },
+          options: { redirectTo: getAuthCallbackUrl() },
         });
+        if (error) showMsg(error.message, 'error');
       });
 
       // Theme toggle

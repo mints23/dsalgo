@@ -22,5 +22,11 @@ export async function fetchIsAdmin(): Promise<boolean> {
 }
 
 export function setAdminNavLink(link: HTMLElement | null, isAdmin: boolean) {
-  if (link) link.hidden = !isAdmin;
+  if (!link) return;
+  link.hidden = !isAdmin;
+  if (isAdmin) {
+    link.removeAttribute('aria-hidden');
+  } else {
+    link.setAttribute('aria-hidden', 'true');
+  }
 }

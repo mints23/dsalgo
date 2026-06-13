@@ -1,0 +1,263 @@
+/* Client-rendered Admin UI (createElement / innerHTML). Scoped Astro styles do not apply. */
+.adm-page .adm-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 0.65rem;
+}
+
+.adm-page .adm-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.42rem 0.3rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-align: center;
+  background: color-mix(in oklab, var(--surface2) 80%, var(--surface));
+  border-bottom: 1px solid var(--divider);
+}
+
+.adm-page .adm-table thead th:first-child {
+  text-align: left;
+  width: 4.6rem;
+}
+
+.adm-page .adm-table tbody td {
+  padding: 0.38rem 0.22rem;
+  vertical-align: middle;
+  text-align: center;
+  border-bottom: 1px solid color-mix(in oklab, var(--divider) 85%, transparent);
+}
+
+.adm-page .adm-table tbody td:first-child {
+  text-align: left;
+}
+
+.adm-page .adm-table tbody tr.adm-row--today {
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+}
+
+.adm-page .adm-date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.06rem;
+  line-height: 1.15;
+}
+
+.adm-page .adm-date-wd {
+  font-size: 0.56rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.adm-page .adm-date-dm {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.adm-page .adm-row--today .adm-date-wd,
+.adm-page .adm-row--today .adm-date-dm {
+  color: var(--primary);
+}
+
+.adm-page .adm-slot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.6rem;
+  padding: 0.34rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--surface) 92%, #fff) 0%,
+    color-mix(in oklab, var(--surface2) 70%, var(--surface)) 100%
+  );
+  color: var(--text);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.adm-page .adm-slot-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+  background: color-mix(in oklab, var(--primary) 11%, var(--surface));
+  color: var(--primary);
+}
+
+.adm-page .adm-slot-btn--open {
+  color: var(--inv);
+  border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
+  background: linear-gradient(
+    128deg,
+    color-mix(in oklab, var(--primary) 88%, #fff) 0%,
+    var(--primary) 48%,
+    color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
+  );
+}
+
+.adm-page .adm-slot-btn--open:hover {
+  color: var(--inv);
+}
+
+.adm-page .adm-slot-btn--selected,
+.adm-page .adm-slot-add--selected {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, #6d28d9 40%, transparent),
+    0 2px 12px color-mix(in oklab, #6d28d9 22%, transparent);
+}
+
+.adm-page .adm-slot-btn--open.adm-slot-btn--selected {
+  border-color: #6d28d9;
+  background: linear-gradient(
+    128deg,
+    color-mix(in oklab, #8b5cf6 88%, #fff) 0%,
+    #6d28d9 52%,
+    color-mix(in oklab, #5b21b6 78%, #0a3d42) 100%
+  );
+}
+
+.adm-page .adm-slot-add--selected {
+  border-style: solid;
+  border-color: #6d28d9;
+  background: color-mix(in oklab, #6d28d9 14%, var(--surface));
+  color: #6d28d9;
+}
+
+.adm-page .adm-slot-btn--booked.adm-slot-btn--selected {
+  border-color: #6d28d9;
+  background: color-mix(in oklab, #6d28d9 16%, color-mix(in oklab, #b45309 10%, var(--surface)));
+  color: #7c3aed;
+}
+
+.adm-page .adm-slot-btn--paid.adm-slot-btn--selected {
+  border-color: #6d28d9;
+  background: color-mix(in oklab, #6d28d9 16%, color-mix(in oklab, #0369a1 10%, var(--surface)));
+  color: #7c3aed;
+}
+
+.adm-page .adm-slot-btn--booked {
+  border-color: color-mix(in oklab, #b45309 35%, var(--border));
+  background: color-mix(in oklab, #b45309 10%, var(--surface));
+  color: #b45309;
+  cursor: default;
+}
+
+.adm-page .adm-slot-btn--paid {
+  border-color: color-mix(in oklab, #0369a1 35%, var(--border));
+  background: color-mix(in oklab, #0369a1 10%, var(--surface));
+  color: #0369a1;
+  cursor: default;
+}
+
+.adm-page .adm-slot-btn--stale {
+  border-color: color-mix(in oklab, #b45309 40%, var(--border));
+  background: color-mix(in oklab, #b45309 12%, var(--surface));
+  color: #b45309;
+  cursor: pointer;
+  font-size: 0.62rem;
+}
+
+.adm-page .adm-slot-btn--stale:hover {
+  border-color: #b45309;
+  background: color-mix(in oklab, #b45309 18%, var(--surface));
+}
+
+.adm-page .adm-slot-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.6rem;
+  padding: 0.34rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px dashed color-mix(in oklab, var(--border) 75%, var(--primary));
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-page .adm-slot-add:hover {
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+}
+
+.adm-page .adm-slot-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adm-page .adm-booking-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--divider);
+  flex-wrap: wrap;
+}
+
+.adm-page .adm-booking-row:last-child {
+  border-bottom: 0;
+}
+
+.adm-page .adm-booking-meta {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.adm-page .adm-empty {
+  text-align: center;
+  padding: 1.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.adm-page .adm-waitlist-row {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.adm-page .adm-waitlist-row:last-child {
+  border-bottom: 0;
+}
+
+.adm-page .adm-waitlist-email {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.adm-page .adm-waitlist-meta {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.adm-page .adm-waitlist-note {
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text);
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.45rem;
+  background: color-mix(in oklab, #6d28d9 6%, var(--surface2));
+  border: 1px solid color-mix(in oklab, #6d28d9 14%, var(--border));
+  white-space: pre-wrap;
+  word-break: break-word;
+}

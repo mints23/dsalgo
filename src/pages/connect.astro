@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/connect-client.css';
 import LogoMark from '../components/LogoMark.astro';
 import {
   SUPPORT_EMAIL,
@@ -267,6 +268,12 @@ const mailto = mailtoLink;
         color: inherit;
         font-weight: 700;
       }
+      .connect-my-bookings {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
       .connect-slots-badge {
         font-size: 0.58rem;
         font-weight: 700;
@@ -292,160 +299,6 @@ const mailto = mailtoLink;
       .connect-avail-feed::-webkit-scrollbar-thumb {
         border-radius: 999px;
         background: color-mix(in oklab, var(--primary) 35%, var(--border));
-      }
-      .connect-avail-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        table-layout: fixed;
-        font-size: 0.65rem;
-        line-height: 1.2;
-      }
-      .connect-avail-table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        padding: 0.42rem 0.35rem;
-        font-size: 0.58rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--muted);
-        text-align: center;
-        background: color-mix(in oklab, var(--surface2) 80%, var(--surface));
-        border-bottom: 1px solid var(--divider);
-      }
-      .connect-avail-table thead th:first-child {
-        text-align: left;
-        width: 4.6rem;
-      }
-      .connect-avail-table tbody td {
-        padding: 0.38rem 0.28rem;
-        vertical-align: middle;
-        text-align: center;
-        border-bottom: 1px solid color-mix(in oklab, var(--divider) 85%, transparent);
-      }
-      .connect-avail-table tbody tr:last-child td {
-        border-bottom: 0;
-      }
-      .connect-avail-table tbody td:first-child {
-        text-align: left;
-      }
-      .connect-avail-table tbody tr.connect-avail-row--today {
-        background: color-mix(in oklab, var(--primary) 5%, var(--surface));
-      }
-      .connect-avail-date-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 0.06rem;
-        line-height: 1.15;
-      }
-      .connect-avail-day-wd {
-        font-size: 0.56rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-      }
-      .connect-avail-day-dm {
-        font-size: 0.68rem;
-        font-weight: 700;
-        color: var(--text);
-      }
-      .connect-avail-row--today .connect-avail-day-wd,
-      .connect-avail-row--today .connect-avail-day-dm {
-        color: var(--primary);
-      }
-      .connect-avail-table tbody td.connect-avail-slot-cell {
-        padding: 0.42rem 0.2rem;
-        text-align: center;
-      }
-      .connect-avail-table tbody td.connect-avail-slot-cell--empty {
-        color: var(--faint);
-        font-size: 0.72rem;
-        font-weight: 600;
-      }
-      .connect-avail-empty {
-        padding: 1rem 0.5rem;
-        text-align: center;
-        font-size: 0.72rem;
-        color: var(--muted);
-        background: color-mix(in oklab, var(--surface2) 60%, var(--surface));
-        border: 1px dashed color-mix(in oklab, var(--border) 90%, var(--primary));
-        border-radius: 0.55rem;
-      }
-      .connect-slot-pill,
-      .connect-time-slot-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: auto;
-        min-width: 3.6rem;
-        padding: 0.34rem 0.6rem;
-        border-radius: 999px;
-        border: 1.5px solid color-mix(in oklab, var(--primary) 28%, var(--border));
-        background: linear-gradient(
-          180deg,
-          color-mix(in oklab, var(--surface) 92%, #fff) 0%,
-          color-mix(in oklab, var(--surface2) 70%, var(--surface)) 100%
-        );
-        color: var(--text);
-        font: inherit;
-        font-size: 0.68rem;
-        font-weight: 700;
-        cursor: pointer;
-        user-select: none;
-        white-space: nowrap;
-        line-height: 1.2;
-        box-shadow:
-          inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent),
-          0 1px 2px color-mix(in oklab, var(--border) 40%, transparent);
-        transition:
-          color 0.15s,
-          background 0.15s,
-          border-color 0.15s,
-          box-shadow 0.15s,
-          transform 0.15s;
-      }
-      .connect-slot-pill:hover,
-      .connect-time-slot-btn:hover {
-        color: var(--primary);
-        border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
-        background: color-mix(in oklab, var(--primary) 11%, var(--surface));
-        transform: translateY(-1px);
-        box-shadow:
-          inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent),
-          0 3px 10px color-mix(in oklab, var(--primary) 14%, transparent);
-      }
-      .connect-slot-pill:focus-visible,
-      .connect-time-slot-btn:focus-visible {
-        outline: 2px solid color-mix(in oklab, var(--primary) 45%, #fff);
-        outline-offset: 2px;
-      }
-      .connect-slot-pill--selected,
-      .connect-time-slot-btn--selected {
-        color: var(--inv);
-        border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
-        background: linear-gradient(
-          128deg,
-          color-mix(in oklab, var(--primary) 88%, #fff) 0%,
-          var(--primary) 48%,
-          color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
-        );
-        box-shadow:
-          inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
-          0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent),
-          0 2px 10px color-mix(in oklab, var(--primary) 35%, transparent);
-      }
-      .connect-slot-pill--selected:hover,
-      .connect-time-slot-btn--selected:hover {
-        color: var(--inv);
-        transform: translateY(-1px);
-      }
-      .connect-time-empty {
-        font-size: 0.78rem;
-        color: var(--muted);
-        line-height: 1.5;
       }
       .connect-service-row:hover {
         border-color: color-mix(in oklab, var(--row-accent) 45%, var(--border));
@@ -1655,7 +1508,7 @@ const mailto = mailtoLink;
           <div class="connect-top-actions">
             <a class="connect-top-link connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
             <a class="connect-top-link connect-pill" href="/admin" id="connect-avail-link" hidden>Admin</a>
-            <a class="connect-top-link connect-pill" href="/login" id="connect-nav-auth">Sign in</a>
+            <a class="connect-top-link connect-pill" href="/login?redirect=/connect" id="connect-nav-auth">Sign in</a>
             <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="5"></circle>
@@ -1675,6 +1528,7 @@ const mailto = mailtoLink;
               <p class="connect-slots-signin-hint" id="connect-slots-signin-hint" hidden>
                 <a href="/login?redirect=/connect">Sign in</a> to pick a slot and book a session.
               </p>
+              <div id="connect-my-bookings" class="connect-my-bookings" hidden aria-label="Your booked sessions"></div>
               <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Date and time slots"></div>
             </section>
 
@@ -1757,7 +1611,7 @@ const mailto = mailtoLink;
 
           <nav class="connect-footer" aria-label="Site links">
             <a class="connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
-            <a class="connect-pill" href="/login" id="connect-footer-auth">Sign in</a>
+            <a class="connect-pill" href="/login?redirect=/connect" id="connect-footer-auth">Sign in</a>
           </nav>
           <p class="connect-footnote">
             <span class="connect-footnote-star" aria-hidden="true">*</span>
@@ -1827,7 +1681,7 @@ const mailto = mailtoLink;
       import { supabase } from '../lib/supabase';
       import type { ConnectService } from '../data/connect-services';
       import { connectSessionPricePaise, connectBatchCopy } from '../data/connect-services';
-      import { loadConnectSlots, type ConnectSlot } from '../lib/connect-slots';
+      import { loadConnectSlots, loadMyConnectBookings, type ConnectSlot } from '../lib/connect-slots';
       import { fetchIsAdmin, setAdminNavLink } from '../lib/admin-access';
 
       const IST = 'Asia/Kolkata';
@@ -1862,6 +1716,7 @@ const mailto = mailtoLink;
         ? JSON.parse(offeringsEl.textContent)
         : [];
       const availFeed = document.getElementById('connect-avail-feed');
+      const myBookingsPanel = document.getElementById('connect-my-bookings');
       const slotsCountBadge = document.getElementById('connect-slots-count');
       const serviceDeck = document.getElementById('connect-service-deck');
       const bookingBar = document.getElementById('connect-booking-bar');
@@ -1890,6 +1745,7 @@ const mailto = mailtoLink;
       let activeOffering: ConnectService | null = null;
       let reservedSlot: SlotRow | null = null;
       let allSlots: SlotRow[] = [];
+      let myBookings: SlotRow[] = [];
       let selectedDateKey: string | null = null;
       let selectedSlotId: number | null = null;
       let activeHoldSlotId: number | null = null;
@@ -1998,6 +1854,59 @@ const mailto = mailtoLink;
         }, 900);
       }
 
+      function serviceTitle(serviceId: string) {
+        return offerings.find((o) => o.id === serviceId)?.title ?? serviceId;
+      }
+
+      function formatBookingWhen(startsAt: string) {
+        const d = new Date(startsAt);
+        const date = `${weekdayFmt.format(d)}, ${dayMonthFmt.format(d)}`;
+        const time = timeFmt.format(d);
+        return { date, time, full: `${date} · ${time}` };
+      }
+
+      function buildMyBookingRow(slot: SlotRow) {
+        const when = formatBookingWhen(slot.starts_at);
+        const row = document.createElement('div');
+        row.className = 'connect-my-bookings-row';
+
+        const main = document.createElement('div');
+        main.className = 'connect-my-bookings-main';
+
+        const service = document.createElement('strong');
+        service.className = 'connect-my-bookings-service';
+        service.textContent = serviceTitle(slot.service_id);
+
+        const whenEl = document.createElement('span');
+        whenEl.className = 'connect-my-bookings-when';
+        whenEl.textContent = when.full;
+
+        main.appendChild(service);
+        main.appendChild(whenEl);
+
+        const status = document.createElement('span');
+        status.className = 'connect-my-bookings-status';
+        status.textContent = 'Booked';
+
+        row.appendChild(main);
+        row.appendChild(status);
+        row.title = `${serviceTitle(slot.service_id)} — ${when.full} (confirmed)`;
+        return row;
+      }
+
+      function buildBookedPill(slot: SlotRow) {
+        const span = document.createElement('span');
+        const held = slot.status === 'reserved';
+        span.className =
+          'connect-slot-pill connect-slot-pill--booked' + (held ? ' connect-slot-pill--held' : '');
+        const when = timeFmt.format(new Date(slot.starts_at));
+        span.textContent = held ? `${when} · hold` : `${when} · booked`;
+        span.title = held
+          ? `${serviceTitle(slot.service_id)} · checkout hold`
+          : `${serviceTitle(slot.service_id)} · your confirmed session`;
+        return span;
+      }
+
       function buildSlotButton(slot: SlotRow) {
         const selected = slot.id === selectedSlotId;
         const btn = document.createElement('button');
@@ -2020,39 +1929,94 @@ const mailto = mailtoLink;
         return btn;
       }
 
+      type FeedCell = { slot: SlotRow; kind: 'open' | 'mine' };
+
+      function renderMyBookingsPanel() {
+        if (!myBookingsPanel) return;
+        const paid = myBookings.filter((b) => b.status === 'paid');
+        if (!paid.length) {
+          myBookingsPanel.hidden = true;
+          myBookingsPanel.innerHTML = '';
+          return;
+        }
+
+        myBookingsPanel.hidden = false;
+        const heading =
+          paid.length === 1 ? 'Your upcoming session' : `Your upcoming sessions (${paid.length})`;
+        myBookingsPanel.innerHTML = `<p class="connect-my-bookings-label">${heading}</p>`;
+        for (const slot of paid) {
+          myBookingsPanel.appendChild(buildMyBookingRow(slot));
+        }
+      }
+
       function renderAvailabilityFeed() {
         if (!availFeed) return;
 
-        if (!allSlots.length) {
+        renderMyBookingsPanel();
+
+        const byDate = new Map<string, FeedCell[]>();
+        const seenIds = new Set<number>();
+
+        for (const slot of allSlots) {
+          const key = istDateKey(slot.starts_at);
+          const list = byDate.get(key) ?? [];
+          list.push({ slot, kind: 'open' });
+          seenIds.add(slot.id);
+          byDate.set(key, list);
+        }
+
+        for (const slot of myBookings) {
+          if (seenIds.has(slot.id)) continue;
+          const key = istDateKey(slot.starts_at);
+          const list = byDate.get(key) ?? [];
+          list.push({ slot, kind: 'mine' });
+          byDate.set(key, list);
+        }
+
+        const paidCount = myBookings.filter((b) => b.status === 'paid').length;
+
+        if (!byDate.size && !paidCount) {
           availFeed.innerHTML = '<p class="connect-avail-empty">No open slots right now. Check back soon.</p>';
           if (slotsCountBadge) slotsCountBadge.hidden = true;
           return;
         }
 
-        if (slotsCountBadge) {
-          slotsCountBadge.hidden = false;
-          slotsCountBadge.textContent = `${allSlots.length} open`;
+        if (!byDate.size) {
+          availFeed.innerHTML =
+            '<p class="connect-avail-empty">No other open slots right now. Your session is listed above.</p>';
+          if (slotsCountBadge) {
+            slotsCountBadge.hidden = false;
+            slotsCountBadge.textContent = `${paidCount} booked`;
+          }
+          return;
         }
 
-        const byDate = new Map<string, SlotRow[]>();
-        for (const slot of allSlots) {
-          const key = istDateKey(slot.starts_at);
-          const list = byDate.get(key) ?? [];
-          list.push(slot);
-          byDate.set(key, list);
+        if (slotsCountBadge) {
+          slotsCountBadge.hidden = false;
+          const parts: string[] = [];
+          if (paidCount) parts.push(`${paidCount} booked`);
+          if (allSlots.length) parts.push(`${allSlots.length} open`);
+          slotsCountBadge.textContent = parts.join(' · ') || 'Your booking';
         }
 
         const rows = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
-        for (const [, slots] of rows) {
-          slots.sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+        for (const [, cells] of rows) {
+          cells.sort((a, b) => {
+            if (a.kind !== b.kind) return a.kind === 'mine' ? -1 : 1;
+            return a.slot.starts_at.localeCompare(b.slot.starts_at);
+          });
         }
+
+        const bookingFirstRows = rows.filter(([, cells]) => cells.some((c) => c.kind === 'mine'));
+        const openOnlyRows = rows.filter(([, cells]) => !cells.some((c) => c.kind === 'mine'));
+        const orderedRows = [...bookingFirstRows, ...openOnlyRows];
 
         const today = todayKey();
 
         const table = document.createElement('table');
         table.className = 'connect-avail-table';
         table.setAttribute('role', 'grid');
-        table.setAttribute('aria-label', 'Available session times');
+        table.setAttribute('aria-label', 'Available session times and your bookings');
 
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
@@ -2061,9 +2025,11 @@ const mailto = mailtoLink;
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        for (const [dateKey, slots] of rows) {
+        for (const [dateKey, cells] of orderedRows) {
           const tr = document.createElement('tr');
           if (dateKey === today) tr.classList.add('connect-avail-row--today');
+          const hasMine = cells.some((c) => c.kind === 'mine');
+          if (hasMine) tr.classList.add('connect-avail-row--mine');
 
           const dateTd = document.createElement('td');
           const dateCell = document.createElement('div');
@@ -2071,11 +2037,11 @@ const mailto = mailtoLink;
 
           const wd = document.createElement('span');
           wd.className = 'connect-avail-day-wd';
-          wd.textContent = weekdayFmt.format(new Date(slots[0].starts_at));
+          wd.textContent = weekdayFmt.format(new Date(cells[0].slot.starts_at));
 
           const dm = document.createElement('span');
           dm.className = 'connect-avail-day-dm';
-          dm.textContent = dayMonthFmt.format(new Date(slots[0].starts_at));
+          dm.textContent = dayMonthFmt.format(new Date(cells[0].slot.starts_at));
 
           dateCell.appendChild(wd);
           dateCell.appendChild(dm);
@@ -2086,9 +2052,9 @@ const mailto = mailtoLink;
             const td = document.createElement('td');
             td.className = 'connect-avail-slot-cell';
             td.setAttribute('role', 'gridcell');
-            const slot = slots[i];
-            if (slot) {
-              td.appendChild(buildSlotButton(slot));
+            const cell = cells[i];
+            if (cell) {
+              td.appendChild(cell.kind === 'open' ? buildSlotButton(cell.slot) : buildBookedPill(cell.slot));
             } else {
               td.classList.add('connect-avail-slot-cell--empty');
               td.textContent = '—';
@@ -2173,7 +2139,12 @@ const mailto = mailtoLink;
       }
 
       async function loadAllSlots() {
-        allSlots = await loadConnectSlots();
+        const previousPaid = myBookings.filter((b) => b.status === 'paid');
+        const [open, mine] = await Promise.all([loadConnectSlots(), loadMyConnectBookings()]);
+        allSlots = open;
+        const serverIds = new Set(mine.map((b) => b.id));
+        const keepLocal = previousPaid.filter((b) => !serverIds.has(b.id));
+        myBookings = [...mine, ...keepLocal].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
         renderAvailabilityFeed();
         updateDeckState();
       }
@@ -2244,6 +2215,19 @@ const mailto = mailtoLink;
               return;
             }
             activeHoldSlotId = null;
+            if (reservedSlot && activeOffering) {
+              myBookings = [
+                {
+                  id: slotId,
+                  service_id: activeOffering.id,
+                  starts_at: reservedSlot.starts_at,
+                  ends_at: reservedSlot.ends_at,
+                  status: 'paid',
+                },
+                ...myBookings.filter((b) => b.id !== slotId),
+              ];
+              renderAvailabilityFeed();
+            }
             alert('Session confirmed! You will receive meeting details by email.');
             await clearTimeSelection();
           },
@@ -2431,7 +2415,7 @@ const mailto = mailtoLink;
               navAuth.addEventListener('click', async (e) => {
                 e.preventDefault();
                 await supabase.auth.signOut();
-                window.location.href = '/login';
+                window.location.href = '/login?redirect=/connect';
               });
             }
           }
@@ -2439,7 +2423,7 @@ const mailto = mailtoLink;
         } else {
           if (navAuth) {
             navAuth.textContent = 'Sign in';
-            navAuth.href = '/login';
+            navAuth.href = '/login?redirect=/connect';
             navAuth.setAttribute('aria-label', 'Sign in');
           }
           if (footerAuth) footerAuth.hidden = false;
@@ -2451,12 +2435,12 @@ const mailto = mailtoLink;
       applyConnectAuthNav(!!session);
 
       if (session) {
-        const isAdmin = await fetchIsAdmin();
-        setAdminNavLink(availLink, isAdmin);
+        setAdminNavLink(availLink, await fetchIsAdmin());
+      } else {
+        setAdminNavLink(availLink, false);
       }
 
-      loadAllSlots();
-      updateDeckState();
+      await loadAllSlots();
 
       supabase.auth.onAuthStateChange(async (_event, nextSession) => {
         authSession = nextSession;
@@ -2466,6 +2450,7 @@ const mailto = mailtoLink;
         } else {
           setAdminNavLink(availLink, false);
         }
+        await loadAllSlots();
       });
 
       const themeBtn = document.getElementById('connect-theme');
