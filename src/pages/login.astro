@@ -175,12 +175,12 @@ const tableStaggerBase = 26;
       }
       .login-hero-title {
         margin: 0;
-        font-size: clamp(1.25rem, 3.2vw, 1.75rem);
-        font-weight: 800;
-        letter-spacing: -0.035em;
-        line-height: 1.25;
-        color: var(--text);
-        max-width: none;
+        font-size: clamp(0.98rem, 2.2vw, 1.12rem);
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1.62;
+        color: color-mix(in oklab, var(--text) 82%, var(--muted));
+        max-width: 38rem;
       }
       .login-hero-benefits {
         list-style: none;
@@ -223,7 +223,7 @@ const tableStaggerBase = 26;
       }
       .login-hero-peek {
         align-self: flex-start;
-        margin-top: 0;
+        margin-top: 0.65rem;
         padding: 0.45rem 0.85rem;
         border-radius: 0.5rem;
         border: 1px solid color-mix(in oklab, var(--primary) 35%, var(--border));
@@ -242,16 +242,6 @@ const tableStaggerBase = 26;
       .login-hero-peek:focus-visible {
         outline: 2px solid var(--primary);
         outline-offset: 2px;
-      }
-      .login-hero-method-cta {
-        display: flex;
-        flex-direction: column;
-        gap: 0.55rem;
-        width: 100%;
-        min-width: 0;
-      }
-      .login-hero-method-cta .login-hero-peek {
-        margin-top: 0;
       }
       .login-main {
         order: 1;
@@ -290,92 +280,6 @@ const tableStaggerBase = 26;
         font-size: 0.78rem;
         line-height: 1.45;
         color: var(--muted);
-      }
-
-      /* Guide preview trigger — top bar (same row as Help / theme) */
-      .login-top-preview {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        min-height: 2.25rem;
-        max-width: min(11rem, 42vw);
-        padding: 0.2rem 0.55rem 0.2rem 0.5rem;
-        box-sizing: border-box;
-        margin: 0;
-        border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
-        border-radius: 0.4rem;
-        background: linear-gradient(
-          165deg,
-          color-mix(in srgb, var(--primary) 14%, var(--surface)),
-          color-mix(in srgb, var(--primary) 5%, var(--surface))
-        );
-        box-shadow: 0 1px 0 color-mix(in srgb, #fff 28%, transparent);
-        cursor: pointer;
-        text-align: left;
-        font: inherit;
-        color: var(--text);
-        transition:
-          background 0.15s ease,
-          border-color 0.15s ease,
-          filter 0.15s ease;
-      }
-      [data-theme='dark'] .login-top-preview {
-        box-shadow: 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
-      }
-      .login-top-preview:hover {
-        filter: brightness(1.02);
-        border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
-        background: linear-gradient(
-          165deg,
-          color-mix(in srgb, var(--primary) 18%, var(--surface)),
-          color-mix(in srgb, var(--primary) 7%, var(--surface))
-        );
-      }
-      .login-top-preview:focus-visible {
-        outline: 2px solid var(--primary);
-        outline-offset: 2px;
-      }
-      .login-top-preview-emoji {
-        flex-shrink: 0;
-        font-size: 1rem;
-        line-height: 1;
-        width: 1.25rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .login-top-preview-lines {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 0.06rem;
-        min-width: 0;
-      }
-      .login-top-preview-title {
-        font-size: 0.65rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-        color: var(--text);
-      }
-      .login-top-preview-sub {
-        font-size: 0.55rem;
-        font-weight: 600;
-        color: var(--primary);
-        letter-spacing: 0.02em;
-        line-height: 1.2;
-      }
-      @media (max-width: 380px) {
-        .login-top-preview {
-          max-width: min(9rem, 48vw);
-          padding-inline: 0.45rem;
-        }
-        .login-top-preview-sub {
-          display: none;
-        }
-        .login-top-preview-title {
-          font-size: 0.62rem;
-        }
       }
 
       .login-peek-backdrop {
@@ -530,50 +434,18 @@ const tableStaggerBase = 26;
         margin-top: 0.4rem;
         margin-bottom: 0;
       }
-      /* Tighter Method strip only inside DSA card — keeps global embed readable elsewhere */
       .login-usp-hero .guide-method-strip--embed .guide-method-summary {
         padding: 0.45rem 0.35rem 0.45rem 0.85rem;
         gap: 0.4rem;
+        cursor: default;
+        list-style: none;
       }
       .login-usp-hero .guide-method-strip--embed .guide-method-summary-main {
         gap: 0.32rem;
       }
-      .login-usp-hero .guide-method-strip--embed .guide-method-body {
-        padding: 0 0.85rem 0.5rem;
-      }
-      .login-usp-hero .guide-method-strip--embed .guide-method-lede {
-        padding-top: 0.45rem;
-      }
       .login-usp-hero--hero-col {
         margin-top: 0;
         margin-bottom: 0;
-      }
-      .login-usp-foot {
-        margin-top: 0.4rem;
-        padding-top: 0.45rem;
-        border-top: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        text-align: left;
-      }
-      .login-usp-foot-line {
-        margin: 0;
-        font-size: 0.72rem;
-        line-height: 1.45;
-        color: var(--muted);
-      }
-      .login-usp-foot-line strong {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .login-usp-foot-line a {
-        color: var(--primary);
-        font-weight: 600;
-        text-decoration: none;
-      }
-      .login-usp-foot-line a:hover {
-        text-decoration: underline;
       }
       .login-trust-peek-btn {
         display: inline;
@@ -1075,21 +947,6 @@ const tableStaggerBase = 26;
         <ConnectFloat topbar />
       </div>
       <div class="login-top-bar-right">
-        <button
-          type="button"
-          class="login-top-preview"
-          id="login-peek-open"
-          aria-expanded="false"
-          aria-controls="login-peek-drawer"
-          aria-label="Open preview: same topic order as the app, plus a sample table. No sign-in."
-          title="Same roadmap as the live app—scroll it here first."
-        >
-          <span class="login-top-preview-emoji" aria-hidden="true">✨</span>
-          <span class="login-top-preview-lines">
-            <span class="login-top-preview-title">See the sheet first</span>
-            <span class="login-top-preview-sub">{sidebarTopicCount} topics · sample table · no login</span>
-          </span>
-        </button>
         <a
           class="login-top-help"
           href="mailto:algofrog07@gmail.com?subject=DSA%20Mastery%20Guide%20%E2%80%94%20question"
@@ -1204,42 +1061,32 @@ const tableStaggerBase = 26;
             </div>
           </div>
           <h1 class="login-hero-title">
-            Each topic is a ladder of problems—not a grab bag. Sign in when you want your place saved.
+            Inside every topic table, rows are ordered on purpose: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most methodical path to mastering the topic—learning accumulates step by step instead of skipping around.
           </h1>
 
-          <div class="login-hero-method-cta">
-            <div class="login-usp-hero login-usp-hero--hero-col">
-              <h2 class="login-usp-headline">Why sequence beats random grind</h2>
-              <div class="guide-method-strip guide-method-strip--embed" id="login-guide-method-strip">
-                <div class="guide-method-strip-layout">
-                  <details class="guide-method-details">
-                    <summary class="guide-method-summary">
-                      <span class="guide-method-badge">Method</span>
-                      <span class="guide-method-summary-main">
-                        Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
-                        <span class="guide-method-summary-hint">Why sequence matters</span>
-                      </span>
-                      <span class="guide-method-chevron" aria-hidden="true">▾</span>
-                    </summary>
-                    <div class="guide-method-body">
-                      <p class="guide-method-lede">
-                        Inside every topic table, rows are <strong>ordered on purpose</strong>: each question adds something you have not yet tackled in the rows above, while building on the skills you just used. That stacked ladder is the most <strong>methodical path to mastering the topic</strong>—learning accumulates step by step instead of skipping around.
-                      </p>
-                    </div>
-                  </details>
+          <div class="login-usp-hero login-usp-hero--hero-col">
+            <h2 class="login-usp-headline">Why sequence beats random grind</h2>
+            <div class="guide-method-strip guide-method-strip--embed" id="login-guide-method-strip">
+              <div class="guide-method-strip-layout">
+                <div class="guide-method-summary">
+                  <span class="guide-method-badge">Method</span>
+                  <span class="guide-method-summary-main">
+                    Each problem introduces a new challenge on top of what you already practiced—systematic mastery, not random order.
+                  </span>
                 </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              class="login-hero-peek"
-              id="login-hero-peek-btn"
-              aria-controls="login-peek-drawer"
-            >
-              See the full topic list (no account)
-            </button>
           </div>
+
+          <button
+            type="button"
+            class="login-hero-peek"
+            id="login-hero-peek-btn"
+            aria-expanded="false"
+            aria-controls="login-peek-drawer"
+          >
+            See the full topic list (no account)
+          </button>
 
           <ul class="login-hero-benefits">
             <li>
@@ -1365,7 +1212,7 @@ const tableStaggerBase = 26;
           document.getElementById('login-page-root')?.classList.remove('peek-open');
           document.getElementById('login-peek-drawer')?.classList.remove('is-open');
           document.getElementById('login-peek-backdrop')?.classList.remove('is-open');
-          const openBtn = document.getElementById('login-peek-open');
+          const openBtn = document.getElementById('login-hero-peek-btn');
           const drawer = document.getElementById('login-peek-drawer');
           const backdrop = document.getElementById('login-peek-backdrop');
           openBtn?.setAttribute('aria-expanded', 'false');
@@ -1381,7 +1228,7 @@ const tableStaggerBase = 26;
         const loginPageRoot = document.getElementById('login-page-root');
         const peekDrawer = document.getElementById('login-peek-drawer');
         const peekBackdrop = document.getElementById('login-peek-backdrop');
-        const peekOpen = document.getElementById('login-peek-open');
+        const peekOpen = document.getElementById('login-hero-peek-btn');
         const peekClose = document.getElementById('login-peek-close');
         if (!loginPageRoot || !peekDrawer || !peekBackdrop || !peekOpen || !peekClose) return;
 
@@ -1416,7 +1263,6 @@ const tableStaggerBase = 26;
         }
 
         peekOpen.addEventListener('click', () => openPeek());
-        document.getElementById('login-hero-peek-btn')?.addEventListener('click', () => openPeek());
         peekBackdrop.addEventListener('click', () => closePeek());
         peekClose.addEventListener('click', () => closePeek());
         document.addEventListener('keydown', (e) => {

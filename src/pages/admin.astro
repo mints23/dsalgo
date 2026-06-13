@@ -1,0 +1,1007 @@
+---
+import '../styles/global.css';
+import LogoMark from '../components/LogoMark.astro';
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Connect · algofrog.in</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .adm-page {
+        min-height: 100dvh;
+        padding: clamp(1rem, 3vw, 2rem);
+        background:
+          radial-gradient(ellipse 90% 55% at 50% -8%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 62%),
+          var(--bg);
+      }
+      .adm-shell {
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+      .adm-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+      }
+      .adm-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        text-decoration: none;
+        color: var(--text);
+      }
+      .adm-brand-text {
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .adm-brand-sub {
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+      .adm-nav {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+      }
+      .adm-pill {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--border) 70%, var(--primary));
+        background: color-mix(in oklab, var(--surface) 88%, var(--bg));
+      }
+      .adm-pill:hover {
+        color: var(--primary);
+        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+      }
+      .adm-panel {
+        position: relative;
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        box-shadow: var(--shadow);
+        padding: 0.85rem 0.75rem 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .adm-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary) 0%,
+          color-mix(in oklab, var(--primary) 55%, #6d28d9) 100%
+        );
+      }
+      .adm-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+        padding-bottom: 0.55rem;
+        border-bottom: 1px solid var(--divider);
+        flex-wrap: wrap;
+      }
+      .adm-head-title {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--faint);
+      }
+      .adm-head-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .adm-btn {
+        font: inherit;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 0.32rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        color: var(--primary);
+        cursor: pointer;
+      }
+      .adm-btn:hover {
+        background: color-mix(in oklab, var(--primary) 14%, var(--surface));
+      }
+      .adm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .adm-lead {
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.5;
+        margin: 0 0 0.65rem;
+      }
+      .adm-grid-feed {
+        max-height: min(28rem, 62vh);
+        overflow: auto;
+        scrollbar-width: thin;
+      }
+      .adm-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        font-size: 0.65rem;
+      }
+      .adm-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 0.42rem 0.3rem;
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        text-align: center;
+        background: color-mix(in oklab, var(--surface2) 80%, var(--surface));
+        border-bottom: 1px solid var(--divider);
+      }
+      .adm-table thead th:first-child {
+        text-align: left;
+        width: 4.6rem;
+      }
+      .adm-table tbody td {
+        padding: 0.38rem 0.22rem;
+        vertical-align: middle;
+        text-align: center;
+        border-bottom: 1px solid color-mix(in oklab, var(--divider) 85%, transparent);
+      }
+      .adm-table tbody td:first-child {
+        text-align: left;
+      }
+      .adm-table tbody tr.adm-row--today {
+        background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+      }
+      .adm-date-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 0.06rem;
+        line-height: 1.15;
+      }
+      .adm-date-wd {
+        font-size: 0.56rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+      .adm-date-dm {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .adm-row--today .adm-date-wd,
+      .adm-row--today .adm-date-dm {
+        color: var(--primary);
+      }
+      .adm-slot-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 3.6rem;
+        padding: 0.34rem 0.55rem;
+        border-radius: 999px;
+        border: 1.5px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        background: linear-gradient(
+          180deg,
+          color-mix(in oklab, var(--surface) 92%, #fff) 0%,
+          color-mix(in oklab, var(--surface2) 70%, var(--surface)) 100%
+        );
+        color: var(--text);
+        font: inherit;
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+      }
+      .adm-slot-btn:hover {
+        transform: translateY(-1px);
+        border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+        background: color-mix(in oklab, var(--primary) 11%, var(--surface));
+        color: var(--primary);
+      }
+      .adm-slot-btn--open {
+        color: var(--inv);
+        border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
+        background: linear-gradient(
+          128deg,
+          color-mix(in oklab, var(--primary) 88%, #fff) 0%,
+          var(--primary) 48%,
+          color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
+        );
+      }
+      .adm-slot-btn--open:hover {
+        color: var(--inv);
+      }
+      .adm-slot-btn--selected,
+      .adm-slot-add--selected {
+        box-shadow:
+          0 0 0 2px color-mix(in oklab, #6d28d9 40%, transparent),
+          0 2px 12px color-mix(in oklab, #6d28d9 22%, transparent);
+      }
+      .adm-slot-btn--open.adm-slot-btn--selected {
+        border-color: #6d28d9;
+        background: linear-gradient(
+          128deg,
+          color-mix(in oklab, #8b5cf6 88%, #fff) 0%,
+          #6d28d9 52%,
+          color-mix(in oklab, #5b21b6 78%, #0a3d42) 100%
+        );
+      }
+      .adm-slot-add--selected {
+        border-style: solid;
+        border-color: #6d28d9;
+        background: color-mix(in oklab, #6d28d9 14%, var(--surface));
+        color: #6d28d9;
+      }
+      .adm-slot-btn--booked.adm-slot-btn--selected {
+        border-color: #6d28d9;
+        background: color-mix(in oklab, #6d28d9 16%, color-mix(in oklab, #b45309 10%, var(--surface)));
+        color: #7c3aed;
+      }
+      .adm-slot-btn--paid.adm-slot-btn--selected {
+        border-color: #6d28d9;
+        background: color-mix(in oklab, #6d28d9 16%, color-mix(in oklab, #0369a1 10%, var(--surface)));
+        color: #7c3aed;
+      }
+      .adm-slot-btn--booked {
+        border-color: color-mix(in oklab, #b45309 35%, var(--border));
+        background: color-mix(in oklab, #b45309 10%, var(--surface));
+        color: #b45309;
+        cursor: default;
+      }
+      .adm-slot-btn--paid {
+        border-color: color-mix(in oklab, #0369a1 35%, var(--border));
+        background: color-mix(in oklab, #0369a1 10%, var(--surface));
+        color: #0369a1;
+        cursor: default;
+      }
+      .adm-slot-btn--stale {
+        border-color: color-mix(in oklab, #b45309 40%, var(--border));
+        background: color-mix(in oklab, #b45309 12%, var(--surface));
+        color: #b45309;
+        cursor: pointer;
+        font-size: 0.62rem;
+      }
+      .adm-slot-btn--stale:hover {
+        border-color: #b45309;
+        background: color-mix(in oklab, #b45309 18%, var(--surface));
+      }
+      .adm-slot-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 3.6rem;
+        padding: 0.34rem 0.55rem;
+        border-radius: 999px;
+        border: 1.5px dashed color-mix(in oklab, var(--border) 75%, var(--primary));
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.62rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .adm-slot-add:hover {
+        color: var(--primary);
+        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+        background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+      }
+      .adm-slot-add:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .adm-msg {
+        font-size: 0.76rem;
+        min-height: 1.2rem;
+        margin-top: 0.55rem;
+      }
+      .adm-msg--error {
+        color: #dc2626;
+      }
+      .adm-msg--ok {
+        color: #0f766e;
+      }
+      .adm-gate {
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+      .adm-gate h2 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      .adm-gate p {
+        font-size: 0.84rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+      }
+      .adm-bookings {
+        font-size: 0.82rem;
+      }
+      .adm-bookings h2 {
+        font-size: 0.95rem;
+        margin: 0 0 0.75rem;
+      }
+      .adm-booking-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0;
+        border-bottom: 1px solid var(--divider);
+        flex-wrap: wrap;
+      }
+      .adm-booking-row:last-child {
+        border-bottom: 0;
+      }
+      .adm-booking-meta {
+        color: var(--muted);
+        font-size: 0.72rem;
+      }
+      .adm-empty {
+        text-align: center;
+        padding: 1.25rem;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+      .adm-waitlist-count {
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #6d28d9;
+        background: color-mix(in oklab, #6d28d9 10%, var(--surface));
+        border: 1px solid color-mix(in oklab, #6d28d9 22%, var(--border));
+        border-radius: 999px;
+        padding: 0.2rem 0.5rem;
+      }
+      .adm-waitlist-row {
+        padding: 0.65rem 0;
+        border-bottom: 1px solid var(--divider);
+      }
+      .adm-waitlist-row:last-child {
+        border-bottom: 0;
+      }
+      .adm-waitlist-email {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--text);
+        word-break: break-word;
+      }
+      .adm-waitlist-meta {
+        margin-top: 0.2rem;
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+      .adm-waitlist-note {
+        margin-top: 0.35rem;
+        font-size: 0.76rem;
+        line-height: 1.45;
+        color: var(--text);
+        padding: 0.45rem 0.55rem;
+        border-radius: 0.45rem;
+        background: color-mix(in oklab, #6d28d9 6%, var(--surface2));
+        border: 1px solid color-mix(in oklab, #6d28d9 14%, var(--border));
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="adm-page">
+      <div class="adm-shell">
+        <header class="adm-top">
+          <a class="adm-brand" href="/connect">
+            <LogoMark width={28} height={28} />
+            <div>
+              <div class="adm-brand-text">Mark availability</div>
+              <div class="adm-brand-sub">Connect admin · algofrog.in</div>
+            </div>
+          </a>
+          <nav class="adm-nav">
+            <a class="adm-pill" href="/connect">← Connect</a>
+            <a class="adm-pill" href="/login" id="adm-auth-link">Sign in</a>
+          </nav>
+        </header>
+
+        <div id="adm-gate" class="adm-panel adm-gate" hidden>
+          <h2>Mentor access only</h2>
+          <p id="adm-gate-text">Sign in with your mentor account to mark session slots.</p>
+          <a class="adm-pill" href="/login?redirect=/admin">Sign in</a>
+        </div>
+
+        <div id="adm-app" hidden>
+          <section class="adm-panel">
+            <div class="adm-head">
+              <p class="adm-head-title">Availability grid</p>
+              <div class="adm-head-actions">
+                <button type="button" class="adm-btn" id="adm-fill-week">Fill next 5 weekdays</button>
+                <button type="button" class="adm-btn" id="adm-refresh">Refresh</button>
+              </div>
+            </div>
+            <p class="adm-lead">
+              Tap a cell to select it (purple highlight). Open slots: click again to remove. Empty cells: click <strong>+ Add</strong> to publish.
+            </p>
+            <div class="adm-grid-feed" id="adm-grid-feed">
+              <p class="adm-empty">Loading…</p>
+            </div>
+            <p class="adm-msg" id="adm-msg" aria-live="polite"></p>
+          </section>
+
+          <section class="adm-panel adm-bookings">
+            <h2>Upcoming bookings</h2>
+            <div id="adm-bookings-list">
+              <p class="adm-empty">Loading…</p>
+            </div>
+          </section>
+
+          <section class="adm-panel adm-bookings">
+            <div class="adm-head">
+              <p class="adm-head-title">DSA batch waitlist</p>
+              <span class="adm-waitlist-count" id="adm-waitlist-count" hidden>0 signed up</span>
+            </div>
+            <p class="adm-lead">
+              People who tapped <strong>Add me to batch</strong> on Connect. Notes are optional level / topics they shared.
+            </p>
+            <div id="adm-waitlist-list">
+              <p class="adm-empty">Loading…</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { supabase } from '../lib/supabase';
+      import { fetchIsAdmin } from '../lib/admin-access';
+      import { connectServices } from '../data/connect-services';
+      import {
+        CONNECT_SLOT_PRESETS,
+        CONNECT_SLOT_SERVICE_ID,
+        IST,
+        istDateKey,
+        istTime24,
+        istToUtcIso,
+        istTodayKey,
+        upcomingIstDateKeys,
+      } from '../lib/connect-ist';
+
+      type SlotRow = {
+        id: number;
+        service_id: string;
+        starts_at: string;
+        ends_at: string;
+        status: string;
+        booked_by: string | null;
+      };
+
+      const weekdayFmt = new Intl.DateTimeFormat('en-IN', { timeZone: IST, weekday: 'short' });
+      const dayMonthFmt = new Intl.DateTimeFormat('en-IN', { timeZone: IST, day: 'numeric', month: 'short' });
+      const dateTimeFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
+      const GRID_DAYS = 21;
+      const WEEKDAY_FILL_COUNT = 5;
+
+      const gateEl = document.getElementById('adm-gate')!;
+      const appEl = document.getElementById('adm-app')!;
+      const gateText = document.getElementById('adm-gate-text')!;
+      const authLink = document.getElementById('adm-auth-link') as HTMLAnchorElement;
+      const gridFeed = document.getElementById('adm-grid-feed')!;
+      const msgEl = document.getElementById('adm-msg')!;
+      const bookingsList = document.getElementById('adm-bookings-list')!;
+      const waitlistList = document.getElementById('adm-waitlist-list')!;
+      const waitlistCount = document.getElementById('adm-waitlist-count')!;
+      const fillWeekBtn = document.getElementById('adm-fill-week') as HTMLButtonElement;
+      const refreshBtn = document.getElementById('adm-refresh') as HTMLButtonElement;
+
+      type BatchInterestRow = {
+        id: number;
+        user_id: string;
+        email: string;
+        service_id: string;
+        note: string | null;
+        created_at: string;
+      };
+
+      type PaidBookingRow = {
+        id: number;
+        starts_at: string;
+        ends_at: string;
+        service_id: string;
+        razorpay_payment_id: string | null;
+        booked_by: string | null;
+        email: string | null;
+      };
+
+      type SlotContactRow = {
+        slot_id: number;
+        email: string;
+        status: string;
+      };
+
+      function serviceTitle(serviceId: string) {
+        return connectServices.find((s) => s.id === serviceId)?.title ?? serviceId;
+      }
+
+      const waitlistDateFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
+      let batchWaitlist: BatchInterestRow[] = [];
+      let paidBookings: PaidBookingRow[] = [];
+      let slotContactById = new Map<number, string>();
+      let allSlots: SlotRow[] = [];
+      let busy = false;
+      let selectedCellKey: string | null = null;
+
+      function cellKey(dateKey: string, presetTime: string) {
+        return `${dateKey}|${presetTime}`;
+      }
+
+      function setSelectedCell(dateKey: string, presetIndex: number) {
+        const preset = CONNECT_SLOT_PRESETS[presetIndex];
+        if (!preset) return;
+        selectedCellKey = cellKey(dateKey, preset.time);
+      }
+
+      function toggleSelectedCell(dateKey: string, presetIndex: number) {
+        const preset = CONNECT_SLOT_PRESETS[presetIndex];
+        if (!preset) return;
+        const key = cellKey(dateKey, preset.time);
+        selectedCellKey = selectedCellKey === key ? null : key;
+        renderGrid();
+      }
+
+      function setMsg(text: string, kind: 'error' | 'ok' | '' = '') {
+        msgEl.textContent = text;
+        msgEl.className = 'adm-msg' + (kind ? ` adm-msg--${kind}` : '');
+      }
+
+      function dateFromKey(dateKey: string) {
+        return new Date(istToUtcIso(dateKey, '12:00'));
+      }
+
+      function slotMap(): Map<string, SlotRow> {
+        const map = new Map<string, SlotRow>();
+        for (const slot of allSlots) {
+          if (slot.status === 'cancelled') continue;
+          const key = `${istDateKey(slot.starts_at)}|${istTime24(slot.starts_at)}`;
+          map.set(key, slot);
+        }
+        return map;
+      }
+
+      function isWeekday(dateKey: string): boolean {
+        const dow = weekdayFmt.format(dateFromKey(dateKey));
+        return dow !== 'Sun';
+      }
+
+      async function createSlot(dateKey: string, presetIndex: number) {
+        const preset = CONNECT_SLOT_PRESETS[presetIndex];
+        const startsAt = istToUtcIso(dateKey, preset.time);
+        const endsAt = new Date(new Date(startsAt).getTime() + preset.durationMins * 60_000).toISOString();
+
+        const { error } = await supabase.rpc('create_connect_slot', {
+          p_ends_at: endsAt,
+          p_service_id: CONNECT_SLOT_SERVICE_ID,
+          p_starts_at: startsAt,
+        });
+        if (error) throw error;
+      }
+
+      async function removeSlot(slotId: number) {
+        const { error } = await supabase.rpc('cancel_connect_slot', { p_slot_id: slotId });
+        if (error) throw error;
+      }
+
+      async function releaseStaleSlot(slotId: number) {
+        const { data, error } = await supabase.rpc('release_connect_slot', { p_slot_id: slotId });
+        if (error) throw new Error(error.message);
+        return data;
+      }
+
+      function renderGrid() {
+        const map = slotMap();
+        const dateKeys = upcomingIstDateKeys(GRID_DAYS);
+        const today = istTodayKey();
+
+        const table = document.createElement('table');
+        table.className = 'adm-table';
+        table.setAttribute('role', 'grid');
+        table.setAttribute('aria-label', 'Mark session availability');
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        headRow.innerHTML =
+          '<th>Date</th>' +
+          CONNECT_SLOT_PRESETS.map((p) => `<th>${p.label}</th>`).join('');
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        for (const dateKey of dateKeys) {
+          const tr = document.createElement('tr');
+          if (dateKey === today) tr.classList.add('adm-row--today');
+
+          const dateTd = document.createElement('td');
+          const dateCell = document.createElement('div');
+          dateCell.className = 'adm-date-cell';
+          const probe = dateFromKey(dateKey);
+          dateCell.innerHTML = `<span class="adm-date-wd">${weekdayFmt.format(probe)}</span><span class="adm-date-dm">${dayMonthFmt.format(probe)}</span>`;
+          dateTd.appendChild(dateCell);
+          tr.appendChild(dateTd);
+
+          CONNECT_SLOT_PRESETS.forEach((preset, presetIndex) => {
+            const td = document.createElement('td');
+            const key = cellKey(dateKey, preset.time);
+            const isSelected = selectedCellKey === key;
+            const slot = map.get(key);
+
+            if (!slot) {
+              const addBtn = document.createElement('button');
+              addBtn.type = 'button';
+              addBtn.className = 'adm-slot-add' + (isSelected ? ' adm-slot-add--selected' : '');
+              addBtn.textContent = '+ Add';
+              addBtn.disabled = busy;
+              addBtn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+              addBtn.addEventListener('click', () => {
+                setSelectedCell(dateKey, presetIndex);
+                void toggleSlot(dateKey, presetIndex, null);
+              });
+              td.appendChild(addBtn);
+            } else if (slot.status === 'available') {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className =
+                'adm-slot-btn adm-slot-btn--open' + (isSelected ? ' adm-slot-btn--selected' : '');
+              btn.textContent = preset.label;
+              btn.title = 'Click to remove open slot';
+              btn.disabled = busy;
+              btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+              btn.addEventListener('click', () => {
+                setSelectedCell(dateKey, presetIndex);
+                void toggleSlot(dateKey, presetIndex, slot.id);
+              });
+              td.appendChild(btn);
+            } else if (slot.status === 'reserved') {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className =
+                'adm-slot-btn adm-slot-btn--stale' + (isSelected ? ' adm-slot-btn--selected' : '');
+              btn.textContent = 'Clear hold';
+              const holdEmail = slotContactById.get(slot.id);
+              btn.title = holdEmail
+                ? `Hold by ${holdEmail} — click to reopen slot`
+                : 'Checkout hold (7 min) — click to reopen slot';
+              btn.disabled = busy;
+              btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+              btn.addEventListener('click', () => {
+                setSelectedCell(dateKey, presetIndex);
+                void clearStaleSlot(slot.id);
+              });
+              td.appendChild(btn);
+            } else if (slot.status === 'paid') {
+              const span = document.createElement('button');
+              span.type = 'button';
+              span.className =
+                'adm-slot-btn adm-slot-btn--paid' + (isSelected ? ' adm-slot-btn--selected' : '');
+              span.textContent = 'Paid';
+              const paidEmail = slotContactById.get(slot.id);
+              span.title = paidEmail ? `Paid · ${paidEmail}` : 'Confirmed booking';
+              span.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+              span.addEventListener('click', () => toggleSelectedCell(dateKey, presetIndex));
+              td.appendChild(span);
+            } else {
+              td.textContent = '—';
+            }
+
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        }
+
+        table.appendChild(tbody);
+        gridFeed.innerHTML = '';
+        gridFeed.appendChild(table);
+      }
+
+      function renderBookings() {
+        if (!paidBookings.length) {
+          bookingsList.innerHTML = '<p class="adm-empty">No paid bookings yet.</p>';
+          return;
+        }
+
+        bookingsList.innerHTML = paidBookings
+          .map((row) => {
+            const when = dateTimeFmt.format(new Date(row.starts_at));
+            const email = row.email ? escapeHtml(row.email) : 'Unknown user';
+            const service = escapeHtml(serviceTitle(row.service_id));
+            const payment = row.razorpay_payment_id
+              ? `<div class="adm-booking-meta">Payment · ${escapeHtml(row.razorpay_payment_id)}</div>`
+              : '';
+            return `<div class="adm-booking-row">
+              <div>
+                <strong>${when}</strong>
+                <div class="adm-booking-meta">${service} · ${email}</div>
+                ${payment}
+              </div>
+            </div>`;
+          })
+          .join('');
+      }
+
+      async function loadPaidBookings() {
+        const { data, error } = await supabase.rpc('list_connect_paid_bookings');
+        if (error) {
+          bookingsList.innerHTML = `<p class="adm-empty">Could not load bookings: ${escapeHtml(error.message)}</p>`;
+          paidBookings = [];
+          return;
+        }
+        paidBookings = Array.isArray(data) ? (data as PaidBookingRow[]) : [];
+        renderBookings();
+      }
+
+      async function loadSlotContacts() {
+        const { data, error } = await supabase.rpc('list_connect_slot_contacts');
+        slotContactById = new Map();
+        if (error || !Array.isArray(data)) return;
+        for (const row of data as SlotContactRow[]) {
+          if (row.email) slotContactById.set(row.slot_id, row.email);
+        }
+      }
+
+      function escapeHtml(text: string) {
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderWaitlist() {
+        const count = batchWaitlist.length;
+        if (count) {
+          waitlistCount.hidden = false;
+          waitlistCount.textContent = `${count} signed up`;
+        } else {
+          waitlistCount.hidden = true;
+        }
+
+        if (!count) {
+          waitlistList.innerHTML = '<p class="adm-empty">No one on the batch list yet.</p>';
+          return;
+        }
+
+        waitlistList.innerHTML = batchWaitlist
+          .map((row) => {
+            const when = waitlistDateFmt.format(new Date(row.created_at));
+            const note = row.note?.trim();
+            return `<div class="adm-waitlist-row">
+              <div class="adm-waitlist-email">${escapeHtml(row.email)}</div>
+              <div class="adm-waitlist-meta">Added ${when}</div>
+              ${note ? `<div class="adm-waitlist-note">${escapeHtml(note)}</div>` : ''}
+            </div>`;
+          })
+          .join('');
+      }
+
+      async function loadBatchWaitlist() {
+        const { data, error } = await supabase.rpc('list_connect_batch_interest', {
+          p_service_id: 'dsa-classes',
+        });
+
+        if (error) {
+          waitlistList.innerHTML = `<p class="adm-empty">Could not load waitlist: ${escapeHtml(error.message)}</p>`;
+          waitlistCount.hidden = true;
+          return;
+        }
+
+        batchWaitlist = Array.isArray(data) ? (data as BatchInterestRow[]) : [];
+        renderWaitlist();
+      }
+
+      async function clearStaleSlot(slotId: number) {
+        if (busy) return;
+        if (!confirm('Clear this unpaid hold and reopen the slot?')) return;
+        busy = true;
+        fillWeekBtn.disabled = true;
+        refreshBtn.disabled = true;
+        setMsg('Clearing hold…', '');
+        try {
+          await releaseStaleSlot(slotId);
+          setMsg('Slot reopened.', 'ok');
+          await loadSlots();
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Could not clear hold';
+          setMsg(message, 'error');
+        } finally {
+          busy = false;
+          fillWeekBtn.disabled = false;
+          refreshBtn.disabled = false;
+          renderGrid();
+        }
+      }
+
+      async function toggleSlot(dateKey: string, presetIndex: number, slotId: number | null) {
+        if (busy) return;
+        const preset = CONNECT_SLOT_PRESETS[presetIndex];
+        if (preset) selectedCellKey = cellKey(dateKey, preset.time);
+        busy = true;
+        fillWeekBtn.disabled = true;
+        refreshBtn.disabled = true;
+        setMsg('', '');
+
+        try {
+          if (slotId) {
+            if (!confirm('Remove this open slot?')) {
+              renderGrid();
+              return;
+            }
+            await removeSlot(slotId);
+            setMsg('Slot removed.', 'ok');
+          } else {
+            await createSlot(dateKey, presetIndex);
+            setMsg('Slot added — visible on Connect.', 'ok');
+          }
+          await loadSlots();
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Something went wrong';
+          setMsg(message, 'error');
+        } finally {
+          busy = false;
+          fillWeekBtn.disabled = false;
+          refreshBtn.disabled = false;
+          renderGrid();
+        }
+      }
+
+      async function fillWeekdays() {
+        if (busy) return;
+        if (!confirm(`Add all 3 evening slots for the next ${WEEKDAY_FILL_COUNT} weekdays?`)) return;
+
+        busy = true;
+        fillWeekBtn.disabled = true;
+        setMsg('Adding slots…', '');
+
+        let added = 0;
+        const map = slotMap();
+        const dates = upcomingIstDateKeys(GRID_DAYS).filter(isWeekday).slice(0, WEEKDAY_FILL_COUNT);
+
+        try {
+          for (const dateKey of dates) {
+            for (let i = 0; i < CONNECT_SLOT_PRESETS.length; i++) {
+              const preset = CONNECT_SLOT_PRESETS[i];
+              const key = `${dateKey}|${preset.time}`;
+              if (map.has(key)) continue;
+              await createSlot(dateKey, i);
+              added++;
+            }
+          }
+          await loadSlots();
+          setMsg(added ? `Added ${added} slot(s).` : 'All preset slots already exist for those days.', 'ok');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Bulk add failed';
+          setMsg(message, 'error');
+          await loadSlots();
+        } finally {
+          busy = false;
+          fillWeekBtn.disabled = false;
+          renderGrid();
+        }
+      }
+
+      async function loadSlots() {
+        await supabase.rpc('sweep_connect_holds');
+
+        const { data, error } = await supabase
+          .from('connect_slots')
+          .select('id, service_id, starts_at, ends_at, status, booked_by')
+          .neq('status', 'cancelled')
+          .gte('starts_at', new Date().toISOString())
+          .order('starts_at', { ascending: true });
+
+        if (error) {
+          gridFeed.innerHTML = `<p class="adm-empty">Could not load slots: ${error.message}</p>`;
+          return;
+        }
+
+        allSlots = (data ?? []) as SlotRow[];
+        await loadSlotContacts();
+        renderGrid();
+        await loadPaidBookings();
+        await loadBatchWaitlist();
+      }
+
+      fillWeekBtn.addEventListener('click', () => void fillWeekdays());
+      refreshBtn.addEventListener('click', () => void loadSlots());
+
+      async function checkAdmin() {
+        return fetchIsAdmin();
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        gateEl.hidden = false;
+      } else {
+        authLink.textContent = 'Sign out';
+        authLink.href = '#';
+        authLink.addEventListener('click', async (ev) => {
+          ev.preventDefault();
+          await supabase.auth.signOut();
+          window.location.href = '/login?redirect=/admin';
+        });
+
+        const isAdmin = await checkAdmin();
+        if (!isAdmin) {
+          gateEl.hidden = false;
+          gateText.textContent =
+            'This page is for site admins only. Set is_admin = true on your subscriptions row in Supabase.';
+        } else {
+          appEl.hidden = false;
+          await loadSlots();
+        }
+      }
+    </script>
+  </body>
+</html>

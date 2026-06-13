@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
-    "astro": "^6.1.7"
+    "astro": "^2.4.5"
   },
   "devDependencies": {
     "dotenv": "^17.4.2",

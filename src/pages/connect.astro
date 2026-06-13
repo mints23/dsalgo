@@ -1,116 +1,21 @@
 ---
 import '../styles/global.css';
 import LogoMark from '../components/LogoMark.astro';
+import {
+  SUPPORT_EMAIL,
+  SESSION_FOOTNOTE,
+  urgentService,
+  connectServices as services,
+  connectOfferings,
+  introBody,
+  mailtoLink,
+  connectSessionPricePaise,
+  isConnectSlotBookable,
+  connectBatchCopy,
+} from '../data/connect-services';
 
-const SUPPORT_EMAIL = 'algofrog07@gmail.com';
-const mailto = (subject: string, body?: string) => {
-  const params = new URLSearchParams();
-  params.set('subject', subject);
-  if (body) params.set('body', body);
-  return `mailto:${SUPPORT_EMAIL}?${params.toString()}`;
-};
-
-const sessionFootnote =
-  'One session is 30 to 60 minutes, depending on what you need covered. Monthly plans include live sessions scheduled each month.';
-
-const urgentService = {
-  id: 'urgent',
-  title: 'Urgent Connect',
-  benefit: 'Stuck right now?',
-  hook: 'Priority 1:1 session when you need answers fast — interview tomorrow, blocker today.',
-  icon: '⚡',
-  subject: 'Connect — Urgent Connect',
-  accent: '#dc2626',
-  price: '₹599',
-  pricePeriod: '· 1 session',
-  mailBody:
-    'Hi,\n\nI need an urgent connect session.\n\nMy blocker:\nCurrent level:\nHow soon I need help:\n\nThanks!',
-} as const;
-
-const services = [
-  {
-    id: 'system-design',
-    title: 'System Design',
-    benefit: 'Think like a senior engineer',
-    hook: 'Trade-offs, scale narratives, and interview-ready design stories.',
-    icon: '🏗️',
-    subject: 'Connect — System Design',
-    accent: '#0f766e',
-    price: '₹1499',
-    pricePeriod: '/ month · 4 sessions',
-    mailBody:
-      'Hi,\n\nI need help with: System Design\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-  {
-    id: 'dsa-classes',
-    title: 'DSA Classes',
-    benefit: 'Learn patterns live',
-    hook: 'Topic-focused sessions — when to use it, how to code it, and what interviewers actually test.',
-    icon: '📚',
-    subject: 'Connect — DSA Classes',
-    accent: '#6d28d9',
-    price: '₹990',
-    pricePeriod: '/ month · 4 sessions',
-    mailBody:
-      'Hi,\n\nI need help with: DSA Classes\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-  {
-    id: 'roadmap',
-    title: 'Road Map for High CTC',
-    benefit: 'Stop guessing what’s next',
-    hook: 'Phased plan: what to solve, when, and in what order for top offers.',
-    icon: '🗺️',
-    subject: 'Connect — Road Map for High CTC',
-    accent: '#0369a1',
-    price: '₹599',
-    pricePeriod: '· 1 session',
-    mailBody:
-      'Hi,\n\nI need help with: Road Map for High CTC\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-  {
-    id: 'cv-review',
-    title: 'CV Review',
-    benefit: 'Get past the resume screen',
-    hook: 'Impact bullets, ATS layout, and the story recruiters actually read.',
-    icon: '📄',
-    subject: 'Connect — CV Review',
-    accent: '#01696f',
-    price: '₹399',
-    mailBody:
-      'Hi,\n\nI need help with: CV Review\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-  {
-    id: 'mentorship',
-    title: '1:1 Mentorship',
-    benefit: 'Ongoing coach in your corner',
-    hook: 'Regular check-ins, accountability, and direction across your full prep journey.',
-    icon: '🤝',
-    subject: 'Connect — 1:1 Mentorship',
-    accent: '#b45309',
-    price: '₹799',
-    pricePeriod: '/ month · 1 connect',
-    mailBody:
-      'Hi,\n\nI need help with: 1:1 Mentorship\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-  {
-    id: 'motivation',
-    title: 'Motivation',
-    benefit: 'Stay in the game',
-    hook: 'Burnout, consistency, and mindset for a 6–12 month grind.',
-    icon: '🔥',
-    subject: 'Connect — Motivation',
-    accent: '#c2410c',
-    price: '₹199',
-    pricePeriod: '· 1 session',
-    mailBody:
-      'Hi,\n\nI need help with: Motivation\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
-] as const;
-
-const connectOfferings = [...services, urgentService];
-
-const introBody =
-  'Hi,\n\nI am interested in mentoring. My goal:\n\nCurrent level (student / 0–2 YOE / 2+ YOE):\nTarget companies / CTC:\nTimeline:\n\nService I need:\n\nThanks!';
+const sessionFootnote = SESSION_FOOTNOTE;
+const mailto = mailtoLink;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -173,7 +78,7 @@ const introBody =
         position: relative;
         z-index: 1;
         width: 100%;
-        max-width: 900px;
+        max-width: 1080px;
         margin: 0 auto;
       }
       .connect-top {
@@ -281,6 +186,624 @@ const introBody =
         border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
       }
 
+      /* Calendar + services booking */
+      .connect-book-row {
+        display: grid;
+        grid-template-columns: minmax(16rem, 24rem) minmax(0, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+        margin-bottom: 1.75rem;
+      }
+      .connect-book {
+        margin-bottom: 0;
+        min-width: 0;
+      }
+      .connect-slots-panel {
+        position: relative;
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        box-shadow: var(--shadow);
+        padding: 0.85rem 0.75rem 0.75rem;
+      }
+      .connect-slots-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary) 0%,
+          color-mix(in oklab, var(--primary) 55%, #6d28d9) 100%
+        );
+      }
+      .connect-slots-panel--pulse {
+        animation: connect-slots-pulse 0.85s ease-out;
+      }
+      @keyframes connect-slots-pulse {
+        0%,
+        100% {
+          box-shadow: var(--shadow);
+        }
+        35%,
+        65% {
+          box-shadow:
+            0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent),
+            0 12px 28px color-mix(in oklab, var(--primary) 22%, transparent);
+        }
+      }
+      .connect-slots-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+        padding-bottom: 0.55rem;
+        border-bottom: 1px solid var(--divider);
+      }
+      .connect-slots-title {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--faint);
+      }
+      .connect-slots-signin-hint {
+        margin: 0 0 0.65rem;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+        color: var(--primary);
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--border));
+        border-radius: 0.55rem;
+      }
+      .connect-slots-signin-hint a {
+        color: inherit;
+        font-weight: 700;
+      }
+      .connect-slots-badge {
+        font-size: 0.58rem;
+        font-weight: 700;
+        color: var(--primary);
+        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+        padding: 0.14rem 0.45rem;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .connect-avail-feed {
+        width: 100%;
+        min-height: min(20rem, 54vh);
+        max-height: min(30rem, 68vh);
+        overflow: auto;
+        padding-right: 0.15rem;
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklab, var(--primary) 35%, var(--border)) transparent;
+      }
+      .connect-avail-feed::-webkit-scrollbar {
+        width: 5px;
+      }
+      .connect-avail-feed::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--primary) 35%, var(--border));
+      }
+      .connect-avail-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        font-size: 0.65rem;
+        line-height: 1.2;
+      }
+      .connect-avail-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 0.42rem 0.35rem;
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        text-align: center;
+        background: color-mix(in oklab, var(--surface2) 80%, var(--surface));
+        border-bottom: 1px solid var(--divider);
+      }
+      .connect-avail-table thead th:first-child {
+        text-align: left;
+        width: 4.6rem;
+      }
+      .connect-avail-table tbody td {
+        padding: 0.38rem 0.28rem;
+        vertical-align: middle;
+        text-align: center;
+        border-bottom: 1px solid color-mix(in oklab, var(--divider) 85%, transparent);
+      }
+      .connect-avail-table tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .connect-avail-table tbody td:first-child {
+        text-align: left;
+      }
+      .connect-avail-table tbody tr.connect-avail-row--today {
+        background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+      }
+      .connect-avail-date-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 0.06rem;
+        line-height: 1.15;
+      }
+      .connect-avail-day-wd {
+        font-size: 0.56rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+      .connect-avail-day-dm {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .connect-avail-row--today .connect-avail-day-wd,
+      .connect-avail-row--today .connect-avail-day-dm {
+        color: var(--primary);
+      }
+      .connect-avail-table tbody td.connect-avail-slot-cell {
+        padding: 0.42rem 0.2rem;
+        text-align: center;
+      }
+      .connect-avail-table tbody td.connect-avail-slot-cell--empty {
+        color: var(--faint);
+        font-size: 0.72rem;
+        font-weight: 600;
+      }
+      .connect-avail-empty {
+        padding: 1rem 0.5rem;
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--muted);
+        background: color-mix(in oklab, var(--surface2) 60%, var(--surface));
+        border: 1px dashed color-mix(in oklab, var(--border) 90%, var(--primary));
+        border-radius: 0.55rem;
+      }
+      .connect-slot-pill,
+      .connect-time-slot-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        min-width: 3.6rem;
+        padding: 0.34rem 0.6rem;
+        border-radius: 999px;
+        border: 1.5px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        background: linear-gradient(
+          180deg,
+          color-mix(in oklab, var(--surface) 92%, #fff) 0%,
+          color-mix(in oklab, var(--surface2) 70%, var(--surface)) 100%
+        );
+        color: var(--text);
+        font: inherit;
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        line-height: 1.2;
+        box-shadow:
+          inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent),
+          0 1px 2px color-mix(in oklab, var(--border) 40%, transparent);
+        transition:
+          color 0.15s,
+          background 0.15s,
+          border-color 0.15s,
+          box-shadow 0.15s,
+          transform 0.15s;
+      }
+      .connect-slot-pill:hover,
+      .connect-time-slot-btn:hover {
+        color: var(--primary);
+        border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+        background: color-mix(in oklab, var(--primary) 11%, var(--surface));
+        transform: translateY(-1px);
+        box-shadow:
+          inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent),
+          0 3px 10px color-mix(in oklab, var(--primary) 14%, transparent);
+      }
+      .connect-slot-pill:focus-visible,
+      .connect-time-slot-btn:focus-visible {
+        outline: 2px solid color-mix(in oklab, var(--primary) 45%, #fff);
+        outline-offset: 2px;
+      }
+      .connect-slot-pill--selected,
+      .connect-time-slot-btn--selected {
+        color: var(--inv);
+        border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
+        background: linear-gradient(
+          128deg,
+          color-mix(in oklab, var(--primary) 88%, #fff) 0%,
+          var(--primary) 48%,
+          color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
+        );
+        box-shadow:
+          inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+          0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent),
+          0 2px 10px color-mix(in oklab, var(--primary) 35%, transparent);
+      }
+      .connect-slot-pill--selected:hover,
+      .connect-time-slot-btn--selected:hover {
+        color: var(--inv);
+        transform: translateY(-1px);
+      }
+      .connect-time-empty {
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .connect-service-row:hover {
+        border-color: color-mix(in oklab, var(--row-accent) 45%, var(--border));
+      }
+      .connect-service-row--selected {
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--row-accent) 35%, transparent);
+      }
+      .connect-service-meta {
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.35rem;
+        line-height: 1.45;
+      }
+      .connect-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        box-shadow: var(--shadow);
+        padding: 1rem;
+      }
+      .connect-panel-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--faint);
+        margin-bottom: 0.75rem;
+      }
+      .connect-cal-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+      }
+      .connect-cal-nav-btn {
+        width: 1.85rem;
+        height: 1.85rem;
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        background: var(--surface2);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .connect-cal-nav-btn:hover {
+        color: var(--primary);
+        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+      }
+      .connect-cal-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .connect-cal-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.15rem;
+        margin-bottom: 0.35rem;
+      }
+      .connect-cal-weekdays span {
+        text-align: center;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--faint);
+        text-transform: uppercase;
+      }
+      .connect-cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.2rem;
+      }
+      .connect-cal-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        border: 1px solid transparent;
+        border-radius: 0.45rem;
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: default;
+        padding: 0;
+      }
+      .connect-cal-day--empty {
+        visibility: hidden;
+      }
+      .connect-cal-day--has-slots {
+        color: var(--text);
+        cursor: pointer;
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        border-color: color-mix(in oklab, var(--primary) 18%, var(--border));
+      }
+      .connect-cal-day--has-slots:hover {
+        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+        background: color-mix(in oklab, var(--primary) 14%, var(--surface));
+      }
+      .connect-cal-day--selected {
+        color: var(--inv);
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+      .connect-cal-day--selected::after {
+        background: var(--inv);
+      }
+      .connect-cal-day--has-slots::after {
+        content: '';
+        position: absolute;
+        bottom: 0.18rem;
+        width: 0.28rem;
+        height: 0.28rem;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+      .connect-cal-hint {
+        margin-top: 0.65rem;
+        font-size: 0.68rem;
+        line-height: 1.45;
+        color: var(--faint);
+      }
+      .connect-services-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        margin-top: 0.15rem;
+      }
+      .connect-service-row {
+        --row-accent: var(--primary);
+        appearance: none;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid color-mix(in oklab, var(--row-accent) 22%, var(--border));
+        border-radius: 0.65rem;
+        padding: 0.75rem 0.85rem;
+        background: color-mix(in oklab, var(--row-accent) 5%, var(--surface));
+        text-align: left;
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .connect-service-row-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        margin-bottom: 0.55rem;
+      }
+      .connect-service-row-icon {
+        font-size: 1.35rem;
+        line-height: 1;
+      }
+      .connect-service-row-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1.25;
+      }
+      .connect-service-row-benefit {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--row-accent);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .connect-service-row-price {
+        margin-left: auto;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--row-accent);
+        white-space: nowrap;
+      }
+      .connect-time-chips {
+        display: none;
+      }
+      .connect-other--awaiting-slot .connect-deck .connect-card {
+        opacity: 0.5;
+        filter: grayscale(0.15);
+      }
+      .connect-other--awaiting-slot .connect-deck .connect-card--soon {
+        opacity: 0.92;
+        filter: none;
+      }
+      .connect-other--slot-selected {
+        position: relative;
+        padding: 0.85rem 0.75rem 0.75rem;
+        border-radius: 0.85rem;
+        border: 1px solid color-mix(in oklab, var(--primary) 32%, var(--border));
+        background:
+          radial-gradient(ellipse 120% 80% at 50% -20%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 55%),
+          color-mix(in oklab, var(--primary) 5%, var(--surface));
+        box-shadow:
+          0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+          0 10px 32px color-mix(in oklab, var(--primary) 18%, transparent);
+        animation: connect-deck-unlock 0.55s ease-out;
+      }
+      .connect-other--slot-selected::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1px;
+        background: conic-gradient(
+          from var(--connect-deck-angle, 0deg),
+          transparent 0%,
+          color-mix(in oklab, var(--primary) 55%, #6d28d9) 25%,
+          color-mix(in oklab, var(--primary) 75%, #02a6a0) 50%,
+          color-mix(in oklab, #6d28d9 50%, var(--primary)) 75%,
+          transparent 100%
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        mask-composite: exclude;
+        opacity: 0.75;
+        pointer-events: none;
+        animation: connect-deck-border-spin 5s linear infinite;
+      }
+      @keyframes connect-deck-border-spin {
+        to {
+          --connect-deck-angle: 360deg;
+        }
+      }
+      @property --connect-deck-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+      @keyframes connect-deck-unlock {
+        from {
+          opacity: 0.65;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .connect-other--slot-selected .connect-deck-label {
+        color: var(--primary);
+        text-shadow: 0 0 18px color-mix(in oklab, var(--primary) 35%, transparent);
+        animation: connect-deck-label-pop 0.5s ease-out;
+      }
+      @keyframes connect-deck-label-pop {
+        0% {
+          transform: scale(0.96);
+          opacity: 0.5;
+        }
+        60% {
+          transform: scale(1.03);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .connect-other--slot-selected .connect-deck .connect-card {
+        opacity: 1;
+        filter: none;
+        animation: connect-card-pop 0.45s ease-out backwards;
+        animation-delay: calc(var(--i, 0) * 0.045s);
+      }
+      @keyframes connect-card-pop {
+        from {
+          opacity: 0.4;
+          transform: translateY(8px) scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .connect-other--slot-selected .connect-deck .connect-card:hover {
+        border-color: color-mix(in srgb, var(--card-accent) 45%, var(--border));
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px color-mix(in oklab, var(--card-accent) 22%, transparent);
+      }
+      .connect-other--slot-selected .connect-deck .connect-card--soon {
+        animation: connect-card-pop 0.45s ease-out backwards;
+        animation-delay: calc(var(--i, 0) * 0.045s);
+      }
+      .connect-card--service-picked {
+        outline: 2px solid var(--card-accent);
+        outline-offset: 2px;
+      }
+      .connect-card--soon {
+        cursor: pointer;
+      }
+      .connect-card--soon .connect-card-hint {
+        font-size: 0.62rem;
+        line-height: 1.35;
+      }
+      .connect-soon-badge {
+        position: absolute;
+        top: 0.42rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        padding: 0.14rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.5rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #5b21b6;
+        background: color-mix(in oklab, #6d28d9 14%, #fff);
+        border: 1px solid color-mix(in oklab, #6d28d9 28%, transparent);
+        box-shadow: 0 2px 8px color-mix(in oklab, #6d28d9 18%, transparent);
+      }
+      [data-theme='dark'] .connect-soon-badge {
+        color: #ddd6fe;
+        background: color-mix(in oklab, #6d28d9 22%, var(--surface));
+      }
+      .connect-card--soon .connect-card-cta {
+        color: #6d28d9;
+      }
+      [data-theme='dark'] .connect-card--soon .connect-card-cta {
+        color: #c4b5fd;
+      }
+      .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked) {
+        opacity: 0.72;
+      }
+      .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked):hover {
+        opacity: 1;
+      }
+      .connect-other--service-picked .connect-deck .connect-card--service-picked {
+        opacity: 1;
+      }
+      .connect-booking-bar-note {
+        font-size: 0.68rem;
+        color: var(--muted);
+        margin-top: 0.35rem;
+      }
+      .connect-booking-bar {
+        margin-top: 1rem;
+        padding: 0.75rem 0.85rem;
+        border-radius: 0.65rem;
+        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+      }
+      .connect-booking-bar p {
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: var(--text);
+        margin-bottom: 0.65rem;
+      }
+      .connect-other {
+        margin-bottom: 0;
+        min-width: 0;
+      }
+
       /* Deck */
       .connect-deck-label {
         font-size: 0.72rem;
@@ -289,7 +812,31 @@ const introBody =
         letter-spacing: 0.06em;
         color: var(--faint);
         margin-bottom: 0.65rem;
-        text-align: center;
+        text-align: left;
+      }
+      .connect-deck-slot-hint {
+        margin: -0.35rem 0 0.65rem;
+        padding: 0.55rem 0.65rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.45;
+        color: var(--primary);
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+        border-radius: 0.55rem;
+      }
+      .connect-deck-slot-hint--flash {
+        animation: connect-deck-hint-flash 0.6s ease-out;
+      }
+      @keyframes connect-deck-hint-flash {
+        0% {
+          transform: scale(0.98);
+          opacity: 0.6;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
       .connect-deck-layout {
         display: grid;
@@ -800,6 +1347,158 @@ const introBody =
         width: 100%;
         box-sizing: border-box;
       }
+      .connect-detail-soon-badge {
+        display: inline-block;
+        margin-bottom: 0.65rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.58rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #5b21b6;
+        background: color-mix(in oklab, var(--detail-accent, #6d28d9) 12%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--detail-accent, #6d28d9) 28%, var(--border));
+      }
+      [data-theme='dark'] .connect-detail-soon-badge {
+        color: #ddd6fe;
+      }
+      .connect-detail-interest {
+        margin-bottom: 0.5rem;
+      }
+      .connect-detail-interest-lead {
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: var(--muted);
+        margin: 0 0 0.85rem;
+      }
+      .connect-detail-interest-label {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--faint);
+        margin-bottom: 0.35rem;
+      }
+      .connect-detail-interest-note {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 4.5rem;
+        resize: vertical;
+        padding: 0.6rem 0.7rem;
+        margin-bottom: 0.75rem;
+        border-radius: 0.55rem;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text);
+        font: inherit;
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+      .connect-detail-interest-note:focus {
+        outline: none;
+        border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 45%, var(--border));
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, transparent);
+      }
+      .connect-detail-interest-status {
+        font-size: 0.78rem;
+        line-height: 1.45;
+        margin: 0 0 0.65rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 0.5rem;
+        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+        color: var(--text);
+      }
+      .connect-detail-interest-status--done {
+        background: color-mix(in oklab, #16a34a 10%, var(--surface));
+        border-color: color-mix(in oklab, #16a34a 28%, var(--border));
+        color: color-mix(in oklab, #15803d 85%, var(--text));
+      }
+      [data-theme='dark'] .connect-detail-interest-status--done {
+        color: #86efac;
+      }
+      .connect-detail-interest-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+      .connect-detail-slots {
+        margin-bottom: 1rem;
+      }
+      .connect-detail-slots-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--faint);
+        margin-bottom: 0.5rem;
+      }
+      .connect-slot-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        max-height: 11rem;
+        overflow-y: auto;
+        margin-bottom: 0.75rem;
+      }
+      .connect-slot-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 0.55rem;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        font-size: 0.78rem;
+      }
+      .connect-slot-item strong {
+        font-weight: 700;
+        color: var(--text);
+      }
+      .connect-slot-pick {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.35rem 0.6rem;
+        border-radius: 0.4rem;
+        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 40%, var(--border));
+        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 10%, var(--surface));
+        color: var(--detail-accent, var(--primary));
+        cursor: pointer;
+      }
+      .connect-slot-pick:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .connect-slot-empty {
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.5;
+        padding: 0.5rem 0;
+      }
+      .connect-slot-reserved {
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: var(--text);
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.55rem;
+        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 9%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 22%, var(--border));
+        margin-bottom: 0.75rem;
+      }
+      .connect-detail-mentor-link {
+        display: inline-block;
+        margin-bottom: 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--primary);
+        text-decoration: none;
+      }
+      .connect-detail-mentor-link:hover {
+        text-decoration: underline;
+      }
       .connect-email-link {
         color: var(--primary);
         font-weight: 600;
@@ -868,6 +1567,15 @@ const introBody =
           transform: translateY(0);
         }
       }
+      @media (max-width: 768px) {
+        .connect-book-row {
+          grid-template-columns: 1fr;
+        }
+        .connect-avail-feed {
+          min-height: 0;
+          max-height: min(16rem, 42vh);
+        }
+      }
       @media (max-width: 560px) {
         .connect-deck-layout {
           grid-template-columns: 1fr;
@@ -908,6 +1616,15 @@ const introBody =
         }
       }
       @media (prefers-reduced-motion: reduce) {
+        .connect-other--slot-selected,
+        .connect-other--slot-selected::before,
+        .connect-other--slot-selected .connect-deck-label,
+        .connect-other--slot-selected .connect-deck .connect-card {
+          animation: none;
+        }
+        .connect-other--slot-selected .connect-deck .connect-card:hover {
+          transform: none;
+        }
         .connect-card,
         .connect-card--urgent,
         .connect-cta {
@@ -937,6 +1654,7 @@ const introBody =
           </a>
           <div class="connect-top-actions">
             <a class="connect-top-link connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
+            <a class="connect-top-link connect-pill" href="/admin" id="connect-avail-link" hidden>Admin</a>
             <a class="connect-top-link connect-pill" href="/login" id="connect-nav-auth">Sign in</a>
             <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -948,28 +1666,47 @@ const introBody =
         </header>
 
         <main>
-          <p class="connect-deck-label">What do you need help with?</p>
-          <div class="connect-deck-layout">
-            <div class="connect-deck" role="list">
-              {
-                services.map((s, i) => (
-                  <button
-                    type="button"
-                    class="connect-card"
-                    role="listitem"
-                    style={`--card-accent: ${s.accent}; --i: ${i}`}
-                    data-connect-id={s.id}
-                    title={s.hook}
-                  >
-                    <span class="connect-card-icon" aria-hidden="true">{s.icon}</span>
-                    <span class="connect-card-benefit">{s.benefit}</span>
-                    <span class="connect-card-title">{s.title}</span>
-                    <span class="connect-card-hint">{s.hook}</span>
-                    <span class="connect-card-cta">View details →</span>
-                  </button>
-                ))
-              }
-            </div>
+          <div class="connect-book-row">
+            <section class="connect-book connect-slots-panel" aria-label="Book a live session">
+              <div class="connect-slots-head">
+                <p class="connect-slots-title">Pick a time</p>
+                <span class="connect-slots-badge" id="connect-slots-count" hidden></span>
+              </div>
+              <p class="connect-slots-signin-hint" id="connect-slots-signin-hint" hidden>
+                <a href="/login?redirect=/connect">Sign in</a> to pick a slot and book a session.
+              </p>
+              <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Date and time slots"></div>
+            </section>
+
+            <section class="connect-other connect-other--awaiting-slot" id="connect-service-deck" aria-label="Choose your service">
+              <p class="connect-deck-label">Choose your service</p>
+              <p class="connect-deck-slot-hint" id="connect-deck-slot-hint" hidden role="status" aria-live="polite">
+                Pick a time slot on the left before choosing a service.
+              </p>
+            <div class="connect-deck-layout">
+              <div class="connect-deck" role="list">
+                {
+                  services.map((s, i) => (
+                    <button
+                      type="button"
+                      class:list={['connect-card', s.comingSoon && 'connect-card--soon']}
+                      role="listitem"
+                      style={`--card-accent: ${s.accent}; --i: ${i}`}
+                      data-connect-id={s.id}
+                      data-connect-bookable={isConnectSlotBookable(s) ? '1' : '0'}
+                      data-connect-coming-soon={s.comingSoon ? '1' : '0'}
+                      title={s.comingSoon ? `${s.title} — ${connectBatchCopy.cardHint}` : s.hook}
+                    >
+                      {s.comingSoon && <span class="connect-soon-badge">{connectBatchCopy.badge}</span>}
+                      <span class="connect-card-icon" aria-hidden="true">{s.icon}</span>
+                      <span class="connect-card-benefit">{s.benefit}</span>
+                      <span class="connect-card-title">{s.title}</span>
+                      <span class="connect-card-hint">{s.hook}</span>
+                      <span class="connect-card-cta">{s.comingSoon ? connectBatchCopy.cta : 'Book this →'}</span>
+                    </button>
+                  ))
+                }
+              </div>
             <div class="connect-urgent-glow">
               <button
                 type="button"
@@ -990,6 +1727,15 @@ const introBody =
                 <span class="connect-card-cta">View details →</span>
               </button>
             </div>
+          </div>
+            <div class="connect-booking-bar" id="connect-booking-bar" hidden>
+              <p id="connect-booking-msg"></p>
+              <p class="connect-booking-bar-note" id="connect-booking-note" hidden>
+                Tap another service above to change before you pay. When you pay, the slot is held for 7 minutes.
+              </p>
+              <button type="button" class="connect-cta-btn" id="connect-booking-pay" hidden>Pay to confirm →</button>
+            </div>
+          </section>
           </div>
 
           <section class="connect-cta">
@@ -1037,54 +1783,510 @@ const introBody =
         <p class="connect-detail-benefit" id="connect-detail-benefit"></p>
         <h2 class="connect-detail-title" id="connect-detail-title"></h2>
         <p class="connect-detail-hook" id="connect-detail-hook"></p>
-        <div class="connect-detail-price">
+        <span class="connect-detail-soon-badge" id="connect-detail-soon-badge" hidden>{connectBatchCopy.badge}</span>
+        <div class="connect-detail-price" id="connect-detail-price-wrap">
           <span class="connect-detail-price-amt" id="connect-detail-price-amt"></span>
           <span class="connect-detail-price-period" id="connect-detail-price-period"></span>
         </div>
-        <p class="connect-detail-note">{sessionFootnote}</p>
+        <div class="connect-detail-interest" id="connect-detail-interest" hidden>
+          <p class="connect-detail-interest-lead" id="connect-detail-interest-lead">
+            {connectBatchCopy.modalLead}
+          </p>
+          <label class="connect-detail-interest-label" for="connect-detail-interest-note">
+            Your level & topics (optional)
+          </label>
+          <textarea
+            class="connect-detail-interest-note"
+            id="connect-detail-interest-note"
+            rows="3"
+            maxlength="500"
+            placeholder="e.g. Student · trees, graphs, DP · targeting SDE-2 in 6 months"
+          ></textarea>
+          <p class="connect-detail-interest-status" id="connect-detail-interest-status" hidden role="status"></p>
+          <button type="button" class="connect-cta-btn connect-detail-interest-btn" id="connect-detail-interest-btn">
+            {connectBatchCopy.cta}
+          </button>
+        </div>
+        <p class="connect-detail-note" id="connect-detail-footnote">{sessionFootnote}</p>
+        <div class="connect-detail-slots" id="connect-detail-slots" hidden>
+          <p class="connect-detail-slots-label">Pick a session time</p>
+          <div class="connect-slot-list" id="connect-slot-list"></div>
+          <div class="connect-slot-reserved" id="connect-slot-reserved" hidden></div>
+          <button type="button" class="connect-cta-btn connect-detail-book" id="connect-detail-pay" hidden>
+            Pay to confirm →
+          </button>
+        </div>
         <a class="connect-cta-btn connect-detail-book" id="connect-detail-book" href="#">Book via email →</a>
       </div>
     </div>
 
+    <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script id="connect-offerings-data" type="application/json" set:html={JSON.stringify(connectOfferings)} />
 
     <script>
       import { supabase } from '../lib/supabase';
+      import type { ConnectService } from '../data/connect-services';
+      import { connectSessionPricePaise, connectBatchCopy } from '../data/connect-services';
+      import { loadConnectSlots, type ConnectSlot } from '../lib/connect-slots';
+      import { fetchIsAdmin, setAdminNavLink } from '../lib/admin-access';
 
-      type ConnectOffering = {
-        id: string;
-        title: string;
-        benefit: string;
-        hook: string;
-        icon: string;
-        subject: string;
-        accent: string;
-        price: string;
-        pricePeriod?: string;
-        mailBody: string;
-      };
+      const IST = 'Asia/Kolkata';
+      const dateFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      });
+      const timeFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      const dayMonthFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        day: 'numeric',
+        month: 'short',
+      });
+      const weekdayFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        weekday: 'short',
+      });
 
-      const SUPPORT_EMAIL = 'algofrog07@gmail.com';
+      const SLOT_COLUMNS = 3;
+
+      type SlotRow = ConnectSlot;
+
       const offeringsEl = document.getElementById('connect-offerings-data');
-      const offerings: ConnectOffering[] = offeringsEl?.textContent
+      const offerings: ConnectService[] = offeringsEl?.textContent
         ? JSON.parse(offeringsEl.textContent)
         : [];
+      const availFeed = document.getElementById('connect-avail-feed');
+      const slotsCountBadge = document.getElementById('connect-slots-count');
+      const serviceDeck = document.getElementById('connect-service-deck');
+      const bookingBar = document.getElementById('connect-booking-bar');
+      const bookingMsg = document.getElementById('connect-booking-msg');
+      const bookingNote = document.getElementById('connect-booking-note');
+      const bookingPay = document.getElementById('connect-booking-pay') as HTMLButtonElement | null;
+      const deckSlotHint = document.getElementById('connect-deck-slot-hint');
+      const slotsSignInHint = document.getElementById('connect-slots-signin-hint');
+      const slotsPanel = document.querySelector('.connect-slots-panel');
 
       const detailRoot = document.getElementById('connect-detail');
       const detailBackdrop = document.getElementById('connect-detail-backdrop');
       const detailClose = document.getElementById('connect-detail-close');
       const detailBook = document.getElementById('connect-detail-book') as HTMLAnchorElement | null;
+      const detailSoonBadge = document.getElementById('connect-detail-soon-badge');
+      const detailPriceWrap = document.getElementById('connect-detail-price-wrap');
+      const detailInterest = document.getElementById('connect-detail-interest');
+      const detailInterestNote = document.getElementById('connect-detail-interest-note') as HTMLTextAreaElement | null;
+      const detailInterestStatus = document.getElementById('connect-detail-interest-status');
+      const detailInterestBtn = document.getElementById('connect-detail-interest-btn') as HTMLButtonElement | null;
+      const detailFootnote = document.getElementById('connect-detail-footnote');
+      const availLink = document.getElementById('connect-avail-link');
+
+      let authSession: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session'] = null;
+      let interestServiceId: string | null = null;
+      let activeOffering: ConnectService | null = null;
+      let reservedSlot: SlotRow | null = null;
+      let allSlots: SlotRow[] = [];
+      let selectedDateKey: string | null = null;
+      let selectedSlotId: number | null = null;
+      let activeHoldSlotId: number | null = null;
+
+      const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: IST });
+
+      function istDateKey(iso: string) {
+        return dayKeyFmt.format(new Date(iso));
+      }
+
+      function todayKey() {
+        return dayKeyFmt.format(new Date());
+      }
+
+      function requireConnectAuth(): boolean {
+        if (authSession) return true;
+        window.location.href = '/login?redirect=/connect';
+        return false;
+      }
+
+      function syncConnectAuthUi() {
+        if (slotsSignInHint) slotsSignInHint.hidden = !!authSession;
+      }
 
       function mailtoLink(subject: string, body: string) {
         const params = new URLSearchParams();
         params.set('subject', subject);
         params.set('body', body);
-        return `mailto:${SUPPORT_EMAIL}?${params.toString()}`;
+        return `mailto:algofrog07@gmail.com?${params.toString()}`;
       }
 
-      function openConnectDetail(id: string) {
-        const item = offerings.find((o) => o.id === id);
-        if (!item || !detailRoot) return;
+      async function releaseActiveHold() {
+        if (activeHoldSlotId == null) return;
+        const slotId = activeHoldSlotId;
+        activeHoldSlotId = null;
+        const { error } = await supabase.rpc('release_my_connect_slot_hold', { p_slot_id: slotId });
+        if (error) console.error('Failed to release slot hold:', error);
+      }
+
+      function resetBookingBar() {
+        reservedSlot = null;
+        activeOffering = null;
+        if (bookingBar) bookingBar.hidden = true;
+        if (bookingPay) bookingPay.hidden = true;
+        if (bookingNote) bookingNote.hidden = true;
+        if (bookingMsg) bookingMsg.textContent = '';
+        syncServicePickHighlight();
+      }
+
+      function syncServicePickHighlight() {
+        serviceDeck?.classList.toggle(
+          'connect-other--service-picked',
+          !!selectedSlotId && !!activeOffering,
+        );
+        document.querySelectorAll('.connect-deck .connect-card[data-connect-id]').forEach((el) => {
+          const id = el.getAttribute('data-connect-id');
+          if (el.getAttribute('data-connect-coming-soon') === '1') {
+            el.classList.remove('connect-card--service-picked');
+            el.setAttribute('aria-pressed', 'false');
+            return;
+          }
+          el.classList.toggle('connect-card--service-picked', !!activeOffering && id === activeOffering.id);
+          el.setAttribute('aria-pressed', !!activeOffering && id === activeOffering.id ? 'true' : 'false');
+        });
+      }
+
+      async function clearTimeSelection() {
+        await releaseActiveHold();
+        selectedSlotId = null;
+        selectedDateKey = null;
+        resetBookingBar();
+        updateDeckState();
+        await loadAllSlots();
+      }
+
+      function updateDeckState() {
+        serviceDeck?.classList.toggle('connect-other--awaiting-slot', !selectedSlotId);
+        serviceDeck?.classList.toggle('connect-other--slot-selected', !!selectedSlotId);
+        if (deckSlotHint && selectedSlotId) deckSlotHint.hidden = true;
+        document.querySelectorAll('.connect-deck .connect-card[data-connect-id]').forEach((card) => {
+          const cta = card.querySelector('.connect-card-cta');
+          if (!cta) return;
+          if (card.getAttribute('data-connect-coming-soon') === '1') {
+            cta.textContent = connectBatchCopy.cta;
+            return;
+          }
+          cta.textContent = selectedSlotId ? 'Book this →' : 'Pick a time first →';
+        });
+        syncServicePickHighlight();
+      }
+
+      function promptPickSlotFirst() {
+        if (deckSlotHint) {
+          deckSlotHint.hidden = false;
+          deckSlotHint.classList.remove('connect-deck-slot-hint--flash');
+          void deckSlotHint.offsetWidth;
+          deckSlotHint.classList.add('connect-deck-slot-hint--flash');
+        }
+        slotsPanel?.classList.remove('connect-slots-panel--pulse');
+        void (slotsPanel as HTMLElement | null)?.offsetWidth;
+        slotsPanel?.classList.add('connect-slots-panel--pulse');
+        slotsPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        window.setTimeout(() => {
+          slotsPanel?.classList.remove('connect-slots-panel--pulse');
+          deckSlotHint?.classList.remove('connect-deck-slot-hint--flash');
+        }, 900);
+      }
+
+      function buildSlotButton(slot: SlotRow) {
+        const selected = slot.id === selectedSlotId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'connect-slot-pill connect-time-slot-btn';
+        if (selected) {
+          btn.classList.add('connect-slot-pill--selected', 'connect-time-slot-btn--selected');
+        }
+        btn.textContent = timeFmt.format(new Date(slot.starts_at));
+        btn.setAttribute('data-slot-id', String(slot.id));
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        btn.setAttribute(
+          'aria-label',
+          `${dayMonthFmt.format(new Date(slot.starts_at))} at ${timeFmt.format(new Date(slot.starts_at))}`,
+        );
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          selectTimeSlot(slot);
+        });
+        return btn;
+      }
+
+      function renderAvailabilityFeed() {
+        if (!availFeed) return;
+
+        if (!allSlots.length) {
+          availFeed.innerHTML = '<p class="connect-avail-empty">No open slots right now. Check back soon.</p>';
+          if (slotsCountBadge) slotsCountBadge.hidden = true;
+          return;
+        }
+
+        if (slotsCountBadge) {
+          slotsCountBadge.hidden = false;
+          slotsCountBadge.textContent = `${allSlots.length} open`;
+        }
+
+        const byDate = new Map<string, SlotRow[]>();
+        for (const slot of allSlots) {
+          const key = istDateKey(slot.starts_at);
+          const list = byDate.get(key) ?? [];
+          list.push(slot);
+          byDate.set(key, list);
+        }
+
+        const rows = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
+        for (const [, slots] of rows) {
+          slots.sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+        }
+
+        const today = todayKey();
+
+        const table = document.createElement('table');
+        table.className = 'connect-avail-table';
+        table.setAttribute('role', 'grid');
+        table.setAttribute('aria-label', 'Available session times');
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        headRow.innerHTML = '<th>Date</th><th>Slot 1</th><th>Slot 2</th><th>Slot 3</th>';
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        for (const [dateKey, slots] of rows) {
+          const tr = document.createElement('tr');
+          if (dateKey === today) tr.classList.add('connect-avail-row--today');
+
+          const dateTd = document.createElement('td');
+          const dateCell = document.createElement('div');
+          dateCell.className = 'connect-avail-date-cell';
+
+          const wd = document.createElement('span');
+          wd.className = 'connect-avail-day-wd';
+          wd.textContent = weekdayFmt.format(new Date(slots[0].starts_at));
+
+          const dm = document.createElement('span');
+          dm.className = 'connect-avail-day-dm';
+          dm.textContent = dayMonthFmt.format(new Date(slots[0].starts_at));
+
+          dateCell.appendChild(wd);
+          dateCell.appendChild(dm);
+          dateTd.appendChild(dateCell);
+          tr.appendChild(dateTd);
+
+          for (let i = 0; i < SLOT_COLUMNS; i++) {
+            const td = document.createElement('td');
+            td.className = 'connect-avail-slot-cell';
+            td.setAttribute('role', 'gridcell');
+            const slot = slots[i];
+            if (slot) {
+              td.appendChild(buildSlotButton(slot));
+            } else {
+              td.classList.add('connect-avail-slot-cell--empty');
+              td.textContent = '—';
+            }
+            tr.appendChild(td);
+          }
+
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+
+        availFeed.innerHTML = '';
+        availFeed.appendChild(table);
+      }
+
+      function selectTimeSlot(slot: SlotRow) {
+        if (selectedSlotId === slot.id) {
+          void clearTimeSelection();
+          return;
+        }
+        if (!requireConnectAuth()) return;
+
+        selectedSlotId = slot.id;
+        selectedDateKey = istDateKey(slot.starts_at);
+        resetBookingBar();
+        renderAvailabilityFeed();
+        updateDeckState();
+      }
+
+      function pickServiceForSlot(svc: ConnectService) {
+        if (svc.comingSoon) return;
+        if (!requireConnectAuth()) return;
+
+        const slot = allSlots.find((s) => s.id === selectedSlotId);
+        if (!slot) return;
+
+        reservedSlot = slot;
+        activeOffering = svc;
+        showBookingBar();
+      }
+
+      function handleDeckClick(id: string, _el: HTMLElement) {
+        if (id === 'urgent') {
+          openConnectDetail(id);
+          return;
+        }
+
+        const svc = offerings.find((o) => o.id === id);
+        if (svc?.comingSoon) {
+          void openConnectInterest(svc);
+          return;
+        }
+
+        if (!selectedSlotId) {
+          promptPickSlotFirst();
+          return;
+        }
+
+        if (svc) pickServiceForSlot(svc);
+      }
+
+      function showBookingBar() {
+        if (!reservedSlot || !activeOffering || !bookingBar || !bookingMsg || !bookingPay) return;
+        bookingBar.hidden = false;
+        if (bookingNote) bookingNote.hidden = false;
+
+        const when = `${timeFmt.format(new Date(reservedSlot.starts_at))} on ${dateFmt.format(new Date(reservedSlot.starts_at))} (IST)`;
+        const paise = connectSessionPricePaise(activeOffering);
+
+        if (!paise) {
+          bookingPay.hidden = true;
+          bookingMsg.textContent = 'Payment is unavailable for this service. Pick another service or contact support.';
+          syncServicePickHighlight();
+          return;
+        }
+
+        bookingPay.hidden = false;
+        bookingPay.textContent = `Pay ₹${(paise / 100).toFixed(0)} to confirm →`;
+        bookingMsg.innerHTML = `Selected <strong>${activeOffering.title}</strong> at ${when}. Complete payment to confirm your booking.`;
+
+        syncServicePickHighlight();
+      }
+
+      async function loadAllSlots() {
+        allSlots = await loadConnectSlots();
+        renderAvailabilityFeed();
+        updateDeckState();
+      }
+
+      async function openConnectPayment() {
+        if (!requireConnectAuth()) return;
+        if (!reservedSlot || !activeOffering || !bookingPay) return;
+
+        const paise = connectSessionPricePaise(activeOffering);
+        if (!paise) return;
+
+        const payLabel = `Pay ₹${(paise / 100).toFixed(0)} to confirm →`;
+        bookingPay.disabled = true;
+        bookingPay.textContent = 'Reserving slot…';
+
+        const { error: holdError } = await supabase.rpc('hold_connect_slot', {
+          p_service_id: activeOffering.id,
+          p_slot_id: reservedSlot.id,
+        });
+
+        if (holdError) {
+          bookingPay.disabled = false;
+          bookingPay.textContent = payLabel;
+          alert(holdError.message || 'This slot was just taken. Pick another time.');
+          await clearTimeSelection();
+          return;
+        }
+
+        activeHoldSlotId = reservedSlot.id;
+
+        bookingPay.disabled = false;
+        bookingPay.textContent = payLabel;
+
+        const slotId = reservedSlot.id;
+        const slotLabel = `${dateFmt.format(new Date(reservedSlot.starts_at))} ${timeFmt.format(new Date(reservedSlot.starts_at))}`;
+        const options = {
+          key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
+          amount: paise,
+          currency: 'INR',
+          name: 'algofrog.in',
+          description: `${activeOffering.title} session — ${slotLabel}`,
+          prefill: {
+            email: authSession.user.email,
+            name: authSession.user.user_metadata?.full_name || '',
+          },
+          theme: { color: '#0f766e' },
+          modal: {
+            ondismiss: () => {
+              void (async () => {
+                await releaseActiveHold();
+                await loadAllSlots();
+              })();
+            },
+          },
+          handler: async (response: { razorpay_payment_id: string }) => {
+            const { error } = await supabase.rpc('confirm_connect_slot_payment', {
+              p_payment_id: response.razorpay_payment_id,
+              p_service_id: activeOffering!.id,
+              p_slot_id: slotId,
+            });
+            if (error) {
+              alert(
+                error.message ||
+                  'Payment received but the slot could not be booked. Contact support with payment ID: ' +
+                    response.razorpay_payment_id,
+              );
+              console.error(error);
+              return;
+            }
+            activeHoldSlotId = null;
+            alert('Session confirmed! You will receive meeting details by email.');
+            await clearTimeSelection();
+          },
+        };
+        const rzp = new (window as Window & { Razorpay?: new (o: typeof options) => { open: () => void } }).Razorpay!(options);
+        rzp.open();
+      }
+
+      bookingPay?.addEventListener('click', () => {
+        void openConnectPayment();
+      });
+
+      function resetDetailModes() {
+        if (detailSoonBadge) detailSoonBadge.hidden = true;
+        if (detailInterest) detailInterest.hidden = true;
+        if (detailBook) detailBook.hidden = true;
+        if (detailPriceWrap) detailPriceWrap.hidden = false;
+        if (detailFootnote) detailFootnote.hidden = false;
+        if (detailInterestStatus) {
+          detailInterestStatus.hidden = true;
+          detailInterestStatus.textContent = '';
+          detailInterestStatus.classList.remove('connect-detail-interest-status--done');
+        }
+        if (detailInterestNote) detailInterestNote.value = '';
+        if (detailInterestBtn) {
+          detailInterestBtn.disabled = false;
+          detailInterestBtn.textContent = connectBatchCopy.cta;
+        }
+        interestServiceId = null;
+      }
+
+      function showInterestRegistered() {
+        if (!detailInterestStatus || !detailInterestBtn) return;
+        detailInterestStatus.hidden = false;
+        detailInterestStatus.classList.add('connect-detail-interest-status--done');
+        detailInterestStatus.textContent = connectBatchCopy.success;
+        detailInterestBtn.textContent = 'Update note →';
+      }
+
+      async function openConnectInterest(item: ConnectService) {
+        if (!detailRoot) return;
+        resetDetailModes();
+        interestServiceId = item.id;
 
         detailRoot.style.setProperty('--detail-accent', item.accent);
         const iconEl = document.getElementById('connect-detail-icon');
@@ -1099,8 +2301,87 @@ const introBody =
         if (titleEl) titleEl.textContent = item.title;
         if (hookEl) hookEl.textContent = item.hook;
         if (priceAmtEl) priceAmtEl.textContent = item.price;
+        if (pricePeriodEl) {
+          pricePeriodEl.textContent = `${item.pricePeriod ?? ''} · ${connectBatchCopy.priceSuffix}`.trim();
+        }
+        if (detailSoonBadge) detailSoonBadge.hidden = false;
+        if (detailInterest) detailInterest.hidden = false;
+        if (detailBook) detailBook.hidden = true;
+
+        if (authSession) {
+          const { data: onList, error } = await supabase.rpc('has_connect_interest', {
+            p_service_id: item.id,
+          });
+          if (!error && onList) showInterestRegistered();
+        } else if (detailInterestBtn) {
+          detailInterestBtn.textContent = connectBatchCopy.signInCta;
+        }
+
+        detailRoot.hidden = false;
+        detailRoot.setAttribute('aria-hidden', 'false');
+        detailRoot.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        detailClose?.focus();
+      }
+
+      async function submitConnectInterest() {
+        if (!interestServiceId || !detailInterestBtn) return;
+        if (!requireConnectAuth()) return;
+
+        detailInterestBtn.disabled = true;
+        detailInterestBtn.textContent = 'Saving…';
+
+        const { error } = await supabase.rpc('register_connect_interest', {
+          p_note: detailInterestNote?.value ?? '',
+          p_service_id: interestServiceId,
+        });
+
+        if (error) {
+          alert(error.message || 'Could not save. Try again.');
+          detailInterestBtn.disabled = false;
+          detailInterestBtn.textContent = connectBatchCopy.cta;
+          return;
+        }
+
+        closeConnectDetail();
+        activeHoldSlotId = null;
+        if (selectedSlotId) {
+          selectedSlotId = null;
+          selectedDateKey = null;
+          resetBookingBar();
+          updateDeckState();
+        }
+        await loadAllSlots();
+      }
+
+      function openConnectDetail(id: string) {
+        const item = offerings.find((o) => o.id === id);
+        if (!item || !detailRoot) return;
+
+        resetDetailModes();
+        detailRoot.style.setProperty('--detail-accent', item.accent);
+        const iconEl = document.getElementById('connect-detail-icon');
+        const benefitEl = document.getElementById('connect-detail-benefit');
+        const titleEl = document.getElementById('connect-detail-title');
+        const hookEl = document.getElementById('connect-detail-hook');
+        const priceAmtEl = document.getElementById('connect-detail-price-amt');
+        const pricePeriodEl = document.getElementById('connect-detail-price-period');
+
+        if (iconEl) iconEl.textContent = item.icon;
+        if (benefitEl) benefitEl.textContent = item.benefit;
+        if (titleEl) titleEl.textContent = item.title;
+        if (hookEl) hookEl.textContent = item.hook;
+        if (priceAmtEl) priceAmtEl.textContent = item.price;
         if (pricePeriodEl) pricePeriodEl.textContent = item.pricePeriod ?? '';
-        if (detailBook) detailBook.href = mailtoLink(item.subject, item.mailBody);
+        if (detailBook) {
+          if (id === 'urgent') {
+            detailBook.hidden = false;
+            detailBook.href = mailtoLink(item.subject, item.mailBody);
+            detailBook.textContent = 'Book via email →';
+          } else {
+            detailBook.hidden = true;
+          }
+        }
 
         detailRoot.hidden = false;
         detailRoot.setAttribute('aria-hidden', 'false');
@@ -1115,12 +2396,17 @@ const introBody =
         detailRoot.setAttribute('aria-hidden', 'true');
         detailRoot.hidden = true;
         document.body.style.overflow = '';
+        resetDetailModes();
       }
+
+      detailInterestBtn?.addEventListener('click', () => {
+        void submitConnectInterest();
+      });
 
       document.querySelectorAll('[data-connect-id]').forEach((el) => {
         el.addEventListener('click', () => {
           const id = el.getAttribute('data-connect-id');
-          if (id) openConnectDetail(id);
+          if (id) handleDeckClick(id, el as HTMLElement);
         });
       });
 
@@ -1131,6 +2417,7 @@ const introBody =
       });
 
       function applyConnectAuthNav(signedIn: boolean) {
+        syncConnectAuthUi();
         const navAuth = document.getElementById('connect-nav-auth');
         const footerAuth = document.getElementById('connect-footer-auth');
 
@@ -1160,10 +2447,25 @@ const introBody =
       }
 
       const { data: { session } } = await supabase.auth.getSession();
+      authSession = session;
       applyConnectAuthNav(!!session);
 
-      supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (session) {
+        const isAdmin = await fetchIsAdmin();
+        setAdminNavLink(availLink, isAdmin);
+      }
+
+      loadAllSlots();
+      updateDeckState();
+
+      supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+        authSession = nextSession;
         applyConnectAuthNav(!!nextSession);
+        if (nextSession) {
+          setAdminNavLink(availLink, await fetchIsAdmin());
+        } else {
+          setAdminNavLink(availLink, false);
+        }
       });
 
       const themeBtn = document.getElementById('connect-theme');
