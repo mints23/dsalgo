@@ -1,4 +1,4 @@
-const i={badge:"Next batch",cardHint:"Join the next batch",cta:"Add me to batch →",signInCta:"Sign in to join batch →",modalLead:"Small live batches — patterns, live coding, and what interviewers actually test. Add yourself and we’ll email when the next batch opens.",success:"You're on the batch list. We'll email you when the next DSA Classes batch opens.",priceSuffix:"next batch"},t=[{id:"system-design",title:"System Design",benefit:"Think like a senior engineer",hook:"Trade-offs, scale narratives, and interview-ready design stories.",icon:"🏗️",subject:"Connect — System Design",accent:"#0f766e",price:"₹799",pricePeriod:"· 1 session",sessionPricePaise:79900,mailBody:`Hi,
+const i={cta:"Add me to batch →",signInCta:"Sign in to join batch →",success:"You're on the batch list. We'll email you when the next DSA Classes batch opens.",priceSuffix:"next batch"},s=[{id:"system-design",title:"System Design",benefit:"Think like a senior engineer",hook:"Trade-offs, scale narratives, and interview-ready design stories.",icon:"🏗️",subject:"Connect — System Design",accent:"#0f766e",price:"₹799",pricePeriod:"· 1 session",sessionPricePaise:79900,mailBody:`Hi,
 
 I need help with: System Design
 
@@ -37,7 +37,7 @@ My goal:
 Current level:
 Timeline:
 
-Thanks!`},{id:"motivation",title:"Motivation",benefit:"Stay in the game",hook:"Burnout, consistency, and mindset for a 6–12 month grind.",icon:"🔥",subject:"Connect — Motivation",accent:"#c2410c",price:"₹10",pricePeriod:"· 1 session",sessionPricePaise:1e3,mailBody:`Hi,
+Thanks!`},{id:"motivation",title:"Motivation",benefit:"Stay in the game",hook:"Burnout, consistency, and mindset for a 6–12 month grind.",icon:"🔥",subject:"Connect — Motivation",accent:"#c2410c",price:"₹200",pricePeriod:"· 1 session",sessionPricePaise:2e4,mailBody:`Hi,
 
 I need help with: Motivation
 
@@ -45,4 +45,4 @@ My goal:
 Current level:
 Timeline:
 
-Thanks!`}];function s(e){if(e.sessionPricePaise!=null)return e.sessionPricePaise;const n=e.price.replace(/,/g,"").match(/₹?\s*(\d+(?:\.\d+)?)/);if(n)return Math.round(parseFloat(n[1])*100)}export{s as a,t as b,i as c};
+Thanks!`}];function t(e){if(e.sessionPricePaise!=null)return e.sessionPricePaise;const n=e.price.replace(/,/g,"").match(/₹?\s*(\d+(?:\.\d+)?)/);if(n)return Math.round(parseFloat(n[1])*100)}export{i as a,t as b,s as c};

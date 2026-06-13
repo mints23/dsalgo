@@ -1,1 +1,0 @@
-if(!window.__connectScrollPause){let o=function(){t.dataset.connectScrollPause="1",clearTimeout(e),e=setTimeout(()=>{delete t.dataset.connectScrollPause},500)};window.__connectScrollPause=!0;let e;const t=document.documentElement;document.addEventListener("scroll",o,{passive:!0,capture:!0})}
