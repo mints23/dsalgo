@@ -1,1 +1,0 @@
-import{s as i}from"./supabase.KiwWxYfa.js";async function r(){const{data:{session:s}}=await i.auth.getSession();if(!s)return!1;const{data:a,error:e}=await i.from("subscriptions").select("is_admin").eq("user_id",s.user.id).maybeSingle();return e?(console.error("admin flag load:",e),!1):!!a?.is_admin}function t(s,a){s&&(s.hidden=!a)}export{r as f,t as s};
