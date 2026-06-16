@@ -200,6 +200,22 @@ import LogoMark from '../components/LogoMark.astro';
         border-radius: 999px;
         padding: 0.2rem 0.5rem;
       }
+      .adm-pro-count {
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #0369a1;
+        background: color-mix(in oklab, #0369a1 10%, var(--surface));
+        border: 1px solid color-mix(in oklab, #0369a1 22%, var(--border));
+        border-radius: 999px;
+        padding: 0.2rem 0.5rem;
+      }
+      .adm-lead code {
+        font-size: 0.72em;
+        padding: 0.1rem 0.3rem;
+        border-radius: 0.25rem;
+        background: var(--surface2);
+        color: var(--text);
+      }
     </style>
   </head>
   <body>
@@ -247,6 +263,19 @@ import LogoMark from '../components/LogoMark.astro';
             <h2>Upcoming bookings</h2>
             <div id="adm-bookings-list">
               <p class="adm-empty">Loading…</p>
+            </div>
+          </section>
+
+          <section id="adm-pro-panel" class="adm-panel adm-bookings" hidden>
+            <div class="adm-head">
+              <p class="adm-head-title">Pro subscribers (paid)</p>
+              <span class="adm-pro-count" id="adm-pro-count" hidden>0 active</span>
+            </div>
+            <p class="adm-lead">
+              Paying Pro members with an active subscription.
+            </p>
+            <div id="adm-pro-list">
+              <p class="adm-empty">No paid Pro subscribers right now.</p>
             </div>
           </section>
 
@@ -301,6 +330,13 @@ import LogoMark from '../components/LogoMark.astro';
         minute: '2-digit',
         hour12: true,
       });
+      const proExpiryFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
 
       const GRID_DAYS = 21;
       const WEEKDAY_FILL_COUNT = 5;
@@ -312,6 +348,9 @@ import LogoMark from '../components/LogoMark.astro';
       const gridFeed = document.getElementById('adm-grid-feed')!;
       const msgEl = document.getElementById('adm-msg')!;
       const bookingsList = document.getElementById('adm-bookings-list')!;
+      const proList = document.getElementById('adm-pro-list')!;
+      const proCount = document.getElementById('adm-pro-count')!;
+      const proPanel = document.getElementById('adm-pro-panel')!;
       const waitlistList = document.getElementById('adm-waitlist-list')!;
       const waitlistCount = document.getElementById('adm-waitlist-count')!;
       const fillWeekBtn = document.getElementById('adm-fill-week') as HTMLButtonElement;
@@ -342,6 +381,15 @@ import LogoMark from '../components/LogoMark.astro';
         status: string;
       };
 
+      type ProSubscriberRow = {
+        user_id: string;
+        email: string;
+        display_name: string;
+        paid_until: string;
+        razorpay_payment_id: string | null;
+        updated_at: string;
+      };
+
       function serviceTitle(serviceId: string) {
         return connectServices.find((s) => s.id === serviceId)?.title ?? serviceId;
       }
@@ -358,6 +406,7 @@ import LogoMark from '../components/LogoMark.astro';
 
       let batchWaitlist: BatchInterestRow[] = [];
       let paidBookings: PaidBookingRow[] = [];
+      let proSubscribers: ProSubscriberRow[] = [];
       let slotContactById = new Map<number, string>();
       let allSlots: SlotRow[] = [];
       let busy = false;
@@ -572,6 +621,67 @@ import LogoMark from '../components/LogoMark.astro';
         renderBookings();
       }
 
+      function proDaysLeft(paidUntil: string) {
+        return Math.ceil((new Date(paidUntil).getTime() - Date.now()) / 86400000);
+      }
+
+      function renderProSubscribers() {
+        const count = proSubscribers.length;
+        if (count) {
+          proCount.hidden = false;
+          proCount.textContent = `${count} active`;
+        } else {
+          proCount.hidden = true;
+        }
+
+        if (!count) {
+          proList.innerHTML = '<p class="adm-empty">No paid Pro subscribers right now.</p>';
+          return;
+        }
+
+        proList.innerHTML = proSubscribers
+          .map((row) => {
+            const days = proDaysLeft(row.paid_until);
+            const expiryLabel = proExpiryFmt.format(new Date(row.paid_until));
+            const daysLabel =
+              days <= 0
+                ? 'Expires today'
+                : days === 1
+                  ? '1 day left'
+                  : `${days} days left`;
+            const soonClass = days <= 7 ? ' adm-pro-expiry--soon' : '';
+            const payment = row.razorpay_payment_id
+              ? `<div class="adm-pro-email">${escapeHtml(row.razorpay_payment_id)}</div>`
+              : '';
+            return `<div class="adm-pro-row">
+              <div>
+                <div class="adm-pro-name">${escapeHtml(proDisplayLabel(row))}</div>
+                ${payment}
+              </div>
+              <div class="adm-pro-expiry${soonClass}">
+                ${escapeHtml(expiryLabel)}
+                <div class="adm-pro-expiry-meta">${escapeHtml(daysLabel)}</div>
+              </div>
+            </div>`;
+          })
+          .join('');
+      }
+
+      async function loadProSubscribers() {
+        const { data, error } = await supabase.rpc('list_paid_pro_subscribers');
+        if (error) {
+          proSubscribers = [];
+          proPanel.hidden = true;
+          if (!/could not find the function|schema cache/i.test(error.message ?? '')) {
+            console.warn('list_paid_pro_subscribers:', error.message);
+          }
+          return;
+        }
+        proSubscribers = Array.isArray(data) ? (data as ProSubscriberRow[]) : [];
+        proPanel.hidden = false;
+        renderProSubscribers();
+      }
+
       async function loadSlotContacts() {
         const { data, error } = await supabase.rpc('list_connect_slot_contacts');
         slotContactById = new Map();
@@ -587,6 +697,25 @@ import LogoMark from '../components/LogoMark.astro';
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
+      }
+
+      /** e.g. algofrog07@gmail.com → a••••@gmail.com */
+      function maskEmail(email: string): string {
+        const trimmed = email.trim();
+        const at = trimmed.indexOf('@');
+        if (at < 1) return '••••';
+        const local = trimmed.slice(0, at);
+        const domain = trimmed.slice(at + 1);
+        const dots = '•'.repeat(Math.max(2, Math.min(4, local.length - 1)));
+        return `${local[0]}${dots}@${domain}`;
+      }
+
+      function proDisplayLabel(row: ProSubscriberRow): string {
+        const name = row.display_name?.trim();
+        if (!name) return maskEmail(row.email);
+        const local = row.email.split('@')[0] ?? '';
+        if (name.toLowerCase() === local.toLowerCase()) return maskEmail(row.email);
+        return name;
       }
 
       function renderWaitlist() {
@@ -740,6 +869,7 @@ import LogoMark from '../components/LogoMark.astro';
         await loadSlotContacts();
         renderGrid();
         await loadPaidBookings();
+        await loadProSubscribers();
         await loadBatchWaitlist();
       }
 

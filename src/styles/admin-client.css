@@ -261,3 +261,51 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.adm-page .adm-pro-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--divider);
+  flex-wrap: wrap;
+}
+
+.adm-page .adm-pro-row:last-child {
+  border-bottom: 0;
+}
+
+.adm-page .adm-pro-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.adm-page .adm-pro-email {
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.adm-page .adm-pro-expiry {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0369a1;
+  line-height: 1.35;
+}
+
+.adm-page .adm-pro-expiry--soon {
+  color: #b45309;
+}
+
+.adm-page .adm-pro-expiry-meta {
+  margin-top: 0.12rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--muted);
+}
