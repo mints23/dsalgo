@@ -1683,6 +1683,7 @@ const mailto = mailtoLink;
       import { connectSessionPricePaise, connectBatchCopy } from '../data/connect-services';
       import { loadConnectSlots, loadMyConnectBookings, type ConnectSlot } from '../lib/connect-slots';
       import { fetchIsAdmin, setAdminNavLink } from '../lib/admin-access';
+      import { connectPaymentNotes, waitForConnectPaid } from '../lib/payment-await';
 
       const IST = 'Asia/Kolkata';
       const dateFmt = new Intl.DateTimeFormat('en-IN', {
@@ -2186,6 +2187,7 @@ const mailto = mailtoLink;
           currency: 'INR',
           name: 'algofrog.in',
           description: `${activeOffering.title} session — ${slotLabel}`,
+          notes: connectPaymentNotes(authSession.user.id, slotId, activeOffering!.id, paise),
           prefill: {
             email: authSession.user.email,
             name: authSession.user.user_metadata?.full_name || '',
@@ -2200,18 +2202,14 @@ const mailto = mailtoLink;
             },
           },
           handler: async (response: { razorpay_payment_id: string }) => {
-            const { error } = await supabase.rpc('confirm_connect_slot_payment', {
-              p_payment_id: response.razorpay_payment_id,
-              p_service_id: activeOffering!.id,
-              p_slot_id: slotId,
-            });
-            if (error) {
+            const paymentId = response.razorpay_payment_id;
+            const userId = authSession!.user.id;
+            const ok = await waitForConnectPaid(slotId, paymentId, userId);
+            if (!ok) {
               alert(
-                error.message ||
-                  'Payment received but the slot could not be booked. Contact support with payment ID: ' +
-                    response.razorpay_payment_id,
+                'Payment received — confirmation may take a minute. Refresh Connect or contact support with payment ID: ' +
+                  paymentId,
               );
-              console.error(error);
               return;
             }
             activeHoldSlotId = null;

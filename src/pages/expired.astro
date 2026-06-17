@@ -207,6 +207,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 
     <script>
       import { supabase } from '../lib/supabase';
+      import { proPaymentNotes, waitForProActivation } from '../lib/payment-await';
 
       // If not logged in, go to login
       const { data: { session } } = await supabase.auth.getSession();
@@ -247,33 +248,34 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           currency: 'INR',
           name: 'algofrog.in',
           description: descriptions[plan],
+          notes: proPaymentNotes(session.user.id, plan),
           prefill: {
             email: session.user.email,
             name: session.user.user_metadata?.full_name || '',
           },
           theme: { color: '#01696f' },
-          handler: async (response: any) => {
+          handler: async (response: { razorpay_payment_id: string }) => {
             monthlyBtn.disabled = true;
             quarterlyBtn.disabled = true;
             monthlyBtn.textContent = 'Activating...';
             quarterlyBtn.textContent = 'Activating...';
 
-            const { data, error } = await supabase.rpc('activate_subscription', {
-              payment_id: response.razorpay_payment_id,
-              plan,
-            });
+            const paymentId = response.razorpay_payment_id;
+            const ok = await waitForProActivation(paymentId, session.user.id);
 
-            if (error) {
-              alert('Payment recorded but activation failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
-              console.error(error);
+            if (!ok) {
+              alert(
+                'Payment received — activation may take a minute. Refresh or contact support with payment ID: ' +
+                  paymentId,
+              );
               monthlyBtn.disabled = false;
               quarterlyBtn.disabled = false;
               monthlyBtn.textContent = 'Subscribe — ₹149/mo';
               quarterlyBtn.textContent = '₹299 / 3 months';
-            } else {
-              alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
-              window.location.href = '/';
+              return;
             }
+            alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
+            window.location.href = '/';
           },
         };
         const rzp = new (window as any).Razorpay(options);
