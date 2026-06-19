@@ -275,7 +275,7 @@ https://api.algofrog.in/functions/v1/razorpay-webhook?apikey=YOUR_SUPABASE_ANON_
    - `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` — for auto-capture on `payment.authorized`.
 4. **Razorpay → Webhooks** → Active events: `payment.authorized`, `payment.captured`.
 5. **Cloudflare Worker** variable `SUPABASE_ANON_KEY` = same anon key as the site (or use `?apikey=` URL above).
-6. **SQL**: run `migrations/pro_monthly_169_inr.sql` so the DB accepts monthly `16900` paise (₹169).
+6. **SQL**: ensure `webhook_activate_subscription` in `migrations/razorpay_webhook_secure.sql` accepts monthly `16900` paise (₹169).
 7. **Test reachability**: open `https://api.algofrog.in/functions/v1/razorpay-webhook` in a browser — should show `{"ok":true,"service":"razorpay-webhook"}`.
 8. **Razorpay webhook logs**: 401 = secret mismatch; 500 = DB/RPC error (check Supabase function logs); 200 + no Pro = `missing_notes` or capture still pending.
 
