@@ -1,0 +1,20 @@
+name = "algofrog-supabase-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-08-01"
+
+# Set your real project URL in Cloudflare dashboard or `.dev.vars`:
+# SUPABASE_ORIGIN=https://YOUR_PROJECT_REF.supabase.co
+#
+# Optional: inject apikey for Edge Functions (Razorpay webhooks omit it). Same as PUBLIC_SUPABASE_ANON_KEY.
+# REQUIRED for Razorpay webhooks via api.algofrog.in — set in Cloudflare Dashboard → Worker → Settings → Variables.
+# SUPABASE_ANON_KEY=your-anon-key
+
+[vars]
+SUPABASE_ORIGIN = "https://zxgcsotirznipjjiilim.supabase.co"
+
+# After first deploy, attach custom domain in Cloudflare Dashboard:
+# Workers → algofrog-supabase-proxy → Settings → Domains → api.algofrog.in
+#
+[[routes]]
+pattern = "api.algofrog.in/*"
+zone_name = "algofrog.in"

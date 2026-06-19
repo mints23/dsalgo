@@ -4470,3 +4470,103 @@ td.insight-clickable:focus-visible {
   border: 2px solid var(--border);
   box-shadow: none;
 }
+
+/* ── Payment overlay (post-checkout) ── */
+.payment-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: color-mix(in oklab, var(--text) 42%, transparent);
+  backdrop-filter: blur(6px);
+}
+.payment-overlay[hidden] {
+  display: none !important;
+}
+.payment-overlay-card {
+  width: min(100%, 22rem);
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  box-shadow: var(--shadow), 0 20px 48px color-mix(in oklab, var(--text) 14%, transparent);
+  text-align: center;
+}
+.payment-overlay-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  border: 3px solid color-mix(in oklab, var(--primary) 18%, var(--divider));
+  border-top-color: var(--primary);
+  animation: payment-overlay-spin 0.75s linear infinite;
+}
+@keyframes payment-overlay-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.payment-overlay-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto 0.85rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.payment-overlay-icon--check {
+  background: color-mix(in oklab, var(--primary) 14%, var(--surface));
+  color: var(--primary);
+  border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--divider));
+}
+.payment-overlay-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.payment-overlay-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.payment-overlay-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+}
+.payment-overlay-btn {
+  width: 100%;
+  padding: 0.62rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+.payment-overlay-btn--primary {
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 72%, #02a6a0));
+  color: var(--inv);
+  box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 28%, transparent);
+}
+.payment-overlay-btn--primary:hover {
+  filter: brightness(1.04);
+}
+.payment-overlay-btn--ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--divider);
+}
+.payment-overlay--success .payment-overlay-spinner {
+  border-top-color: color-mix(in oklab, var(--primary) 55%, #22c55e);
+}

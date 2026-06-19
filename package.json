@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "npm run build && gh-pages -d dist --dotfiles",
+    "deploy:proxy": "npm run deploy --prefix workers/supabase-proxy",
     "migrate": "tsx scripts/migrate-to-structured.ts",
     "remigrate": "tsx scripts/remigrate-structured.ts",
     "sync:solutions": "tsx scripts/sync-solutions-from-db.ts",

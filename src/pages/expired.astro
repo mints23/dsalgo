@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
+import { PRO_MONTHLY_INR } from '../lib/payment-await';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -174,7 +175,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
         </div>
 
         <div class="expired-prices">
-          <div class="expired-price-line">&#8377;149 <span>/ month</span></div>
+          <div class="expired-price-line">&#8377;{PRO_MONTHLY_INR} <span>/ month</span></div>
           <div class="expired-price-line">&#8377;299 <span>/ 3 months</span></div>
         </div>
         <div class="expired-price-sub">Secure checkout · UPI, cards &amp; more</div>
@@ -187,7 +188,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
         </ul>
 
         <div class="expired-btn-row">
-          <button type="button" class="expired-btn" id="subscribe-monthly">Subscribe — ₹149/mo</button>
+          <button type="button" class="expired-btn" id="subscribe-monthly">Subscribe — ₹{PRO_MONTHLY_INR}/mo</button>
           <button type="button" class="expired-btn expired-btn--outline" id="subscribe-quarterly">₹299 / 3 months</button>
         </div>
 
@@ -207,7 +208,8 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 
     <script>
       import { supabase } from '../lib/supabase';
-      import { proPaymentNotes, waitForProActivation } from '../lib/payment-await';
+      import { showProActivatingOverlay, showProPendingOverlay } from '../lib/payment-overlay';
+      import { PRO_MONTHLY_INR, proPaymentNotes, resolveProCheckout, waitForProActivation, reloadAfterPayment } from '../lib/payment-await';
 
       // If not logged in, go to login
       const { data: { session } } = await supabase.auth.getSession();
@@ -233,18 +235,23 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 
       type PayPlan = 'monthly' | 'quarterly';
 
-      function openExpiredCheckout(plan: PayPlan) {
-        const amounts: Record<PayPlan, number> = { monthly: 14900, quarterly: 29900 };
+      async function openExpiredCheckout(plan: PayPlan) {
         const descriptions: Record<PayPlan, string> = {
-          monthly: 'DSA Mastery Guide — Monthly (₹149)',
+          monthly: `DSA Mastery Guide — Monthly (₹${PRO_MONTHLY_INR})`,
           quarterly: 'DSA Mastery Guide — Quarterly 3 months (₹299)',
         };
         const monthlyBtn = document.getElementById('subscribe-monthly') as HTMLButtonElement;
         const quarterlyBtn = document.getElementById('subscribe-quarterly') as HTMLButtonElement;
 
+        const checkout = await resolveProCheckout(plan);
+        if (checkout.orderError) {
+          console.warn('razorpay-create-order:', checkout.orderError);
+        }
+
         const options = {
           key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
-          amount: amounts[plan],
+          ...(checkout.orderId ? { order_id: checkout.orderId } : {}),
+          amount: checkout.amount,
           currency: 'INR',
           name: 'algofrog.in',
           description: descriptions[plan],
@@ -257,25 +264,41 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           handler: async (response: { razorpay_payment_id: string }) => {
             monthlyBtn.disabled = true;
             quarterlyBtn.disabled = true;
-            monthlyBtn.textContent = 'Activating...';
-            quarterlyBtn.textContent = 'Activating...';
 
             const paymentId = response.razorpay_payment_id;
-            const ok = await waitForProActivation(paymentId, session.user.id);
+            const overlay = showProActivatingOverlay();
+            const ok = await waitForProActivation(paymentId, session.user.id, plan, {
+              onProgress: (msg) => overlay.setMessage(msg),
+            });
 
-            if (!ok) {
-              alert(
-                'Payment received — activation may take a minute. Refresh or contact support with payment ID: ' +
-                  paymentId,
-              );
-              monthlyBtn.disabled = false;
-              quarterlyBtn.disabled = false;
-              monthlyBtn.textContent = 'Subscribe — ₹149/mo';
-              quarterlyBtn.textContent = '₹299 / 3 months';
+            if (ok) {
+              overlay.showSuccess();
+              await new Promise((r) => setTimeout(r, 500));
+              overlay.close();
+              reloadAfterPayment();
               return;
             }
-            alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
-            window.location.href = '/';
+            overlay.close();
+
+            const { data: subNow } = await supabase
+              .from('subscriptions')
+              .select('status, paid_until')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            if (
+              subNow?.status === 'active' &&
+              subNow.paid_until &&
+              new Date(subNow.paid_until) > new Date()
+            ) {
+              reloadAfterPayment();
+              return;
+            }
+
+            monthlyBtn.disabled = false;
+            quarterlyBtn.disabled = false;
+            monthlyBtn.textContent = `Subscribe — ₹${PRO_MONTHLY_INR}/mo`;
+            quarterlyBtn.textContent = '₹299 / 3 months';
+            showProPendingOverlay();
           },
         };
         const rzp = new (window as any).Razorpay(options);

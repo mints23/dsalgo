@@ -102,7 +102,8 @@ create table if not exists subscriptions (
   razorpay_payment_id text,
   razorpay_subscription_id text,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  is_admin boolean not null default false
 );
 
 alter table subscriptions enable row level security;
@@ -113,11 +114,22 @@ create policy "Users read own subscription"
   on subscriptions for select
   using (auth.uid() = user_id);
 
--- Users can insert their own subscription (for existing users without a row)
+-- Users can insert their own trial row only (see migrations/security_subscriptions_insert_trial_only.sql)
 drop policy if exists "Users insert own subscription" on subscriptions;
-create policy "Users insert own subscription"
+drop policy if exists "Users insert own trial subscription" on subscriptions;
+create policy "Users insert own trial subscription"
   on subscriptions for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and status = 'trial'
+    and trial_ends_at is not null
+    and trial_ends_at > now()
+    and trial_ends_at <= now() + interval '8 days'
+    and paid_until is null
+    and coalesce(trim(razorpay_payment_id), '') = ''
+    and coalesce(razorpay_subscription_id, '') = ''
+    and coalesce(is_admin, false) = false
+  );
 
 -- Index for fast lookups
 create index if not exists idx_subscriptions_user
@@ -207,23 +219,43 @@ alter table topic_content enable row level security;
 
 -- topic_content is accessible when:
 --   • the topic is marked free (is_free = true), OR
---   • the user has an active trial, OR
---   • the user has an active paid subscription
+--   • the user has an active paid subscription, OR
+--   • the user has an active trial AND (preview id list OR Top K / 1D Linear by label); see trial-preview-topic-ids.ts
 drop policy if exists "Authenticated users can read topic_content" on topic_content;
 drop policy if exists "Topic content access by subscription" on topic_content;
 
 create policy "Topic content access by subscription"
   on topic_content for select
   using (
-    exists (select 1 from public.topics t where t.id = topic_id and t.is_free = true)
+    exists (select 1 from public.topics t where t.id = topic_content.topic_id and t.is_free = true)
     or exists (
       select 1 from public.subscriptions s
       where s.user_id = auth.uid()
-        and (
-          (s.status = 'trial'  and s.trial_ends_at > now())
-          or
-          (s.status = 'active' and s.paid_until    > now())
+        and s.status = 'active'
+        and s.paid_until is not null
+        and s.paid_until > now()
+    )
+    or (
+      exists (
+        select 1 from public.subscriptions s
+        where s.user_id = auth.uid()
+          and s.status = 'trial'
+          and s.trial_ends_at > now()
+      )
+      and (
+        topic_content.topic_id in (1, 2, 3, 4, 10, 14, 29, 39)
+        or exists (
+          select 1
+          from public.topics t
+          where t.id = topic_content.topic_id
+            and (
+              lower(coalesce(t.nav_label, '')) like '%top k%'
+              or lower(coalesce(t.title, '')) like '%top k%'
+              or lower(coalesce(t.nav_label, '')) like '%1d linear%'
+              or lower(coalesce(t.title, '')) like '%1d linear%'
+            )
         )
+      )
     )
   );
 
@@ -252,15 +284,35 @@ drop policy if exists "Problems access by subscription" on problems;
 create policy "Problems access by subscription"
   on problems for select
   using (
-    exists (select 1 from public.topics t where t.id = topic_id and t.is_free = true)
+    exists (select 1 from public.topics t where t.id = problems.topic_id and t.is_free = true)
     or exists (
       select 1 from public.subscriptions s
       where s.user_id = auth.uid()
-        and (
-          (s.status = 'trial'  and s.trial_ends_at > now())
-          or
-          (s.status = 'active' and s.paid_until    > now())
+        and s.status = 'active'
+        and s.paid_until is not null
+        and s.paid_until > now()
+    )
+    or (
+      exists (
+        select 1 from public.subscriptions s
+        where s.user_id = auth.uid()
+          and s.status = 'trial'
+          and s.trial_ends_at > now()
+      )
+      and (
+        problems.topic_id in (1, 2, 3, 4, 10, 14, 29, 39)
+        or exists (
+          select 1
+          from public.topics t
+          where t.id = problems.topic_id
+            and (
+              lower(coalesce(t.nav_label, '')) like '%top k%'
+              or lower(coalesce(t.title, '')) like '%top k%'
+              or lower(coalesce(t.nav_label, '')) like '%1d linear%'
+              or lower(coalesce(t.title, '')) like '%1d linear%'
+            )
         )
+      )
     )
   );
 
@@ -292,14 +344,26 @@ create policy "Problem playback access by subscription"
         and (
           t.is_free = true
           or exists (
-            select 1
-            from public.subscriptions s
+            select 1 from public.subscriptions s
             where s.user_id = auth.uid()
-              and (
-                (s.status = 'trial'  and s.trial_ends_at > now())
-                or
-                (s.status = 'active' and s.paid_until    > now())
-              )
+              and s.status = 'active'
+              and s.paid_until is not null
+              and s.paid_until > now()
+          )
+          or (
+            exists (
+              select 1 from public.subscriptions s
+              where s.user_id = auth.uid()
+                and s.status = 'trial'
+                and s.trial_ends_at > now()
+            )
+            and (
+              p.topic_id in (1, 2, 3, 4, 10, 14, 29, 39)
+              or lower(coalesce(t.nav_label, '')) like '%top k%'
+              or lower(coalesce(t.title, '')) like '%top k%'
+              or lower(coalesce(t.nav_label, '')) like '%1d linear%'
+              or lower(coalesce(t.title, '')) like '%1d linear%'
+            )
           )
         )
     )

@@ -1683,7 +1683,8 @@ const mailto = mailtoLink;
       import { connectSessionPricePaise, connectBatchCopy } from '../data/connect-services';
       import { loadConnectSlots, loadMyConnectBookings, type ConnectSlot } from '../lib/connect-slots';
       import { fetchIsAdmin, setAdminNavLink } from '../lib/admin-access';
-      import { connectPaymentNotes, waitForConnectPaid } from '../lib/payment-await';
+      import { showConnectPendingOverlay } from '../lib/payment-overlay';
+      import { connectPaymentNotes, resolveConnectCheckout, waitForConnectPaid } from '../lib/payment-await';
 
       const IST = 'Asia/Kolkata';
       const dateFmt = new Intl.DateTimeFormat('en-IN', {
@@ -2181,9 +2182,16 @@ const mailto = mailtoLink;
 
         const slotId = reservedSlot.id;
         const slotLabel = `${dateFmt.format(new Date(reservedSlot.starts_at))} ${timeFmt.format(new Date(reservedSlot.starts_at))}`;
+
+        const checkout = await resolveConnectCheckout(slotId, activeOffering!.id, paise);
+        if (checkout.orderError) {
+          console.warn('razorpay-create-order:', checkout.orderError);
+        }
+
         const options = {
           key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
-          amount: paise,
+          ...(checkout.orderId ? { order_id: checkout.orderId } : {}),
+          amount: checkout.amount,
           currency: 'INR',
           name: 'algofrog.in',
           description: `${activeOffering.title} session — ${slotLabel}`,
@@ -2206,10 +2214,7 @@ const mailto = mailtoLink;
             const userId = authSession!.user.id;
             const ok = await waitForConnectPaid(slotId, paymentId, userId);
             if (!ok) {
-              alert(
-                'Payment received — confirmation may take a minute. Refresh Connect or contact support with payment ID: ' +
-                  paymentId,
-              );
+              showConnectPendingOverlay();
               return;
             }
             activeHoldSlotId = null;

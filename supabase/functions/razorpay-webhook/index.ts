@@ -21,9 +21,104 @@ async function hmacSha256Hex(secret: string, body: string): Promise<string> {
 
 type RazorpayNotes = Record<string, string>;
 
+type RazorpayPayment = {
+  id?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  notes?: RazorpayNotes;
+  order_id?: string;
+};
+
+async function fetchOrderNotes(orderId: string): Promise<RazorpayNotes> {
+  const auth = razorpayBasicAuth();
+  if (!auth) return {};
+  const res = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(orderId)}`, {
+    headers: { Authorization: auth },
+  });
+  if (!res.ok) {
+    console.error('fetch order notes failed', orderId, res.status);
+    return {};
+  }
+  try {
+    const order = (await res.json()) as { notes?: RazorpayNotes };
+    return order.notes ?? {};
+  } catch {
+    return {};
+  }
+}
+
+async function resolvePaymentNotes(
+  payment: RazorpayPayment,
+  orderNotesFromEvent?: RazorpayNotes,
+): Promise<RazorpayNotes> {
+  const fromEvent = { ...(orderNotesFromEvent ?? {}), ...(payment.notes ?? {}) };
+  if (fromEvent.type && fromEvent.user_id) return fromEvent;
+  if (payment.order_id) {
+    const fromOrder = await fetchOrderNotes(payment.order_id);
+    return { ...fromOrder, ...fromEvent };
+  }
+  return fromEvent;
+}
+
+function razorpayBasicAuth(): string | null {
+  const keyId = Deno.env.get('RAZORPAY_KEY_ID');
+  const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
+  if (!keyId || !keySecret) return null;
+  return `Basic ${btoa(`${keyId}:${keySecret}`)}`;
+}
+
+async function captureRazorpayPayment(
+  paymentId: string,
+  amount: number,
+  currency: string,
+): Promise<RazorpayPayment | null> {
+  const auth = razorpayBasicAuth();
+  if (!auth) return null;
+  const res = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}/capture`, {
+    method: 'POST',
+    headers: { Authorization: auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, currency }),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    console.error('Razorpay capture failed', paymentId, res.status, text);
+    return null;
+  }
+  try {
+    return JSON.parse(text) as RazorpayPayment;
+  } catch {
+    return null;
+  }
+}
+
+async function ensurePaymentCaptured(payment: RazorpayPayment): Promise<RazorpayPayment | null> {
+  if (!payment.id || payment.currency !== 'INR') return null;
+  if (payment.status === 'captured') return payment;
+  if (payment.status === 'authorized' && payment.amount) {
+    for (let i = 0; i < 3; i++) {
+      const captured = await captureRazorpayPayment(
+        payment.id,
+        payment.amount,
+        payment.currency ?? 'INR',
+      );
+      if (captured?.status === 'captured') return captured;
+      if (i < 2) await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (req.method === 'GET') {
+    return new Response(
+      JSON.stringify({ ok: true, service: 'razorpay-webhook', jwt: false }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   }
 
   if (req.method !== 'POST') {
@@ -41,13 +136,16 @@ Deno.serve(async (req) => {
 
   const expected = await hmacSha256Hex(webhookSecret, body);
   if (!signature || signature !== expected) {
-    console.error('Invalid Razorpay webhook signature');
+    console.error('Invalid Razorpay webhook signature', {
+      hasSignature: !!signature,
+      bodyLength: body.length,
+    });
     return new Response('Invalid signature', { status: 401, headers: corsHeaders });
   }
 
   let event: {
     event?: string;
-    payload?: { payment?: { entity?: Record<string, unknown> } };
+    payload?: { payment?: { entity?: RazorpayPayment }; order?: { entity?: { notes?: RazorpayNotes } } };
   };
 
   try {
@@ -56,39 +154,50 @@ Deno.serve(async (req) => {
     return new Response('Invalid JSON', { status: 400, headers: corsHeaders });
   }
 
-  if (event.event !== 'payment.captured') {
-    return new Response(JSON.stringify({ ok: true, skipped: event.event }), {
+  const eventName = event.event ?? '';
+  if (eventName !== 'payment.captured' && eventName !== 'payment.authorized') {
+    return new Response(JSON.stringify({ ok: true, skipped: eventName }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  const payment = event.payload?.payment?.entity as
-    | {
-        id?: string;
-        amount?: number;
-        currency?: string;
-        status?: string;
-        notes?: RazorpayNotes;
-      }
-    | undefined;
-
-  if (!payment?.id || payment.status !== 'captured' || payment.currency !== 'INR') {
+  let payment = event.payload?.payment?.entity;
+  if (!payment?.id) {
     return new Response(JSON.stringify({ ok: true, ignored: true }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  const notes = payment.notes ?? {};
+  if (payment.status !== 'captured') {
+    const captured = await ensurePaymentCaptured(payment);
+    if (captured) {
+      payment = captured;
+    }
+  }
+
+  if (!payment.id || payment.status !== 'captured' || payment.currency !== 'INR') {
+    return new Response(JSON.stringify({ ok: true, pending: payment.status }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const orderNotes = event.payload?.order?.entity?.notes;
+  const notes = await resolvePaymentNotes(payment, orderNotes);
   const type = notes.type;
   const userId = notes.user_id;
   const paymentId = payment.id;
   const amount = payment.amount ?? 0;
 
   if (!type || !userId) {
-    console.error('Webhook missing notes.type or notes.user_id', notes);
-    return new Response(JSON.stringify({ ok: true, ignored: 'missing_notes' }), {
+    console.error('Webhook missing notes.type or notes.user_id', {
+      paymentId: payment.id,
+      orderId: payment.order_id,
+      notes,
+    });
+    return new Response(JSON.stringify({ ok: true, ignored: 'missing_notes', payment_id: payment.id }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

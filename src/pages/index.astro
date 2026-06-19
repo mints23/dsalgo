@@ -3,6 +3,7 @@ import '../styles/global.css';
 import LogoMark from '../components/LogoMark.astro';
 import ConnectFloat from '../components/ConnectFloat.astro';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
+import { PRO_MONTHLY_INR } from '../lib/payment-await';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -159,101 +160,6 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
             </button>
           </div>
         </div>
-        <div class="pro-benefits-strip" id="pro-benefits-strip" hidden>
-          <div class="pro-benefits-strip-layout">
-            <details class="pro-benefits-details" title="What you get with Pro">
-              <summary class="pro-benefits-summary">
-                <span class="pro-benefits-badge">Pro</span>
-                <span class="pro-benefits-summary-line">
-                  <span class="pro-benefits-kw">Progress</span><span class="pro-benefits-sep">·</span><span class="pro-benefits-kw">Focus</span><span class="pro-benefits-sep">·</span><span class="pro-benefits-kw">Animated insights</span>
-                  <span class="pro-benefits-summary-hint">details</span>
-                </span>
-                <span class="pro-benefits-chevron" aria-hidden="true">▾</span>
-              </summary>
-            <div class="pro-benefits-body">
-              <p class="pro-benefits-lead">
-                Pro is for people grinding the list: you keep <strong>state</strong> (what you solved), <strong>access</strong> (every topic after trial), and <strong>animated insight walkthroughs</strong> (step-by-step playback with pacing and speed) — not just read-only pages.
-              </p>
-              <div class="pro-benefit-grid" role="list">
-                <div class="pro-benefit-point" role="listitem">
-                  <span class="pro-benefit-icon pro-benefit-icon--a" aria-hidden="true">1</span>
-                  <div class="pro-benefit-copy">
-                    <span class="pro-benefit-title">Clear picture of progress</span>
-                    <p class="pro-benefit-desc">Tick problems as you go; the nav dots and top bar show how deep you are in each topic. Everything syncs to your login — switch laptop or phone without starting from zero.</p>
-                  </div>
-                </div>
-                <div class="pro-benefit-point" role="listitem">
-                  <span class="pro-benefit-icon pro-benefit-icon--b" aria-hidden="true">2</span>
-                  <div class="pro-benefit-copy">
-                    <span class="pro-benefit-title">Strip noise, keep signal</span>
-                    <p class="pro-benefit-desc"><strong>Problems only</strong> hides long explanations when you just want the table. <strong>Core set</strong> narrows each topic to minimum-coverage rows. Both follow your account so your next session matches this one.</p>
-                  </div>
-                </div>
-                <div class="pro-benefit-point" role="listitem">
-                  <span class="pro-benefit-icon pro-benefit-icon--c" aria-hidden="true">3</span>
-                  <div class="pro-benefit-copy">
-                    <span class="pro-benefit-title" id="pro-benefits-topic-count-title">The whole {GUIDE_TOPIC_COUNT}-topic path stays open</span>
-                    <p class="pro-benefit-desc">Trial ends or access lapses — without Pro you drop to free chapters only. Pro keeps the full structured guide (tables, layers, and every problem row) so your prep isn’t fragmented.</p>
-                  </div>
-                </div>
-                <div class="pro-benefit-point" role="listitem">
-                  <span class="pro-benefit-icon pro-benefit-icon--d" aria-hidden="true">4</span>
-                  <div class="pro-benefit-copy">
-                    <span class="pro-benefit-title">Animated key-insight playback</span>
-                    <p class="pro-benefit-desc">Click any <strong>Key insight</strong> cell for the full overlay: curated steps, typewriter-style code replay, auto-advance, speed control, and visual frames where we ship them. It’s included with Pro so you can rehearse each problem’s story end to end.</p>
-                  </div>
-                </div>
-              </div>
-              <div class="pro-benefits-actions">
-                <button type="button" class="pro-benefits-upgrade" id="pro-benefits-upgrade">
-                  Go Pro — ₹149/mo
-                </button>
-                <span class="pro-benefits-footnote">₹299 / 3 mo also available at checkout</span>
-              </div>
-            </div>
-            </details>
-            <button
-              type="button"
-              class="pro-benefits-dismiss"
-              id="pro-benefits-dismiss"
-              aria-label="Hide Pro banner until next visit"
-              title="Hide until next visit"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-        <div class="guide-method-strip" id="guide-method-strip">
-          <div class="guide-method-strip-layout">
-            <details class="guide-method-details">
-              <summary class="guide-method-summary">
-                <span class="guide-method-badge">Method</span>
-                <div class="guide-method-summary-main">
-                  <span class="guide-method-tagline">Work the rows like a checklist</span>
-                  <p class="guide-method-blurb">
-                    Every row is a question; order matters—each one assumes you’ve done the rows above, not a random playlist.
-                  </p>
-                  <span class="guide-method-summary-hint">Why sequence matters</span>
-                </div>
-                <span class="guide-method-chevron" aria-hidden="true">▾</span>
-              </summary>
-              <div class="guide-method-body">
-                <p class="guide-method-lede">
-                  Each <strong>row is a question</strong>, stacked on purpose: the next row always adds something new on top of what you just solved. That’s the straightest path through the topic—no shuffling the deck.
-                </p>
-              </div>
-            </details>
-            <button
-              type="button"
-              class="guide-method-dismiss"
-              id="guide-method-dismiss"
-              aria-label="Hide this note until next visit"
-              title="Hide until next visit"
-            >
-              ×
-            </button>
-          </div>
-        </div>
         <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
           <div class="heatmap-modal-inner">
             <div class="heatmap-modal-head">
@@ -393,7 +299,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           <p class="insight-pro-gate-copy">
             Go Pro to open the full key-insight walkthrough: curated steps, visuals where we ship them, and playback you can run at your own pace.
           </p>
-          <button type="button" class="pro-benefits-upgrade" id="insight-pro-gate-upgrade">Go Pro — ₹149/mo</button>
+          <button type="button" class="pro-benefits-upgrade" id="insight-pro-gate-upgrade">Go Pro — ₹{PRO_MONTHLY_INR}/mo</button>
           <p class="insight-pro-gate-foot">₹299 / 3 mo also available at checkout</p>
         </div>
       </div>
@@ -405,7 +311,14 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
     <script>
       import { supabase } from '../lib/supabase';
       import { setAdminNavLink } from '../lib/admin-access';
-      import { proPaymentNotes, waitForProActivation } from '../lib/payment-await';
+      import { showProActivatingOverlay, showProPendingOverlay } from '../lib/payment-overlay';
+      import {
+        PRO_MONTHLY_INR,
+        proPaymentNotes,
+        resolveProCheckout,
+        waitForProActivation,
+        reloadAfterPayment,
+      } from '../lib/payment-await';
       import { getStepExplain, stepHasProseAside } from '../data/step-explain';
       import { resolvePlaybackComplexity } from '../data/playback-complexity';
       import { resolveTrialContentTopicIds } from '../data/trial-preview-topic-ids';
@@ -471,7 +384,7 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           b.addEventListener('click', () => openRazorpay(plan));
           return b;
         };
-        trialBtns.appendChild(mkTrialPay('₹149/mo', 'monthly'));
+        trialBtns.appendChild(mkTrialPay(`₹${PRO_MONTHLY_INR}/mo`, 'monthly'));
         trialBtns.appendChild(mkTrialPay('₹299/3 mo', 'quarterly'));
         subBadgeEl.appendChild(trialBtns);
       } else if (isPaid) {
@@ -503,21 +416,25 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           b.addEventListener('click', () => openRazorpay(plan));
           return b;
         };
-        expBtns.appendChild(mkExp('₹149/mo', 'monthly'));
+        expBtns.appendChild(mkExp(`₹${PRO_MONTHLY_INR}/mo`, 'monthly'));
         expBtns.appendChild(mkExp('₹299/3 mo', 'quarterly'));
         subBadgeEl.appendChild(expBtns);
       }
 
       // ── Razorpay Checkout ──
-      function openRazorpay(plan: PayPlan = 'monthly') {
-        const amounts: Record<PayPlan, number> = { monthly: 14900, quarterly: 29900 };
+      async function openRazorpay(plan: PayPlan = 'monthly') {
         const descriptions: Record<PayPlan, string> = {
-          monthly: 'DSA Mastery Guide — Monthly (₹149)',
+          monthly: `DSA Mastery Guide — Monthly (₹${PRO_MONTHLY_INR})`,
           quarterly: 'DSA Mastery Guide — Quarterly 3 months (₹299)',
         };
+        const checkout = await resolveProCheckout(plan);
+        if (checkout.orderError) {
+          console.warn('razorpay-create-order:', checkout.orderError);
+        }
         const options = {
           key: import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
-          amount: amounts[plan],
+          ...(checkout.orderId ? { order_id: checkout.orderId } : {}),
+          amount: checkout.amount,
           currency: 'INR',
           name: 'algofrog.in',
           description: descriptions[plan],
@@ -529,16 +446,32 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           theme: { color: '#01696f' },
           handler: async (response: { razorpay_payment_id: string }) => {
             const paymentId = response.razorpay_payment_id;
-            const ok = await waitForProActivation(paymentId, session.user.id);
-            if (!ok) {
-              alert(
-                'Payment received — activation may take a minute. Refresh the page or contact support with payment ID: ' +
-                  paymentId,
-              );
+            const overlay = showProActivatingOverlay();
+            const ok = await waitForProActivation(paymentId, session.user.id, plan, {
+              onProgress: (msg) => overlay.setMessage(msg),
+            });
+            if (ok) {
+              overlay.showSuccess();
+              await new Promise((r) => setTimeout(r, 500));
+              overlay.close();
+              reloadAfterPayment();
               return;
             }
-            alert('🎉 Payment successful! Your Pro subscription is now active. Thank you for subscribing to DSA Mastery Guide.');
-            window.location.reload();
+            overlay.close();
+            const { data: subNow } = await supabase
+              .from('subscriptions')
+              .select('status, paid_until')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            if (
+              subNow?.status === 'active' &&
+              subNow.paid_until &&
+              new Date(subNow.paid_until) > new Date()
+            ) {
+              reloadAfterPayment();
+              return;
+            }
+            showProPendingOverlay();
           },
         };
         const rzp = new (window as any).Razorpay(options);
@@ -577,33 +510,6 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
         },
         true
       );
-
-      const PRO_STRIP_DISMISS_KEY = 'pro_benefits_strip_dismiss';
-      const proBenefitsStrip = document.getElementById('pro-benefits-strip');
-      if (!isPaid && proBenefitsStrip && sessionStorage.getItem(PRO_STRIP_DISMISS_KEY) !== '1') {
-        proBenefitsStrip.hidden = false;
-        proBenefitsStrip.classList.toggle('pro-benefits-strip--trial', isTrialActive);
-        document.getElementById('pro-benefits-upgrade')?.addEventListener('click', (e) => {
-          e.preventDefault();
-          openRazorpay('monthly');
-        });
-        document.getElementById('pro-benefits-dismiss')?.addEventListener('click', () => {
-          sessionStorage.setItem(PRO_STRIP_DISMISS_KEY, '1');
-          proBenefitsStrip.hidden = true;
-        });
-      }
-
-      const GUIDE_METHOD_DISMISS_KEY = 'guide_method_strip_dismiss';
-      const guideMethodStrip = document.getElementById('guide-method-strip');
-      if (guideMethodStrip) {
-        if (sessionStorage.getItem(GUIDE_METHOD_DISMISS_KEY) === '1') {
-          guideMethodStrip.hidden = true;
-        }
-        document.getElementById('guide-method-dismiss')?.addEventListener('click', () => {
-          sessionStorage.setItem(GUIDE_METHOD_DISMISS_KEY, '1');
-          guideMethodStrip.hidden = true;
-        });
-      }
 
       supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') window.location.href = '/login';
@@ -701,8 +607,6 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
           'content',
           `${pc} questions in ordered tables — ${tc} DSA topics for interview prep.`,
         );
-        const proTitle = document.getElementById('pro-benefits-topic-count-title');
-        if (proTitle) proTitle.textContent = `The whole ${tc}-topic path stays open`;
       })();
 
       // ── Study preferences: Pro loads/saves to Supabase; non-Pro sees toggles disabled (no effect) ──
@@ -1118,11 +1022,11 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
             <div class="locked-msg">${lockHead}</div>
             <div class="locked-sub">${lockSub}</div>
             <div class="locked-price-options">
-              <div><span class="locked-price-amt">₹149</span><span class="locked-price-period">/ month</span></div>
+              <div><span class="locked-price-amt">₹${PRO_MONTHLY_INR}</span><span class="locked-price-period">/ month</span></div>
               <div><span class="locked-price-amt">₹299</span><span class="locked-price-period">/ 3 months</span></div>
             </div>
             <div class="upgrade-btn-row">
-              <button type="button" class="upgrade-btn-card" data-pay-plan="monthly">🔓 Monthly — ₹149</button>
+              <button type="button" class="upgrade-btn-card" data-pay-plan="monthly">🔓 Monthly — ₹${PRO_MONTHLY_INR}</button>
               <button type="button" class="upgrade-btn-card upgrade-btn-card--secondary" data-pay-plan="quarterly">🔓 Quarterly — ₹299</button>
             </div>
           </div>`;
@@ -1283,17 +1187,6 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
       patchProblemRowIdsFromTopics(topics);
 
       let w98Active = studyProblemsOnlyPref;
-
-      function syncGuideMethodStripVisibility() {
-        const strip = document.getElementById('guide-method-strip');
-        if (!strip) return;
-        if (sessionStorage.getItem(GUIDE_METHOD_DISMISS_KEY) === '1') {
-          strip.hidden = true;
-          return;
-        }
-        strip.hidden = w98Active;
-      }
-      syncGuideMethodStripVisibility();
 
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
         const lab = document.createElement('label');
@@ -1886,7 +1779,6 @@ import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
       function applyW98() {
         document.documentElement.classList.toggle('w98-mode', w98Active);
         applyTopicBodyVisibility();
-        syncGuideMethodStripVisibility();
       }
       function syncW98TopicToggles() {
         document.querySelectorAll('.w98-topic-toggle').forEach((el) => {

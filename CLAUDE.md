@@ -1,56 +1,57 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for working in this repository.
 
 ## Commands
 
 ```bash
-npm run dev        # Start dev server (Astro hot reload)
-npm run build      # Production build to dist/
-npm run preview    # Serve the production build locally
-npm run deploy     # Build + push dist/ to GitHub Pages (gh-pages)
+npm run dev          # Astro dev server (port 4321)
+npm run build        # Production build → dist/
+npm run preview      # Serve dist/ locally
+npm run deploy       # build + gh-pages push (algofrog.in)
+npm run deploy:proxy # Cloudflare Worker (api.algofrog.in)
 ```
 
-No linting or test framework is configured.
+No lint or test framework is configured.
 
-## Architecture
+## Architecture (summary)
 
-Static DSA prep site ([algofrog.in](https://algofrog.in)) built with Astro. All content lives in `src/data/topics.ts` as a typed TypeScript array — no CMS, no database, no API calls.
+**Full diagram and flows:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-**Single-page design:** `src/pages/index.astro` renders every topic on one HTML document. Navigation is client-side: clicking a sidebar link scrolls to `id="tp{id}"` on the matching TopicCard. There are no dynamic routes.
+- **Static site:** Astro on GitHub Pages (`algofrog.in`).
+- **Backend:** Supabase (auth, Postgres, RLS, RPCs). Guide content is fetched client-side from `topics` / `problems` — not baked into HTML.
+- **API proxy:** `PUBLIC_SUPABASE_URL=https://api.algofrog.in` in prod — Cloudflare Worker → `*.supabase.co` (India ISP blocks). See [docs/CLOUDFLARE_SUPABASE_PROXY.md](docs/CLOUDFLARE_SUPABASE_PROXY.md).
+- **Payments:** Razorpay Checkout in browser; activation via Edge Function `razorpay-webhook` + `migrations/razorpay_webhook_secure.sql`. Client polls after pay (`src/lib/payment-await.ts`); never trust client activation RPCs.
 
-**Data flow:**
-1. `src/data/types.ts` defines the `Topic` interface and `TierCode` enum
-2. `src/data/topics.ts` exports `Topic[]` — the sole data source
-3. `index.astro` maps topics → `<TopicCard>` and passes the array to `<SidebarNav>` for grouping
+### Pages
 
-## Topic Data Shape
+| Route | Role |
+|-------|------|
+| `/` | DSA guide (auth + subscription gated) |
+| `/login`, `/auth/callback` | Google OAuth PKCE |
+| `/connect` | Mentor slots + Razorpay |
+| `/admin` | Admin panel (`is_admin`) |
+| `/expired` | Post-trial upgrade |
 
-Each `Topic` in `topics.ts` has two concerns:
+### Key libs
 
-**Sidebar/nav fields** — used by `SidebarNav.astro` to build grouped navigation:
-- `navSection`: group header (e.g., `"Algorithms"`, `"Data Structures"`)
-- `navLabel`: link text shown in sidebar
-- `navTierDotColor`: hex color dot beside the label
-- `showInSidebar`: whether the topic appears in nav at all
-- `displayNumber`: used for sort order within each section
+- `src/lib/supabase.ts` — browser client
+- `src/lib/payment-await.ts` — Razorpay notes + webhook polling
+- `src/lib/auth-redirect.ts` — OAuth redirects
+- `src/lib/admin-access.ts` — admin nav visibility
 
-**Content fields** — used by `TopicCard.astro`:
-- `title`, `tier`, `typeLabel`, `summaryMeta`, `topbarMeta`: header metadata
-- `bodyHtml`: raw HTML string (use `String.raw\`...\`` to avoid escaping). This is the full rendered content — tables of LeetCode problems, pattern triggers, sub-variant pills, etc.
+### Migrations
 
-When adding a new topic, assign the next sequential `id`, pick a `navSection` that matches an existing group, and write `bodyHtml` as an HTML string with the same table/div structure used in other topics.
+Run SQL in Supabase SQL Editor from `migrations/`. Schema snapshot: `supabase-schema.sql`. Payment lockdown: `razorpay_webhook_secure.sql`.
 
-## Components
+### Env (build)
 
-- **`SidebarNav.astro`** — groups topics by `navSection`, sorts by `displayNumber`, renders anchor links
-- **`TopicCard.astro`** — renders one topic: header row (number, title, tier badge, type label) + `bodyHtml` via `set:html`
-- **`Topbar.astro`** — top bar; shows breadcrumb from `topbarMeta` when a topic is active
+Copy `.env.example` → `.env`. Prod: `PUBLIC_SUPABASE_URL=https://api.algofrog.in`. Never commit secrets.
 
 ## Theming
 
-`src/styles/global.css` defines all design tokens as CSS variables on `:root` (light) and `[data-theme="dark"]`. Theme is toggled by setting `document.documentElement.dataset.theme` and persisted in `localStorage`. Primary colors: `#01696f` (light) / `#4f98a3` (dark). Always use CSS variables rather than hardcoded colors.
+`src/styles/global.css` — CSS variables on `:root` / `[data-theme="dark"]`. Primary: `#01696f` (light) / `#4f98a3` (dark). Use variables, not hardcoded colors.
 
 ## Deployment
 
-`npm run deploy` runs `gh-pages -d dist --dotfiles`, pushing the built `dist/` folder to the `gh-pages` branch. The production domain is `https://algofrog.in`.
+`npm run deploy` → `gh-pages` branch, custom domain `algofrog.in`. Worker deploy is separate (`npm run deploy:proxy`).
