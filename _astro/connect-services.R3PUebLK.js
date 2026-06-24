@@ -37,12 +37,4 @@ My goal:
 Current level:
 Timeline:
 
-Thanks!`},{id:"motivation",title:"Motivation",benefit:"Stay in the game",hook:"Burnout, consistency, and mindset for a 6–12 month grind.",icon:"🔥",subject:"Connect — Motivation",accent:"#c2410c",price:"₹200",pricePeriod:"· 1 session",sessionPricePaise:2e4,mailBody:`Hi,
-
-I need help with: Motivation
-
-My goal:
-Current level:
-Timeline:
-
 Thanks!`}];function t(e){if(e.sessionPricePaise!=null)return e.sessionPricePaise;const n=e.price.replace(/,/g,"").match(/₹?\s*(\d+(?:\.\d+)?)/);if(n)return Math.round(parseFloat(n[1])*100)}export{i as a,t as b,s as c};
