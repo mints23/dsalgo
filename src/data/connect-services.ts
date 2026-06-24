@@ -34,21 +34,6 @@ export const SUPPORT_EMAIL = 'algofrog07@gmail.com';
 export const SESSION_FOOTNOTE =
   'Each booking is one live session (30 to 60 minutes), depending on what you need covered.';
 
-export const urgentService: ConnectService = {
-  id: 'urgent',
-  title: 'Urgent Connect',
-  benefit: 'Stuck right now?',
-  hook: 'Priority 1:1 session when you need answers fast — interview tomorrow, blocker today.',
-  icon: '⚡',
-  subject: 'Connect — Urgent Connect',
-  accent: '#dc2626',
-  price: '₹599',
-  pricePeriod: '· 1 session',
-  sessionPricePaise: 59900,
-  mailBody:
-    'Hi,\n\nI need an urgent connect session.\n\nMy blocker:\nCurrent level:\nHow soon I need help:\n\nThanks!',
-};
-
 export const connectServices: ConnectService[] = [
   {
     id: 'system-design',
@@ -58,9 +43,9 @@ export const connectServices: ConnectService[] = [
     icon: '🏗️',
     subject: 'Connect — System Design',
     accent: '#0f766e',
-    price: '₹799',
+    price: '₹499',
     pricePeriod: '· 1 session',
-    sessionPricePaise: 79900,
+    sessionPricePaise: 49900,
     mailBody:
       'Hi,\n\nI need help with: System Design\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
   },
@@ -72,7 +57,7 @@ export const connectServices: ConnectService[] = [
     icon: '📚',
     subject: 'Connect — DSA Classes',
     accent: '#6d28d9',
-    price: '₹499',
+    price: '₹399',
     pricePeriod: '· per session',
     comingSoon: true,
     mailBody:
@@ -86,9 +71,9 @@ export const connectServices: ConnectService[] = [
     icon: '🗺️',
     subject: 'Connect — Road Map for High CTC',
     accent: '#0369a1',
-    price: '₹599',
+    price: '₹399',
     pricePeriod: '· 1 session',
-    sessionPricePaise: 59900,
+    sessionPricePaise: 39900,
     mailBody:
       'Hi,\n\nI need help with: Road Map for High CTC\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
   },
@@ -120,23 +105,9 @@ export const connectServices: ConnectService[] = [
     mailBody:
       'Hi,\n\nI need help with: 1:1 Mentorship\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
   },
-  {
-    id: 'motivation',
-    title: 'Motivation',
-    benefit: 'Stay in the game',
-    hook: 'Burnout, consistency, and mindset for a 6–12 month grind.',
-    icon: '🔥',
-    subject: 'Connect — Motivation',
-    accent: '#c2410c',
-    price: '₹200',
-    pricePeriod: '· 1 session',
-    sessionPricePaise: 20000,
-    mailBody:
-      'Hi,\n\nI need help with: Motivation\n\nMy goal:\nCurrent level:\nTimeline:\n\nThanks!',
-  },
 ];
 
-export const connectOfferings = [...connectServices, urgentService];
+export const connectOfferings = connectServices;
 
 export const introBody =
   'Hi,\n\nI am interested in mentoring. My goal:\n\nCurrent level (student / 0–2 YOE / 2+ YOE):\nTarget companies / CTC:\nTimeline:\n\nService I need:\n\nThanks!';

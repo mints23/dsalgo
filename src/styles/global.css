@@ -26,6 +26,9 @@
   --guide-method-mid: #7c3aed;
   --guide-method-glow: rgba(91, 33, 182, 0.2);
   --guide-method-hint: #b45309;
+  --royal-gold: #b8952e;
+  --royal-gold-soft: color-mix(in oklab, #b8952e 22%, var(--border));
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 }
 @media (min-width: 1536px) {
   :root,
@@ -72,6 +75,8 @@
   --guide-method-mid: #a78bfa;
   --guide-method-glow: rgba(139, 92, 246, 0.35);
   --guide-method-hint: #fbbf24;
+  --royal-gold: #d4b44a;
+  --royal-gold-soft: color-mix(in oklab, #d4b44a 24%, var(--border));
 }
 *,
 *::before,
@@ -99,7 +104,10 @@ body {
   font-family: 'Inter', sans-serif;
   /* Scales from phone to ultrawide without tiny or oversized body text */
   font-size: clamp(0.875rem, 0.75rem + 0.35vw, 1.125rem);
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 90% 70% at 0% 0%, color-mix(in oklab, var(--royal-gold) 6%, transparent), transparent 52%),
+    radial-gradient(ellipse 80% 55% at 100% 0%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 48%),
+    var(--bg);
   color: var(--text);
   line-height: 1.6;
   min-height: 100dvh;
@@ -174,15 +182,30 @@ summary:focus-visible {
   /* Slightly wider on large monitors, compact on small laptops */
   width: clamp(252px, 19vw, 312px);
   flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  box-shadow: 4px 0 24px color-mix(in srgb, var(--text) 4%, transparent);
+  background: color-mix(in oklab, var(--surface) 94%, var(--bg));
+  border-right: 1px solid color-mix(in oklab, var(--royal-gold-soft) 45%, var(--border));
+  box-shadow: 4px 0 28px color-mix(in srgb, var(--text) 5%, transparent);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100dvh;
   overflow-y: auto;
+}
+.sidebar::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: block;
+  height: 2px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--royal-gold) 75%, var(--primary)),
+    transparent
+  );
 }
 @media (min-width: 1025px) {
   .sidebar {
@@ -200,24 +223,20 @@ summary:focus-visible {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--primary) 5%, var(--bg)) 0%,
-    var(--bg) 14rem
-  );
+  background:
+    radial-gradient(ellipse 70% 50% at 100% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 45%),
+    linear-gradient(180deg, color-mix(in oklab, var(--primary) 4%, var(--bg)) 0%, var(--bg) 16rem);
 }
 [data-theme='dark'] .main {
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--primary) 8%, var(--bg)) 0%,
-    var(--bg) 12rem
-  );
+  background:
+    radial-gradient(ellipse 60% 45% at 100% 0%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in oklab, var(--primary) 7%, var(--bg)) 0%, var(--bg) 14rem);
 }
 
 /* ── SIDEBAR ── */
 .logo {
   padding: 1.2rem 1.1rem 0.8rem;
-  border-bottom: 1px solid var(--divider);
+  border-bottom: 1px solid color-mix(in oklab, var(--royal-gold-soft) 40%, var(--divider));
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -317,17 +336,20 @@ summary:focus-visible {
 .logo .logo-mark {
   flex-shrink: 0;
   display: block;
-  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 14%, transparent);
 }
 .logo-text {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 .logo-sub {
-  font-size: 0.68rem;
-  color: var(--muted);
+  font-size: 0.66rem;
+  color: color-mix(in oklab, var(--royal-gold) 55%, var(--muted));
   line-height: 1.35;
+  letter-spacing: 0.03em;
 }
 .sidebar-purpose {
   margin: 0;
@@ -346,8 +368,8 @@ summary:focus-visible {
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--faint);
+  letter-spacing: 0.12em;
+  color: color-mix(in oklab, var(--royal-gold) 48%, var(--faint));
 }
 .nav-item {
   display: flex;
@@ -372,10 +394,10 @@ summary:focus-visible {
   color: var(--text);
 }
 .nav-item.active {
-  background: color-mix(in oklab, var(--primary) 12%, var(--surface));
+  background: color-mix(in oklab, var(--primary) 10%, var(--surface));
   color: var(--primary);
   font-weight: 600;
-  box-shadow: inset 3px 0 0 0 var(--primary);
+  box-shadow: inset 3px 0 0 0 color-mix(in oklab, var(--royal-gold) 70%, var(--primary));
 }
 .nav-item .num {
   font-size: 0.68rem;
@@ -492,6 +514,120 @@ summary:focus-visible {
   display: contents;
   padding: 0;
   margin: 0;
+}
+
+.topbar-discord-slot {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.discord-join--topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.9rem;
+  padding: 0.28rem 0.85rem 0.28rem 0.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: normal;
+  background: color-mix(in oklab, #5865f2 9%, var(--surface));
+  border: 1px solid color-mix(in oklab, #5865f2 30%, var(--border));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent),
+    0 2px 8px -4px color-mix(in oklab, #5865f2 35%, transparent);
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.discord-join-topbar-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: #5865f2;
+}
+.discord-join-topbar-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.06rem;
+  min-width: 0;
+  text-align: left;
+}
+.discord-join-topbar-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: #5865f2;
+}
+.discord-join-topbar-hint {
+  font-size: 0.56rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: color-mix(in oklab, #5865f2 55%, var(--muted));
+}
+.discord-join--topbar:hover {
+  background: color-mix(in oklab, #5865f2 14%, var(--surface));
+  border-color: color-mix(in oklab, #5865f2 42%, var(--border));
+}
+.discord-join--topbar:hover .discord-join-topbar-label {
+  color: color-mix(in oklab, #5865f2 88%, #000);
+}
+[data-theme='dark'] .discord-join-topbar-label {
+  color: #aeb7ff;
+}
+[data-theme='dark'] .discord-join-topbar-hint {
+  color: color-mix(in oklab, #aeb7ff 72%, var(--muted));
+}
+[data-theme='dark'] .discord-join-topbar-icon {
+  color: #aeb7ff;
+}
+[data-theme='dark'] .discord-join--topbar {
+  color: #aeb7ff;
+  background: color-mix(in oklab, #5865f2 18%, var(--surface));
+  border-color: color-mix(in oklab, #5865f2 38%, var(--border));
+}
+[data-theme='dark'] .discord-join--topbar:hover {
+  background: color-mix(in oklab, #5865f2 24%, var(--surface));
+}
+[data-theme='dark'] .discord-join--topbar:hover .discord-join-topbar-label {
+  color: #c8ceff;
+}
+.discord-join--topbar:focus-visible {
+  outline: 2px solid color-mix(in oklab, #5865f2 55%, transparent);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .discord-join-topbar-hint {
+    display: none;
+  }
+  .discord-join--topbar {
+    padding: 0 0.72rem 0 0.5rem;
+  }
+}
+@media (max-width: 380px) {
+  .discord-join-topbar-label {
+    font-size: 0.62rem;
+  }
+  .discord-join--topbar {
+    padding: 0 0.6rem 0 0.45rem;
+    gap: 0.32rem;
+  }
+}
+
+/* DSA sheet (.topbar): single-line Discord pill — same width as before the subtitle */
+.topbar .discord-join--topbar {
+  height: 1.9rem;
+  min-height: 1.9rem;
+  padding: 0 0.8rem 0 0.55rem;
+  gap: 0.32rem;
+  white-space: nowrap;
+}
+.topbar .discord-join-topbar-hint {
+  display: none;
+}
+.topbar .discord-join-topbar-copy {
+  flex-direction: row;
+  align-items: center;
 }
 
 /* ── Connect (wavy radiating) ── */
@@ -1197,7 +1333,7 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
     color-mix(in oklab, var(--surface) 91%, var(--bg)) 42%,
     color-mix(in oklab, var(--surface) 82%, var(--bg)) 100%
   );
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 44%, var(--primary) 6%);
+  border-bottom: 1px solid color-mix(in oklab, var(--royal-gold-soft) 55%, color-mix(in oklab, var(--border) 44%, var(--primary) 6%));
   box-shadow:
     0 1px 0 color-mix(in srgb, #fff 52%, transparent),
     0 14px 44px -22px color-mix(in oklab, var(--primary) 28%, var(--text) 10%),
@@ -1243,11 +1379,12 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
 }
 .topbar-topic-title {
   min-width: 0;
-  font-size: clamp(0.88rem, 0.78rem + 0.45vw, 1.05rem);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 0.85rem + 0.45vw, 1.12rem);
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.3;
-  color: color-mix(in oklab, var(--text) 90%, var(--primary));
+  color: color-mix(in oklab, var(--text) 88%, var(--primary));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2096,12 +2233,28 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
   padding: clamp(0.85rem, 2.2vw, 1.35rem) clamp(0.75rem, 2.5vw, 1.5rem);
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--primary) 5%, var(--surface)) 0%,
+    color-mix(in oklab, var(--royal-gold) 5%, color-mix(in oklab, var(--primary) 6%, var(--surface))) 0%,
     var(--surface) 100%
   );
-  border: 1px solid var(--border);
-  border-radius: 0.6rem 0.6rem 0 0;
+  border: 1px solid color-mix(in oklab, var(--royal-gold-soft) 35%, var(--border));
+  border-radius: 0.65rem 0.65rem 0 0;
   border-bottom: none;
+  position: relative;
+}
+.topic-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 0.65rem 0.65rem 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--royal-gold) 80%, var(--primary)),
+    transparent
+  );
 }
 .topic-header-main {
   flex: 1;
@@ -2162,17 +2315,18 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
 .topic-num {
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--border);
+  color: color-mix(in oklab, var(--royal-gold-soft) 55%, var(--border));
   line-height: 1;
   font-family: 'JetBrains Mono', monospace;
   min-width: 3.5rem;
 }
 .topic-title {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.5vw, 1.55rem);
+  font-weight: 600;
   letter-spacing: -0.02em;
   margin: 0 0 0.25rem;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 .topic-meta {
   font-size: 0.72rem;
@@ -2180,8 +2334,8 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
 }
 .topic-body {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0 0 0.6rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--royal-gold-soft) 28%, var(--border));
+  border-radius: 0 0 0.65rem 0.65rem;
   padding: clamp(0.75rem, 2vw, 1.35rem) clamp(0.65rem, 2.4vw, 1.5rem);
   display: flex;
   flex-direction: column;
@@ -2196,7 +2350,7 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
 /* Problem tables: clear “stage” so the list feels like the hero */
 .topic-body > .tbl-wrap {
   border-radius: 0.65rem;
-  border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+  border: 1px solid color-mix(in oklab, var(--royal-gold-soft) 38%, color-mix(in oklab, var(--primary) 22%, var(--border)));
   background: color-mix(in oklab, var(--primary) 3.5%, var(--surface));
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--primary) 6%, transparent),

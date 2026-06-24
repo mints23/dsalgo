@@ -21,12 +21,11 @@ immutable
 set search_path = public
 as $$
   select case trim(coalesce(p_service_id, ''))
-    when 'urgent' then 59900
-    when 'system-design' then 79900
-    when 'roadmap' then 59900
+    when 'system-design' then 49900
+    when 'roadmap' then 39900
+    when 'dsa-classes' then 39900
     when 'cv-review' then 39900
     when 'mentorship' then 79900
-    when 'motivation' then 20000
     else null
   end;
 $$;

@@ -22,18 +22,16 @@ function proAmountPaise(plan: string): number {
 
 function connectAmountPaise(serviceId: string): number | null {
   switch (serviceId.trim()) {
-    case 'urgent':
-      return 59900;
     case 'system-design':
-      return 79900;
+      return 49900;
     case 'roadmap':
-      return 59900;
+      return 39900;
+    case 'dsa-classes':
+      return 39900;
     case 'cv-review':
       return 39900;
     case 'mentorship':
       return 79900;
-    case 'motivation':
-      return 20000;
     default:
       return null;
   }

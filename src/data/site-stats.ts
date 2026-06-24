@@ -10,4 +10,4 @@ import { LOGIN_SNEAK_NAV } from './login-sneak-static';
 export const GUIDE_TOPIC_COUNT = LOGIN_SNEAK_NAV.length;
 
 /** Exact `count(*)` from `public.problems` — update after bulk imports. */
-export const GUIDE_PROBLEM_ROW_COUNT = 1150;
+export const GUIDE_PROBLEM_ROW_COUNT = 1311;

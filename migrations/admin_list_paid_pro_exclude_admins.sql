@@ -1,6 +1,4 @@
--- Admin: active Pro subscribers paid via Razorpay (excludes manual_grant* SQL grants).
--- Run in Supabase SQL Editor, then reload schema.
-
+-- Exclude site admins from Pro subscribers (paid) list on /admin.
 create or replace function public.list_paid_pro_subscribers()
 returns json
 language plpgsql
@@ -41,5 +39,3 @@ begin
   );
 end;
 $$;
-
-grant execute on function public.list_paid_pro_subscribers() to authenticated;

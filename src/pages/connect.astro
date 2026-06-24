@@ -2,21 +2,16 @@
 import '../styles/global.css';
 import '../styles/connect-client.css';
 import LogoMark from '../components/LogoMark.astro';
+import DiscordJoin from '../components/DiscordJoin.astro';
 import {
-  SUPPORT_EMAIL,
   SESSION_FOOTNOTE,
-  urgentService,
   connectServices as services,
   connectOfferings,
-  introBody,
-  mailtoLink,
-  connectSessionPricePaise,
   isConnectSlotBookable,
   connectBatchCopy,
 } from '../data/connect-services';
 
 const sessionFootnote = SESSION_FOOTNOTE;
-const mailto = mailtoLink;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +32,7 @@ const mailto = mailtoLink;
     <title>Connect — 1:1 Mentoring · algofrog.in</title>
     <meta
       name="description"
-      content="Personal mentoring for high-CTC prep — system design, roadmaps, CV review, DSA classes, 1:1 mentorship, and motivation. From the team behind DSA Mastery."
+      content="Personal mentoring for high-CTC prep — system design, roadmaps, CV review, DSA classes, and 1:1 mentorship. From the team behind DSA Mastery."
     />
     <meta name="theme-color" content="#1f5c61" />
     <link rel="canonical" href="https://algofrog.in/connect" />
@@ -45,41 +40,27 @@ const mailto = mailtoLink;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
       rel="stylesheet"
     />
     <style>
       .connect-page {
-        --connect-glow: color-mix(in oklab, var(--primary) 22%, transparent);
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
-        padding: clamp(1rem, 3vw, 2rem);
+        padding: clamp(0.75rem, 2.5vw, 1.5rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 3vh, 2rem);
         position: relative;
         overflow-x: hidden;
         background:
-          radial-gradient(ellipse 90% 55% at 50% -8%, var(--connect-glow), transparent 62%),
-          radial-gradient(ellipse 50% 40% at 100% 50%, color-mix(in oklab, #6d28d9 8%, transparent), transparent),
-          radial-gradient(ellipse 45% 35% at 0% 80%, color-mix(in oklab, var(--primary) 10%, transparent), transparent),
+          radial-gradient(ellipse 90% 70% at 0% 0%, color-mix(in oklab, var(--royal-gold) 7%, transparent), transparent 52%),
+          radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 48%),
           var(--bg);
-      }
-      .connect-page::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.35;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-        z-index: 0;
-      }
-      [data-theme='dark'] .connect-page::before {
-        opacity: 0.2;
       }
       .connect-shell {
         position: relative;
         z-index: 1;
         width: 100%;
-        max-width: 1080px;
+        max-width: 52rem;
         margin: 0 auto;
       }
       .connect-top {
@@ -87,7 +68,40 @@ const mailto = mailtoLink;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        margin-bottom: clamp(1.25rem, 3vh, 2rem);
+        margin-bottom: 1.75rem;
+      }
+      .connect-brand .logo-mark {
+        border-radius: 8px;
+        box-shadow: 0 4px 18px color-mix(in srgb, var(--primary) 14%, transparent);
+      }
+      .connect-brand-text {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 1.02rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+      .connect-brand-sub {
+        display: none;
+      }
+      .connect-intro {
+        margin: 0 auto 1.5rem;
+        max-width: 28rem;
+        text-align: center;
+      }
+      .connect-intro-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(1.85rem, 5vw, 2.45rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: var(--text);
+      }
+      .connect-intro-title em {
+        font-style: italic;
+        font-weight: 500;
+        color: color-mix(in oklab, var(--royal-gold) 80%, var(--primary));
       }
       .connect-brand {
         display: inline-flex;
@@ -95,16 +109,6 @@ const mailto = mailtoLink;
         gap: 0.55rem;
         text-decoration: none;
         color: var(--text);
-      }
-      .connect-brand-text {
-        font-weight: 700;
-        font-size: 0.95rem;
-        line-height: 1.2;
-      }
-      .connect-brand-sub {
-        font-size: 0.68rem;
-        color: var(--muted);
-        font-weight: 500;
       }
       .connect-top-actions {
         display: flex;
@@ -187,39 +191,45 @@ const mailto = mailtoLink;
         border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
       }
 
-      /* Calendar + services booking */
-      .connect-book-row {
-        display: grid;
-        grid-template-columns: minmax(16rem, 24rem) minmax(0, 1fr);
-        gap: 1.25rem;
-        align-items: start;
-        margin-bottom: 1.75rem;
-      }
-      .connect-book {
-        margin-bottom: 0;
-        min-width: 0;
-      }
-      .connect-slots-panel {
-        position: relative;
-        overflow: hidden;
+      /* Single booking card */
+      .connect-flow {
+        max-width: 52rem;
+        margin: 0 auto;
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: 0.85rem;
-        box-shadow: var(--shadow);
-        padding: 0.85rem 0.75rem 0.75rem;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 8px 32px color-mix(in oklab, var(--text) 5%, transparent);
       }
-      .connect-slots-panel::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--primary) 0%,
-          color-mix(in oklab, var(--primary) 55%, #6d28d9) 100%
-        );
+      .connect-flow-body {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      @media (min-width: 880px) {
+        .connect-flow-body {
+          grid-template-columns: 1fr 1fr;
+        }
+        .connect-flow-time {
+          border-right: 1px solid var(--divider);
+        }
+      }
+      .connect-flow-section {
+        padding: 1.15rem 1.2rem 1.2rem;
+        min-width: 0;
+      }
+      .connect-flow-label-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .connect-flow-label {
+        margin: 0;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
       }
       .connect-slots-panel--pulse {
         animation: connect-slots-pulse 0.85s ease-out;
@@ -236,44 +246,6 @@ const mailto = mailtoLink;
             0 12px 28px color-mix(in oklab, var(--primary) 22%, transparent);
         }
       }
-      .connect-slots-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.65rem;
-        padding-bottom: 0.55rem;
-        border-bottom: 1px solid var(--divider);
-      }
-      .connect-slots-title {
-        margin: 0;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--faint);
-      }
-      .connect-slots-signin-hint {
-        margin: 0 0 0.65rem;
-        padding: 0.5rem 0.65rem;
-        font-size: 0.76rem;
-        font-weight: 600;
-        line-height: 1.45;
-        color: var(--primary);
-        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--border));
-        border-radius: 0.55rem;
-      }
-      .connect-slots-signin-hint a {
-        color: inherit;
-        font-weight: 700;
-      }
-      .connect-my-bookings {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
       .connect-slots-badge {
         font-size: 0.58rem;
         font-weight: 700;
@@ -283,11 +255,32 @@ const mailto = mailtoLink;
         padding: 0.14rem 0.45rem;
         border-radius: 999px;
         white-space: nowrap;
+        margin-left: auto;
+      }
+      .connect-slots-signin-hint {
+        margin: 0 0 0.75rem;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      .connect-slots-signin-hint a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .connect-slots-signin-hint a:hover {
+        text-decoration: underline;
+      }
+      .connect-my-bookings {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
       }
       .connect-avail-feed {
         width: 100%;
-        min-height: min(20rem, 54vh);
-        max-height: min(30rem, 68vh);
+        min-height: min(12rem, 32vh);
+        max-height: min(22rem, 50vh);
         overflow: auto;
         padding-right: 0.15rem;
         scrollbar-width: thin;
@@ -311,21 +304,6 @@ const mailto = mailtoLink;
         color: var(--muted);
         margin-top: 0.35rem;
         line-height: 1.45;
-      }
-      .connect-panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 0.85rem;
-        box-shadow: var(--shadow);
-        padding: 1rem;
-      }
-      .connect-panel-title {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--faint);
-        margin-bottom: 0.75rem;
       }
       .connect-cal-nav {
         display: flex;
@@ -477,177 +455,54 @@ const mailto = mailtoLink;
       .connect-time-chips {
         display: none;
       }
+      .connect-flow-services .connect-flow-label {
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-transform: none;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+      }
       .connect-other--awaiting-slot .connect-deck .connect-card {
         opacity: 0.5;
-        filter: grayscale(0.15);
       }
       .connect-other--awaiting-slot .connect-deck .connect-card--soon {
-        opacity: 0.92;
-        filter: none;
-      }
-      .connect-other--slot-selected {
-        position: relative;
-        padding: 0.85rem 0.75rem 0.75rem;
-        border-radius: 0.85rem;
-        border: 1px solid color-mix(in oklab, var(--primary) 32%, var(--border));
-        background:
-          radial-gradient(ellipse 120% 80% at 50% -20%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 55%),
-          color-mix(in oklab, var(--primary) 5%, var(--surface));
-        box-shadow:
-          0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
-          0 10px 32px color-mix(in oklab, var(--primary) 18%, transparent);
-        animation: connect-deck-unlock 0.55s ease-out;
-      }
-      .connect-other--slot-selected::before {
-        content: '';
-        position: absolute;
-        inset: -1px;
-        border-radius: inherit;
-        padding: 1px;
-        background: conic-gradient(
-          from var(--connect-deck-angle, 0deg),
-          transparent 0%,
-          color-mix(in oklab, var(--primary) 55%, #6d28d9) 25%,
-          color-mix(in oklab, var(--primary) 75%, #02a6a0) 50%,
-          color-mix(in oklab, #6d28d9 50%, var(--primary)) 75%,
-          transparent 100%
-        );
-        -webkit-mask:
-          linear-gradient(#fff 0 0) content-box,
-          linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask:
-          linear-gradient(#fff 0 0) content-box,
-          linear-gradient(#fff 0 0);
-        mask-composite: exclude;
-        opacity: 0.75;
-        pointer-events: none;
-        animation: connect-deck-border-spin 5s linear infinite;
-      }
-      @keyframes connect-deck-border-spin {
-        to {
-          --connect-deck-angle: 360deg;
-        }
-      }
-      @property --connect-deck-angle {
-        syntax: '<angle>';
-        initial-value: 0deg;
-        inherits: false;
-      }
-      @keyframes connect-deck-unlock {
-        from {
-          opacity: 0.65;
-          transform: translateY(6px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .connect-other--slot-selected .connect-deck-label {
-        color: var(--primary);
-        text-shadow: 0 0 18px color-mix(in oklab, var(--primary) 35%, transparent);
-        animation: connect-deck-label-pop 0.5s ease-out;
-      }
-      @keyframes connect-deck-label-pop {
-        0% {
-          transform: scale(0.96);
-          opacity: 0.5;
-        }
-        60% {
-          transform: scale(1.03);
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
+        opacity: 0.85;
       }
       .connect-other--slot-selected .connect-deck .connect-card {
         opacity: 1;
-        filter: none;
-        animation: connect-card-pop 0.45s ease-out backwards;
-        animation-delay: calc(var(--i, 0) * 0.045s);
-      }
-      @keyframes connect-card-pop {
-        from {
-          opacity: 0.4;
-          transform: translateY(8px) scale(0.96);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-      .connect-other--slot-selected .connect-deck .connect-card:hover {
-        border-color: color-mix(in srgb, var(--card-accent) 45%, var(--border));
-        transform: translateY(-3px);
-        box-shadow: 0 8px 22px color-mix(in oklab, var(--card-accent) 22%, transparent);
-      }
-      .connect-other--slot-selected .connect-deck .connect-card--soon {
-        animation: connect-card-pop 0.45s ease-out backwards;
-        animation-delay: calc(var(--i, 0) * 0.045s);
       }
       .connect-card--service-picked {
-        outline: 2px solid var(--card-accent);
-        outline-offset: 2px;
+        background: color-mix(in oklab, var(--royal-gold) 7%, var(--surface));
+      }
+      .connect-card--service-picked .connect-card-price {
+        color: color-mix(in oklab, var(--royal-gold) 80%, var(--primary));
       }
       .connect-card--soon {
         cursor: pointer;
       }
-      .connect-card--soon .connect-card-hint {
-        font-size: 0.62rem;
-        line-height: 1.35;
-      }
-      .connect-soon-badge {
-        position: absolute;
-        top: 0.42rem;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2;
-        padding: 0.14rem 0.45rem;
-        border-radius: 999px;
-        font-size: 0.5rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: #5b21b6;
-        background: color-mix(in oklab, #6d28d9 14%, #fff);
-        border: 1px solid color-mix(in oklab, #6d28d9 28%, transparent);
-        box-shadow: 0 2px 8px color-mix(in oklab, #6d28d9 18%, transparent);
-      }
-      [data-theme='dark'] .connect-soon-badge {
-        color: #ddd6fe;
-        background: color-mix(in oklab, #6d28d9 22%, var(--surface));
-      }
-      .connect-card--soon .connect-card-cta {
-        color: #6d28d9;
-      }
-      [data-theme='dark'] .connect-card--soon .connect-card-cta {
-        color: #c4b5fd;
-      }
       .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked) {
-        opacity: 0.72;
+        opacity: 0.65;
       }
       .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked):hover {
-        opacity: 1;
+        opacity: 0.9;
       }
       .connect-other--service-picked .connect-deck .connect-card--service-picked {
         opacity: 1;
       }
       .connect-booking-bar-note {
-        font-size: 0.68rem;
+        font-size: 0.72rem;
         color: var(--muted);
         margin-top: 0.35rem;
       }
-      .connect-booking-bar {
-        margin-top: 1rem;
-        padding: 0.75rem 0.85rem;
-        border-radius: 0.65rem;
-        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
-        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+      .connect-flow-pay {
+        padding: 1rem 1.2rem 1.15rem;
+        border-top: 1px solid var(--divider);
+        background: color-mix(in oklab, var(--primary) 4%, var(--surface));
       }
       .connect-booking-bar p {
-        font-size: 0.8rem;
+        font-size: 0.84rem;
         line-height: 1.5;
         color: var(--text);
         margin-bottom: 0.65rem;
@@ -657,381 +512,112 @@ const mailto = mailtoLink;
         min-width: 0;
       }
 
-      /* Deck */
-      .connect-deck-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--faint);
-        margin-bottom: 0.65rem;
-        text-align: left;
-      }
+      /* Service list */
       .connect-deck-slot-hint {
-        margin: -0.35rem 0 0.65rem;
-        padding: 0.55rem 0.65rem;
+        margin: 0 0 0.65rem;
+        padding: 0.5rem 0.65rem;
         font-size: 0.78rem;
         font-weight: 600;
         line-height: 1.45;
-        color: var(--primary);
-        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
-        border-radius: 0.55rem;
+        color: #b45309;
+        background: color-mix(in oklab, #f59e0b 12%, var(--surface));
+        border: 1px solid color-mix(in oklab, #f59e0b 35%, var(--border));
+        border-radius: 0.5rem;
+      }
+      [data-theme='dark'] .connect-deck-slot-hint {
+        color: #fbbf24;
+        background: color-mix(in oklab, #f59e0b 14%, var(--surface));
+        border-color: color-mix(in oklab, #f59e0b 40%, var(--border));
       }
       .connect-deck-slot-hint--flash {
-        animation: connect-deck-hint-flash 0.6s ease-out;
+        color: #c2410c;
+        border-color: color-mix(in oklab, #ea580c 50%, var(--border));
+        background: color-mix(in oklab, #f97316 16%, var(--surface));
       }
-      @keyframes connect-deck-hint-flash {
-        0% {
-          transform: scale(0.98);
-          opacity: 0.6;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-      .connect-deck-layout {
-        display: grid;
-        grid-template-columns: 1fr minmax(7rem, 9.25rem);
-        gap: 0.75rem;
-        align-items: center;
-        margin-bottom: 1.75rem;
-      }
-      .connect-urgent-glow {
-        position: relative;
-        width: 100%;
-        border-radius: 0.88rem;
-        isolation: isolate;
-      }
-      .connect-urgent-glow::before,
-      .connect-urgent-glow::after {
-        content: '';
-        position: absolute;
-        border-radius: inherit;
-        pointer-events: none;
-        animation: connect-urgent-spin 7s linear infinite;
-      }
-      .connect-urgent-glow::before {
-        inset: -3px;
-        background: conic-gradient(
-          from 0deg,
-          transparent 0%,
-          color-mix(in oklab, #be123c 55%, transparent) 18%,
-          #fda4af 35%,
-          #be123c 50%,
-          color-mix(in oklab, #be123c 40%, transparent) 68%,
-          transparent 100%
-        );
-        filter: blur(9px);
-        opacity: 0.42;
-        z-index: 0;
-      }
-      .connect-urgent-glow::after {
-        inset: -1px;
-        background: conic-gradient(
-          from 0deg,
-          color-mix(in oklab, #fda4af 70%, var(--surface)) 0%,
-          #be123c 25%,
-          #e11d48 50%,
-          #fb7185 75%,
-          color-mix(in oklab, #fda4af 70%, var(--surface)) 100%
-        );
-        opacity: 0.55;
-        z-index: 0;
-      }
-      @keyframes connect-urgent-spin {
-        to {
-          transform: rotate(360deg);
-        }
+      [data-theme='dark'] .connect-deck-slot-hint--flash {
+        color: #fdba74;
+        background: color-mix(in oklab, #f97316 18%, var(--surface));
       }
       .connect-deck {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.8rem;
-        margin-bottom: 0;
-      }
-      .connect-card--urgent {
-        --card-accent: #be123c;
-        position: relative;
-        z-index: 1;
-        aspect-ratio: 1;
-        width: 100%;
-        gap: 0.3rem;
-        padding: 0.75rem 0.5rem 0.65rem;
-        background: color-mix(in oklab, #be123c 5%, var(--surface));
-        border: 1px solid color-mix(in oklab, #be123c 22%, var(--border));
-        border-radius: 0.82rem;
-        box-shadow: var(--shadow);
-      }
-      .connect-card--urgent::before {
-        background: linear-gradient(
-          145deg,
-          color-mix(in oklab, #be123c 10%, transparent) 0%,
-          transparent 55%
-        );
-        opacity: 1;
-      }
-      .connect-card--urgent::after {
-        display: block;
-        height: 3px;
-        background: #be123c;
-        opacity: 0.85;
-      }
-      .connect-card--urgent:hover {
-        border-color: color-mix(in oklab, #be123c 38%, var(--border));
-        transform: translateY(-2px);
-      }
-      .connect-card--urgent:hover::after {
-        opacity: 1;
-      }
-      .connect-urgent-glow:hover::before {
-        opacity: 0.55;
-      }
-      .connect-urgent-glow:hover::after {
-        opacity: 0.68;
-      }
-      .connect-urgent-badge {
-        position: absolute;
-        top: 0.42rem;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2;
-        font-size: 0.48rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #9f1239;
-        background: color-mix(in oklab, #be123c 9%, var(--surface));
-        border: 1px solid color-mix(in oklab, #be123c 22%, var(--border));
-        padding: 0.16rem 0.38rem;
-        border-radius: 999px;
-        line-height: 1;
-      }
-      [data-theme='dark'] .connect-urgent-badge {
-        color: #fda4af;
-      }
-      .connect-card--urgent .connect-card-icon {
-        font-size: 1.55rem;
-        margin-top: 0.65rem;
-        margin-bottom: 0;
-        filter: none;
-      }
-      .connect-card--urgent .connect-card-benefit {
-        color: #be123c;
-        font-size: 0.58rem;
-      }
-      [data-theme='dark'] .connect-card--urgent .connect-card-benefit {
-        color: #fb7185;
-      }
-      .connect-card--urgent .connect-card-title {
-        color: var(--text);
-        font-size: 0.74rem;
-        line-height: 1.2;
-        max-width: 100%;
-        text-shadow: none;
-      }
-      .connect-card--urgent .connect-card-hint {
-        display: none;
-      }
-      .connect-card--urgent .connect-card-price-amt {
-        color: #be123c;
-        font-size: 0.88rem;
-        text-shadow: none;
-      }
-      [data-theme='dark'] .connect-card--urgent .connect-card-price-amt {
-        color: #fb7185;
-      }
-      .connect-card--urgent .connect-card-price-period {
-        color: var(--muted);
-        font-size: 0.54rem;
-      }
-      .connect-card--urgent .connect-card-cta {
-        color: #be123c;
-        background: transparent;
-        padding: 0;
-        border-radius: 0;
-        margin-top: 0.25rem;
-        font-size: 0.6rem;
-        font-weight: 700;
-        opacity: 0.88;
-        transform: none;
-        border: none;
-        box-shadow: none;
-      }
-      .connect-card--urgent:hover .connect-card-cta,
-      .connect-card--urgent:focus-visible .connect-card-cta {
-        opacity: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
       }
       .connect-card {
-        --card-accent: var(--primary);
         appearance: none;
         width: 100%;
         font: inherit;
         cursor: pointer;
-        aspect-ratio: 1;
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        gap: 0.35rem;
-        padding: 0.9rem 0.6rem;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 0.85rem;
-        box-shadow:
-          var(--shadow),
-          inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1.25rem;
+        padding: 0.8rem 0.35rem;
+        text-align: left;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid color-mix(in oklab, var(--royal-gold-soft) 30%, var(--divider));
+        border-radius: 0;
+        box-shadow: none;
         text-decoration: none;
         color: inherit;
         position: relative;
-        overflow: hidden;
-        animation: connect-rise 0.65s ease both;
-        animation-delay: calc(var(--i, 0) * 0.07s + 0.15s);
-        transition:
-          border-color 0.22s ease,
-          box-shadow 0.22s ease,
-          transform 0.22s ease;
+        transition: background 0.18s ease, opacity 0.18s ease;
       }
-      [data-theme='dark'] .connect-card {
-        box-shadow: var(--shadow);
+      .connect-card:last-child {
+        border-bottom: none;
+        padding-bottom: 0.35rem;
       }
-      .connect-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          145deg,
-          color-mix(in srgb, var(--card-accent) 14%, transparent) 0%,
-          transparent 55%
-        );
-        opacity: 0.85;
-        pointer-events: none;
-        transition: opacity 0.22s ease;
-      }
-      .connect-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--card-accent);
-        opacity: 0.7;
-        transition: height 0.22s ease, opacity 0.22s ease;
+      .connect-card:first-child {
+        padding-top: 0.15rem;
       }
       .connect-card:hover {
-        border-color: color-mix(in srgb, var(--card-accent) 45%, var(--border));
-        box-shadow:
-          0 10px 28px color-mix(in srgb, var(--card-accent) 18%, transparent),
-          inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
-        transform: translateY(-3px) scale(1.02);
-      }
-      .connect-card:hover::after {
-        height: 4px;
-        opacity: 1;
+        background: color-mix(in oklab, var(--royal-gold) 6%, transparent);
       }
       .connect-card:focus-visible {
-        outline: 2px solid var(--card-accent);
+        outline: 2px solid color-mix(in oklab, var(--royal-gold-soft) 55%, var(--primary));
         outline-offset: 2px;
-      }
-      .connect-card > * {
-        position: relative;
+        border-radius: 0.35rem;
         z-index: 1;
       }
-      .connect-card-icon {
-        font-size: 1.75rem;
-        line-height: 1;
-        margin-bottom: 0.15rem;
-        filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--card-accent) 25%, transparent));
-      }
-      .connect-card-benefit {
-        font-size: 0.62rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--card-accent);
-        line-height: 1.2;
+      .connect-card-main {
+        flex: 1;
+        min-width: 0;
       }
       .connect-card-title {
-        font-size: 0.8rem;
-        font-weight: 800;
+        display: block;
+        font-family: var(--font-display);
+        font-size: 1.02rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        line-height: 1.25;
         color: var(--text);
-        line-height: 1.2;
-        max-width: 9.5rem;
+      }
+      .connect-card-note {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 0.72rem;
+        font-style: italic;
+        line-height: 1.35;
+        color: var(--muted);
       }
       .connect-card-price {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 0.15rem;
-        margin-top: 0.15rem;
-        line-height: 1;
-      }
-      .connect-card-price-amt {
-        font-size: 0.95rem;
-        font-weight: 800;
-        color: var(--card-accent);
+        flex-shrink: 0;
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 600;
         letter-spacing: -0.02em;
-      }
-      .connect-card-price-period {
-        font-size: 0.58rem;
-        font-weight: 600;
-        color: var(--muted);
-      }
-      .connect-card-hint {
-        font-size: 0.6rem;
-        font-weight: 600;
-        color: var(--muted);
-        line-height: 1.35;
-        max-width: 10rem;
-        opacity: 0.85;
-        margin-top: 0.1rem;
-      }
-      .connect-card-cta {
-        margin-top: 0.35rem;
-        font-size: 0.62rem;
-        font-weight: 700;
-        color: var(--card-accent);
-        opacity: 0.82;
-        transform: none;
-        transition: opacity 0.2s ease, transform 0.2s ease;
-      }
-      .connect-card:hover .connect-card-cta,
-      .connect-card:focus-visible .connect-card-cta {
-        opacity: 1;
-        transform: translateY(0);
+        color: color-mix(in oklab, var(--royal-gold) 65%, var(--primary));
+        white-space: nowrap;
       }
 
-      /* Closing CTA */
-      .connect-cta {
-        padding: clamp(1.15rem, 3vw, 1.5rem);
-        border-radius: 0.85rem;
-        background: linear-gradient(
-          135deg,
-          color-mix(in oklab, var(--primary) 12%, var(--surface)),
-          color-mix(in oklab, var(--primary) 4%, var(--surface))
-        );
-        border: 1px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+      .connect-aside {
+        margin: 1.35rem auto 0;
+        max-width: 32rem;
         text-align: center;
-        box-shadow: 0 8px 32px color-mix(in oklab, var(--primary) 14%, transparent);
-        animation: connect-rise 0.7s ease 0.6s both;
-      }
-      .connect-cta-headline {
-        font-size: clamp(1rem, 2.5vw, 1.15rem);
-        font-weight: 800;
-        color: var(--text);
-        margin-bottom: 0.4rem;
-        letter-spacing: -0.01em;
-      }
-      .connect-cta-text {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
+        line-height: 1.55;
         color: var(--muted);
-        line-height: 1.6;
-        margin-bottom: 1rem;
-        max-width: 28rem;
-        margin-inline: auto;
       }
       .connect-cta-btn {
         display: inline-flex;
@@ -1053,8 +639,7 @@ const mailto = mailtoLink;
         transition: transform 0.18s ease, box-shadow 0.18s ease;
       }
       .connect-cta-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 22px color-mix(in oklab, var(--primary) 40%, transparent);
+        filter: brightness(1.05);
       }
       .connect-cta-btn:focus-visible {
         outline: 2px solid var(--primary);
@@ -1065,8 +650,18 @@ const mailto = mailtoLink;
         font-size: 0.72rem;
         color: var(--faint);
       }
-
-      /* Service detail modal */
+      .connect-footnote {
+        margin-top: 1rem;
+        text-align: center;
+        font-size: 0.65rem;
+        line-height: 1.5;
+        color: var(--faint);
+      }
+      .connect-footnote-star {
+        color: var(--primary);
+        font-weight: 700;
+        margin-right: 0.2rem;
+      }
       .connect-detail {
         position: fixed;
         inset: 0;
@@ -1360,136 +955,11 @@ const mailto = mailtoLink;
       .connect-email-link:hover {
         text-decoration: underline;
       }
-      .connect-footer {
-        margin-top: 1.25rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem 1.25rem;
-        justify-content: center;
-        font-size: 0.76rem;
-      }
-      .connect-footer a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--muted);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.76rem;
-        padding: 0.38rem 0.85rem;
-        border-radius: 999px;
-        border: 1px solid color-mix(in oklab, var(--border) 70%, var(--primary));
-        background: color-mix(in oklab, var(--surface) 88%, var(--bg));
-        transition:
-          color 0.15s,
-          background 0.15s,
-          border-color 0.15s,
-          box-shadow 0.15s,
-          transform 0.15s;
-      }
-      .connect-footer a:hover {
-        color: var(--primary);
-        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
-        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
-      }
-      .connect-footer a.connect-pill--primary:hover {
-        color: #fff;
-      }
-      .connect-footnote {
-        margin-top: 1rem;
-        padding-top: 0.85rem;
-        border-top: 1px solid var(--divider);
-        text-align: center;
-        font-size: 0.68rem;
-        line-height: 1.55;
-        color: var(--faint);
-      }
-      .connect-footnote-star {
-        color: var(--primary);
-        font-weight: 700;
-        margin-right: 0.2rem;
-      }
 
-      @keyframes connect-rise {
-        from {
-          opacity: 0;
-          transform: translateY(14px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
       @media (max-width: 768px) {
-        .connect-book-row {
-          grid-template-columns: 1fr;
-        }
         .connect-avail-feed {
           min-height: 0;
-          max-height: min(16rem, 42vh);
-        }
-      }
-      @media (max-width: 560px) {
-        .connect-deck-layout {
-          grid-template-columns: 1fr;
-        }
-        .connect-urgent-glow {
-          order: -1;
-          max-width: 10.5rem;
-          margin-inline: auto;
-        }
-        .connect-card--urgent .connect-card-cta {
-          opacity: 1;
-          transform: none;
-        }
-        .connect-deck {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.65rem;
-        }
-        .connect-card-title {
-          font-size: 0.74rem;
-        }
-        .connect-card-hint {
-          display: none;
-        }
-        .connect-card-cta {
-          opacity: 1;
-          transform: none;
-        }
-        .connect-card-icon {
-          font-size: 1.45rem;
-        }
-      }
-      @media (max-width: 360px) {
-        .connect-deck {
-          gap: 0.5rem;
-        }
-        .connect-card {
-          padding: 0.65rem 0.45rem;
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .connect-other--slot-selected,
-        .connect-other--slot-selected::before,
-        .connect-other--slot-selected .connect-deck-label,
-        .connect-other--slot-selected .connect-deck .connect-card {
-          animation: none;
-        }
-        .connect-other--slot-selected .connect-deck .connect-card:hover {
-          transform: none;
-        }
-        .connect-card,
-        .connect-card--urgent,
-        .connect-cta {
-          animation: none;
-        }
-        .connect-urgent-glow::before,
-        .connect-urgent-glow::after {
-          animation: none;
-        }
-        .connect-card:hover,
-        .connect-card--urgent:hover {
-          transform: none;
+          max-height: min(14rem, 38vh);
         }
       }
     </style>
@@ -1506,8 +976,7 @@ const mailto = mailtoLink;
             </div>
           </a>
           <div class="connect-top-actions">
-            <a class="connect-top-link connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
-            <a class="connect-top-link connect-pill" href="/admin" id="connect-avail-link" hidden>Admin</a>
+            <DiscordJoin variant="pill" />
             <a class="connect-top-link connect-pill" href="/login?redirect=/connect" id="connect-nav-auth">Sign in</a>
             <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -1519,100 +988,75 @@ const mailto = mailtoLink;
         </header>
 
         <main>
-          <div class="connect-book-row">
-            <section class="connect-book connect-slots-panel" aria-label="Book a live session">
-              <div class="connect-slots-head">
-                <p class="connect-slots-title">Pick a time</p>
-                <span class="connect-slots-badge" id="connect-slots-count" hidden></span>
-              </div>
-              <p class="connect-slots-signin-hint" id="connect-slots-signin-hint" hidden>
-                <a href="/login?redirect=/connect">Sign in</a> to pick a slot and book a session.
-              </p>
-              <div id="connect-my-bookings" class="connect-my-bookings" hidden aria-label="Your booked sessions"></div>
-              <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Date and time slots"></div>
-            </section>
+          <header class="connect-intro">
+            <h1 class="connect-intro-title">Book a <em>live session</em></h1>
+          </header>
 
-            <section class="connect-other connect-other--awaiting-slot" id="connect-service-deck" aria-label="Choose your service">
-              <p class="connect-deck-label">Choose your service</p>
-              <p class="connect-deck-slot-hint" id="connect-deck-slot-hint" hidden role="status" aria-live="polite">
-                Pick a time slot on the left before choosing a service.
-              </p>
-            <div class="connect-deck-layout">
-              <div class="connect-deck" role="list">
-                {
-                  services.map((s, i) => (
-                    <button
-                      type="button"
-                      class:list={['connect-card', s.comingSoon && 'connect-card--soon']}
-                      role="listitem"
-                      style={`--card-accent: ${s.accent}; --i: ${i}`}
-                      data-connect-id={s.id}
-                      data-connect-bookable={isConnectSlotBookable(s) ? '1' : '0'}
-                      data-connect-coming-soon={s.comingSoon ? '1' : '0'}
-                      title={s.comingSoon ? `${s.title} — ${connectBatchCopy.cardHint}` : s.hook}
-                    >
-                      {s.comingSoon && <span class="connect-soon-badge">{connectBatchCopy.badge}</span>}
-                      <span class="connect-card-icon" aria-hidden="true">{s.icon}</span>
-                      <span class="connect-card-benefit">{s.benefit}</span>
-                      <span class="connect-card-title">{s.title}</span>
-                      <span class="connect-card-hint">{s.hook}</span>
-                      <span class="connect-card-cta">{s.comingSoon ? connectBatchCopy.cta : 'Book this →'}</span>
-                    </button>
-                  ))
-                }
-              </div>
-            <div class="connect-urgent-glow">
-              <button
-                type="button"
-                class="connect-card connect-card--urgent"
-                role="listitem"
-                style={`--card-accent: ${urgentService.accent}; --i: 6`}
-                data-connect-id={urgentService.id}
-                title={urgentService.hook}
+          <div class="connect-flow">
+            <div class="connect-flow-body">
+              <section class="connect-flow-section connect-flow-time connect-slots-panel" aria-label="Pick a time">
+                <div class="connect-flow-label-row">
+                  <h2 class="connect-flow-label">Time</h2>
+                  <span class="connect-slots-badge" id="connect-slots-count" hidden></span>
+                </div>
+                <p class="connect-slots-signin-hint" id="connect-slots-signin-hint" hidden>
+                  <a href="/login?redirect=/connect">Sign in</a> to pick a slot.
+                </p>
+                <div id="connect-my-bookings" class="connect-my-bookings" hidden aria-label="Your booked sessions"></div>
+                <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Date and time slots"></div>
+              </section>
+
+              <section
+                class="connect-flow-section connect-flow-services connect-other connect-other--awaiting-slot"
+                id="connect-service-deck"
+                aria-label="Choose your service"
               >
-                <span class="connect-urgent-badge">Urgent</span>
-                <span class="connect-card-icon" aria-hidden="true">{urgentService.icon}</span>
-                <span class="connect-card-benefit">{urgentService.benefit}</span>
-                <span class="connect-card-title">{urgentService.title}</span>
-                <span class="connect-card-price">
-                  <span class="connect-card-price-amt">{urgentService.price}</span>
-                  <span class="connect-card-price-period">{urgentService.pricePeriod}</span>
-                </span>
-                <span class="connect-card-cta">View details →</span>
-              </button>
+                <h2 class="connect-flow-label">Choose a session</h2>
+                <p class="connect-deck-slot-hint" id="connect-deck-slot-hint" hidden role="status" aria-live="polite">
+                  Pick a time first, then choose a service.
+                </p>
+                <div class="connect-deck" role="list">
+                  {
+                    services.map((s, i) => (
+                      <button
+                        type="button"
+                        class:list={['connect-card', s.comingSoon && 'connect-card--soon']}
+                        role="listitem"
+                        style={`--i: ${i}`}
+                        data-connect-id={s.id}
+                        data-connect-bookable={isConnectSlotBookable(s) ? '1' : '0'}
+                        data-connect-coming-soon={s.comingSoon ? '1' : '0'}
+                        title={s.comingSoon ? `${s.title} — ${connectBatchCopy.cardHint}` : s.hook}
+                      >
+                        <span class="connect-card-main">
+                          <span class="connect-card-title">{s.title}</span>
+                          {s.comingSoon && (
+                            <span class="connect-card-note">{connectBatchCopy.cardHint}</span>
+                          )}
+                        </span>
+                        <span class="connect-card-price">{s.price}</span>
+                      </button>
+                    ))
+                  }
+                </div>
+              </section>
             </div>
-          </div>
-            <div class="connect-booking-bar" id="connect-booking-bar" hidden>
+
+            <div class="connect-flow-pay connect-booking-bar" id="connect-booking-bar" hidden>
               <p id="connect-booking-msg"></p>
               <p class="connect-booking-bar-note" id="connect-booking-note" hidden>
-                Tap another service above to change before you pay. When you pay, the slot is held for 7 minutes.
+                Change service above before paying. Slot held for 7 minutes after you start checkout.
               </p>
               <button type="button" class="connect-cta-btn" id="connect-booking-pay" hidden>Pay to confirm →</button>
             </div>
-          </section>
           </div>
 
-          <section class="connect-cta">
-            <h2 class="connect-cta-headline">Not sure where to start?</h2>
-            <p class="connect-cta-text">
-              Send one email with your target CTC, current level, and biggest blocker. I’ll point you to the right service — no pressure, no spam.
-            </p>
-            <a
-              class="connect-cta-btn"
-              href={mailto('Connect — Intro call', introBody)}
-            >
-              Start with a free intro email
-              <span aria-hidden="true">→</span>
-            </a>
-            <p class="connect-cta-sub">
-              Or write directly: <a class="connect-email-link" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
-            </p>
-          </section>
+          <p class="connect-aside">
+            Not sure where to start? <DiscordJoin variant="link" /> — DM your goal and level.
+          </p>
 
-          <nav class="connect-footer" aria-label="Site links">
-            <a class="connect-pill connect-pill--primary" href="/">Back to DSA sheet</a>
-            <a class="connect-pill" href="/login?redirect=/connect" id="connect-footer-auth">Sign in</a>
-          </nav>
+          <a href="/admin" id="connect-avail-link" hidden>Admin</a>
+
           <p class="connect-footnote">
             <span class="connect-footnote-star" aria-hidden="true">*</span>
             {sessionFootnote}
@@ -1772,13 +1216,6 @@ const mailto = mailtoLink;
         if (slotsSignInHint) slotsSignInHint.hidden = !!authSession;
       }
 
-      function mailtoLink(subject: string, body: string) {
-        const params = new URLSearchParams();
-        params.set('subject', subject);
-        params.set('body', body);
-        return `mailto:algofrog07@gmail.com?${params.toString()}`;
-      }
-
       async function releaseActiveHold() {
         if (activeHoldSlotId == null) return;
         const slotId = activeHoldSlotId;
@@ -1815,11 +1252,16 @@ const mailto = mailtoLink;
       }
 
       async function clearTimeSelection() {
-        await releaseActiveHold();
         selectedSlotId = null;
         selectedDateKey = null;
         resetBookingBar();
         updateDeckState();
+        renderAvailabilityFeed();
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        await releaseActiveHold();
         await loadAllSlots();
       }
 
@@ -2099,11 +1541,6 @@ const mailto = mailtoLink;
       }
 
       function handleDeckClick(id: string, _el: HTMLElement) {
-        if (id === 'urgent') {
-          openConnectDetail(id);
-          return;
-        }
-
         const svc = offerings.find((o) => o.id === id);
         if (svc?.comingSoon) {
           void openConnectInterest(svc);
@@ -2337,44 +1774,9 @@ const mailto = mailtoLink;
           selectedDateKey = null;
           resetBookingBar();
           updateDeckState();
+          renderAvailabilityFeed();
         }
         await loadAllSlots();
-      }
-
-      function openConnectDetail(id: string) {
-        const item = offerings.find((o) => o.id === id);
-        if (!item || !detailRoot) return;
-
-        resetDetailModes();
-        detailRoot.style.setProperty('--detail-accent', item.accent);
-        const iconEl = document.getElementById('connect-detail-icon');
-        const benefitEl = document.getElementById('connect-detail-benefit');
-        const titleEl = document.getElementById('connect-detail-title');
-        const hookEl = document.getElementById('connect-detail-hook');
-        const priceAmtEl = document.getElementById('connect-detail-price-amt');
-        const pricePeriodEl = document.getElementById('connect-detail-price-period');
-
-        if (iconEl) iconEl.textContent = item.icon;
-        if (benefitEl) benefitEl.textContent = item.benefit;
-        if (titleEl) titleEl.textContent = item.title;
-        if (hookEl) hookEl.textContent = item.hook;
-        if (priceAmtEl) priceAmtEl.textContent = item.price;
-        if (pricePeriodEl) pricePeriodEl.textContent = item.pricePeriod ?? '';
-        if (detailBook) {
-          if (id === 'urgent') {
-            detailBook.hidden = false;
-            detailBook.href = mailtoLink(item.subject, item.mailBody);
-            detailBook.textContent = 'Book via email →';
-          } else {
-            detailBook.hidden = true;
-          }
-        }
-
-        detailRoot.hidden = false;
-        detailRoot.setAttribute('aria-hidden', 'false');
-        detailRoot.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        detailClose?.focus();
       }
 
       function closeConnectDetail() {
@@ -2406,7 +1808,6 @@ const mailto = mailtoLink;
       function applyConnectAuthNav(signedIn: boolean) {
         syncConnectAuthUi();
         const navAuth = document.getElementById('connect-nav-auth');
-        const footerAuth = document.getElementById('connect-footer-auth');
 
         if (signedIn) {
           if (navAuth) {
@@ -2422,14 +1823,12 @@ const mailto = mailtoLink;
               });
             }
           }
-          if (footerAuth) footerAuth.hidden = true;
         } else {
           if (navAuth) {
             navAuth.textContent = 'Sign in';
             navAuth.href = '/login?redirect=/connect';
             navAuth.setAttribute('aria-label', 'Sign in');
           }
-          if (footerAuth) footerAuth.hidden = false;
         }
       }
 
