@@ -6,6 +6,8 @@ export type ConnectService = {
   icon: string;
   subject: string;
   accent: string;
+  /** Grouping for the Connect booking UI */
+  section: ConnectServiceSectionId;
   price: string;
   pricePeriod?: string;
   mailBody: string;
@@ -16,6 +18,32 @@ export type ConnectService = {
   /** Shown as coming soon — collects batch interest instead of booking. */
   comingSoon?: boolean;
 };
+
+export type ConnectServiceSectionId = 'interview' | 'career' | 'mentorship';
+
+export type ConnectServiceSection = {
+  id: ConnectServiceSectionId;
+  label: string;
+  blurb: string;
+};
+
+export const connectServiceSections: ConnectServiceSection[] = [
+  {
+    id: 'interview',
+    label: 'Interview prep',
+    blurb: 'Design rounds, patterns, and what interviewers actually test.',
+  },
+  {
+    id: 'career',
+    label: 'Career & offers',
+    blurb: 'Roadmaps, resume positioning, and offer-focused planning.',
+  },
+  {
+    id: 'mentorship',
+    label: 'Ongoing support',
+    blurb: 'Regular check-ins and accountability across your prep.',
+  },
+];
 
 /** Copy for services that collect batch interest (e.g. DSA Classes). */
 export const connectBatchCopy = {
@@ -43,6 +71,7 @@ export const connectServices: ConnectService[] = [
     icon: '🏗️',
     subject: 'Connect — System Design',
     accent: '#0f766e',
+    section: 'interview',
     price: '₹499',
     pricePeriod: '· 1 session',
     sessionPricePaise: 49900,
@@ -57,6 +86,7 @@ export const connectServices: ConnectService[] = [
     icon: '📚',
     subject: 'Connect — DSA Classes',
     accent: '#6d28d9',
+    section: 'interview',
     price: '₹399',
     pricePeriod: '· per session',
     comingSoon: true,
@@ -71,6 +101,7 @@ export const connectServices: ConnectService[] = [
     icon: '🗺️',
     subject: 'Connect — Road Map for High CTC',
     accent: '#0369a1',
+    section: 'career',
     price: '₹399',
     pricePeriod: '· 1 session',
     sessionPricePaise: 39900,
@@ -85,6 +116,7 @@ export const connectServices: ConnectService[] = [
     icon: '📄',
     subject: 'Connect — CV Review',
     accent: '#01696f',
+    section: 'career',
     price: '₹399',
     pricePeriod: '· 1 session',
     sessionPricePaise: 39900,
@@ -99,6 +131,7 @@ export const connectServices: ConnectService[] = [
     icon: '🤝',
     subject: 'Connect — 1:1 Mentorship',
     accent: '#b45309',
+    section: 'mentorship',
     price: '₹799',
     pricePeriod: '· 1 session',
     sessionPricePaise: 79900,

@@ -1,27 +1,22 @@
-/* Client-rendered Connect UI (createElement / innerHTML). Scoped Astro styles do not apply. */
+/* Client-rendered Connect UI — day rows + booking chips */
 .connect-page .connect-my-bookings-label {
   margin: 0 0 0.1rem;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--primary);
+  color: var(--faint);
 }
 
 .connect-page .connect-my-bookings-row {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.8rem;
-  border-radius: 0.65rem;
-  border: 1px solid color-mix(in oklab, #15803d 32%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, #15803d 10%, var(--surface)) 0%,
-    color-mix(in oklab, #15803d 4%, var(--surface)) 100%
-  );
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+  gap: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklab, #15803d 20%, var(--hairline));
+  background: color-mix(in oklab, #15803d 6%, var(--surface));
 }
 
 .connect-page .connect-my-bookings-main {
@@ -31,21 +26,19 @@
 
 .connect-page .connect-my-bookings-service {
   display: block;
-  margin: 0 0 0.28rem;
-  font-size: 0.82rem;
-  font-weight: 800;
+  margin: 0 0 0.15rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--text);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
 .connect-page .connect-my-bookings-when {
   display: block;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--muted);
   line-height: 1.35;
-  white-space: nowrap;
 }
 
 .connect-page .connect-my-bookings-status {
@@ -53,131 +46,202 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #15803d;
-  padding: 0.32rem 0.62rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in oklab, #15803d 45%, var(--border));
-  background: color-mix(in oklab, #15803d 14%, var(--surface));
+  padding: 0.24rem 0.5rem;
+  border-radius: 6px;
+  background: color-mix(in oklab, #15803d 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #15803d 22%, transparent);
   white-space: nowrap;
 }
 
 [data-theme='dark'] .connect-page .connect-my-bookings-row {
-  border-color: color-mix(in oklab, #4ade80 34%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, #4ade80 10%, var(--surface)) 0%,
-    color-mix(in oklab, #4ade80 4%, var(--surface)) 100%
-  );
-  box-shadow: none;
+  border-color: color-mix(in oklab, #4ade80 24%, var(--hairline));
+  background: color-mix(in oklab, #4ade80 8%, var(--surface));
 }
 
 [data-theme='dark'] .connect-page .connect-my-bookings-status {
   color: #4ade80;
-  border-color: color-mix(in oklab, #4ade80 42%, var(--border));
-  background: color-mix(in oklab, #4ade80 12%, var(--surface));
 }
 
-.connect-page .connect-avail-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: fixed;
-  font-size: 0.65rem;
-  line-height: 1.2;
+/* Calendar slot picker */
+.connect-page .connect-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
-.connect-page .connect-avail-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: 0.42rem 0.35rem;
-  font-size: 0.58rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.connect-page .connect-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.connect-page .connect-cal-nav-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
   color: var(--muted);
-  text-align: center;
-  background: color-mix(in oklab, var(--surface2) 80%, var(--surface));
-  border-bottom: 1px solid var(--divider);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.connect-page .connect-avail-table thead th:first-child {
-  text-align: left;
-  width: 4.6rem;
-}
-
-.connect-page .connect-avail-table tbody td {
-  padding: 0.38rem 0.28rem;
-  vertical-align: middle;
-  text-align: center;
-  border-bottom: 1px solid color-mix(in oklab, var(--divider) 85%, transparent);
-}
-
-.connect-page .connect-avail-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.connect-page .connect-avail-table tbody td:first-child {
-  text-align: left;
-}
-
-.connect-page .connect-avail-table tbody tr.connect-avail-row--today {
+.connect-page .connect-cal-nav-btn:hover {
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 28%, var(--hairline));
   background: color-mix(in oklab, var(--primary) 5%, var(--surface));
 }
 
-.connect-page .connect-avail-date-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.06rem;
-  line-height: 1.15;
+.connect-page .connect-cal-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-align: center;
+  flex: 1;
+  min-width: 0;
 }
 
-.connect-page .connect-avail-day-wd {
-  font-size: 0.56rem;
-  font-weight: 700;
+.connect-page .connect-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.15rem;
+}
+
+.connect-page .connect-cal-weekdays span {
+  text-align: center;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--faint);
 }
 
-.connect-page .connect-avail-day-dm {
-  font-size: 0.68rem;
+.connect-page .connect-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.2rem;
+}
+
+.connect-page .connect-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: default;
+  padding: 0;
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.connect-page .connect-cal-day--empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.connect-page .connect-cal-day--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.connect-page .connect-cal-day--has-slots {
+  color: var(--text);
+  cursor: pointer;
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary) 14%, var(--hairline));
+}
+
+.connect-page .connect-cal-day--has-slots:hover {
+  border-color: color-mix(in oklab, var(--primary) 32%, var(--hairline));
+  background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+}
+
+.connect-page .connect-cal-day--has-slots::after {
+  content: '';
+  position: absolute;
+  bottom: 0.2rem;
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.connect-page .connect-cal-day--today {
+  color: var(--primary);
   font-weight: 700;
+}
+
+.connect-page .connect-cal-day--selected {
+  color: var(--inv);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.connect-page .connect-cal-day--selected::after {
+  background: var(--inv);
+}
+
+.connect-page .connect-cal-day--selected:hover {
+  background: var(--primary-h);
+  border-color: var(--primary-h);
+}
+
+.connect-page .connect-cal-day--mine:not(.connect-cal-day--selected) {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #15803d 35%, transparent);
+}
+
+.connect-page .connect-cal-hint {
+  margin: 0.1rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--faint);
+}
+
+.connect-page .connect-cal-times {
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.connect-page .connect-cal-times-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
-.connect-page .connect-avail-row--today .connect-avail-day-wd,
-.connect-page .connect-avail-row--today .connect-avail-day-dm {
-  color: var(--primary);
-}
-
-.connect-page .connect-avail-row--mine td:first-child {
-  border-left: 3px solid color-mix(in oklab, var(--primary) 55%, transparent);
-}
-
-.connect-page .connect-avail-table tbody td.connect-avail-slot-cell {
-  padding: 0.42rem 0.2rem;
-  text-align: center;
-}
-
-.connect-page .connect-avail-table tbody td.connect-avail-slot-cell--empty {
-  color: var(--faint);
-  font-size: 0.72rem;
-  font-weight: 600;
+.connect-page .connect-cal-time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .connect-page .connect-avail-empty {
-  padding: 1rem 0.5rem;
-  text-align: center;
-  font-size: 0.72rem;
+  padding: 0.75rem 0.35rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   color: var(--muted);
-  background: color-mix(in oklab, var(--surface2) 60%, var(--surface));
-  border: 1px dashed color-mix(in oklab, var(--border) 90%, var(--primary));
-  border-radius: 0.55rem;
 }
 
 .connect-page .connect-slot-pill,
@@ -185,128 +249,87 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: auto;
-  min-width: 3.6rem;
-  padding: 0.34rem 0.6rem;
-  border-radius: 999px;
-  border: 1.5px solid color-mix(in oklab, var(--primary) 28%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--surface) 92%, #fff) 0%,
-    color-mix(in oklab, var(--surface2) 70%, var(--surface)) 100%
-  );
+  min-width: 4.5rem;
+  height: 30px;
+  padding: 0 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  line-height: 1.2;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent),
-    0 1px 2px color-mix(in oklab, var(--border) 40%, transparent);
+  line-height: 1;
   transition:
     color 0.15s,
     background 0.15s,
-    border-color 0.15s,
-    box-shadow 0.15s,
-    transform 0.15s;
+    border-color 0.15s;
 }
 
 .connect-page .connect-slot-pill:hover,
 .connect-page .connect-time-slot-btn:hover {
   color: var(--primary);
-  border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
-  background: color-mix(in oklab, var(--primary) 11%, var(--surface));
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent),
-    0 3px 10px color-mix(in oklab, var(--primary) 14%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 28%, var(--hairline));
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
 }
 
 .connect-page .connect-slot-pill:focus-visible,
 .connect-page .connect-time-slot-btn:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--primary) 45%, #fff);
+  outline: 2px solid color-mix(in oklab, var(--primary) 40%, transparent);
   outline-offset: 2px;
 }
 
 .connect-page .connect-slot-pill--selected,
 .connect-page .connect-time-slot-btn--selected {
   color: var(--inv);
-  border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
-  background: linear-gradient(
-    128deg,
-    color-mix(in oklab, var(--primary) 88%, #fff) 0%,
-    var(--primary) 48%,
-    color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
-    0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent),
-    0 2px 10px color-mix(in oklab, var(--primary) 35%, transparent);
-}
-
-.connect-page .connect-slot-pill--booked {
-  cursor: default;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
-}
-
-.connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held) {
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #15803d;
-  border-color: color-mix(in oklab, #15803d 48%, var(--border));
-  background: color-mix(in oklab, #15803d 14%, var(--surface));
-}
-
-.connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held):hover {
-  transform: none;
-  color: #15803d;
-  border-color: color-mix(in oklab, #15803d 48%, var(--border));
-  background: color-mix(in oklab, #15803d 14%, var(--surface));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
-}
-
-[data-theme='dark'] .connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held) {
-  color: #4ade80;
-  border-color: color-mix(in oklab, #4ade80 42%, var(--border));
-  background: color-mix(in oklab, #4ade80 12%, var(--surface));
-}
-
-[data-theme='dark'] .connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held):hover {
-  color: #4ade80;
-  border-color: color-mix(in oklab, #4ade80 42%, var(--border));
-  background: color-mix(in oklab, #4ade80 12%, var(--surface));
-}
-
-.connect-page .connect-slot-pill--booked.connect-slot-pill--held {
-  border-color: color-mix(in oklab, var(--primary) 42%, var(--border));
-  background: color-mix(in oklab, var(--primary) 14%, var(--surface));
-  color: var(--primary);
-}
-
-.connect-page .connect-slot-pill--booked.connect-slot-pill--held:hover {
-  transform: none;
-  color: var(--primary);
-  border-color: color-mix(in oklab, var(--primary) 42%, var(--border));
-  background: color-mix(in oklab, var(--primary) 14%, var(--surface));
-}
-
-.connect-page .connect-slot-pill--held {
-  border-style: dashed;
-  opacity: 0.92;
+  border-color: var(--primary);
+  background: var(--primary);
 }
 
 .connect-page .connect-slot-pill--selected:hover,
 .connect-page .connect-time-slot-btn--selected:hover {
   color: var(--inv);
-  transform: translateY(-1px);
+  background: var(--primary-h);
+  border-color: var(--primary-h);
+}
+
+.connect-page .connect-slot-pill--booked {
+  cursor: default;
+  font-size: 0.6875rem;
+}
+
+.connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held) {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #15803d;
+  border-color: color-mix(in oklab, #15803d 26%, var(--hairline));
+  background: color-mix(in oklab, #15803d 8%, var(--surface));
+}
+
+.connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held):hover {
+  color: #15803d;
+  background: color-mix(in oklab, #15803d 8%, var(--surface));
+}
+
+[data-theme='dark'] .connect-page .connect-slot-pill--booked:not(.connect-slot-pill--held) {
+  color: #4ade80;
+  border-color: color-mix(in oklab, #4ade80 26%, var(--hairline));
+  background: color-mix(in oklab, #4ade80 8%, var(--surface));
+}
+
+.connect-page .connect-slot-pill--booked.connect-slot-pill--held {
+  border-color: color-mix(in oklab, var(--primary) 26%, var(--hairline));
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+  color: var(--primary);
+  border-style: dashed;
 }
 
 .connect-page .connect-time-empty {
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   color: var(--muted);
   line-height: 1.5;
 }

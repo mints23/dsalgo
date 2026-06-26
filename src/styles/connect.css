@@ -1,0 +1,1161 @@
+/**
+ * Connect / Mentor booking — imported by connect.astro only.
+ * Mirrors post-login app shell: topbar, ambient stage, problem-list rows.
+ */
+
+:root,
+[data-theme='light'] {
+  --connect-max: min(72rem, 100%);
+  --connect-pad-x: clamp(1rem, 2.5vw, 1.75rem);
+  --connect-pad-y: clamp(0.75rem, 2vw, 1.5rem);
+  --connect-sheet-radius: 14px;
+  --connect-sheet-shadow:
+    0 0 0 1px color-mix(in oklab, var(--hairline) 90%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.02),
+    0 12px 40px rgba(1, 105, 111, 0.07);
+  --connect-ambient: radial-gradient(
+    ellipse 100% 70% at 100% -30%,
+    color-mix(in oklab, var(--primary) 6%, transparent),
+    transparent 55%
+  );
+}
+
+[data-theme='dark'] {
+  --connect-sheet-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+  --connect-ambient: radial-gradient(
+    ellipse 90% 60% at 100% -20%,
+    color-mix(in oklab, var(--primary) 12%, transparent),
+    transparent 50%
+  );
+}
+
+@keyframes connect-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Page shell ── */
+.connect-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.connect-stage {
+  flex: 1;
+  background: var(--connect-ambient), var(--bg);
+  padding: 0.35rem var(--connect-pad-x) max(1.25rem, env(safe-area-inset-bottom, 0px));
+}
+
+.connect-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--connect-max);
+  margin: 0 auto;
+}
+
+.connect-main {
+  animation: connect-rise 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Topbar (matches app .topbar) ── */
+.connect-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem var(--connect-pad-x);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.connect-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  min-width: 0;
+}
+
+.connect-brand:hover {
+  color: var(--primary);
+}
+
+.connect-brand .logo-mark {
+  border-radius: 9px;
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--primary) 18%, transparent),
+    0 4px 14px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+.connect-brand-text {
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  letter-spacing: -0.045em;
+}
+
+.connect-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.connect-topbar-link {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.connect-topbar-link:hover {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+}
+
+@media (min-width: 640px) {
+  .connect-topbar-link {
+    display: inline-flex;
+  }
+}
+
+.connect-top-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.38rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.connect-top-link:hover {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary) 22%, var(--hairline));
+}
+
+.connect-pill--primary {
+  color: var(--inv);
+  font-weight: 600;
+  border-color: color-mix(in oklab, var(--primary) 40%, transparent);
+  background: var(--primary);
+  box-shadow: none;
+}
+
+.connect-pill--primary:hover {
+  color: var(--inv);
+  transform: none;
+  background: var(--primary-h);
+  border-color: color-mix(in oklab, var(--primary-h) 50%, transparent);
+  box-shadow: none;
+}
+
+.connect-top-link:focus-visible,
+.connect-pill:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  outline-offset: 2px;
+}
+
+.connect-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.connect-theme-btn:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--primary) 25%, var(--hairline));
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+}
+
+/* ── Intro (topic-title energy) ── */
+.connect-intro {
+  margin: 0 0 0.85rem;
+  max-width: 36rem;
+}
+
+.connect-intro-eyebrow {
+  display: none;
+}
+
+.connect-intro-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+  background: linear-gradient(
+    120deg,
+    var(--text) 0%,
+    color-mix(in oklab, var(--text) 88%, var(--primary)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme='dark'] .connect-intro-title {
+  background: linear-gradient(
+    120deg,
+    var(--text) 0%,
+    color-mix(in oklab, var(--text) 90%, var(--primary)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.connect-intro-title em {
+  font-style: normal;
+  background: linear-gradient(
+    120deg,
+    var(--primary) 0%,
+    color-mix(in oklab, var(--primary) 65%, #34d399) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.connect-intro-lead {
+  display: none;
+}
+
+/* ── Booking workspace (sidebar + main, like post-login app) ── */
+.connect-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.connect-workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: min(28rem, 70vh);
+  max-height: min(42rem, calc(100dvh - 7.5rem));
+  background: var(--surface);
+  border: 1px solid color-mix(in oklab, var(--hairline) 90%, transparent);
+  border-radius: var(--connect-sheet-radius);
+  box-shadow: var(--connect-sheet-shadow);
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .connect-workspace {
+    grid-template-columns: minmax(17rem, 21rem) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
+
+.connect-time-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.85rem 0.9rem 1rem;
+  background: color-mix(in oklab, var(--offset) 55%, var(--surface));
+  border-bottom: 1px solid var(--hairline);
+}
+
+@media (min-width: 900px) {
+  .connect-time-rail {
+    border-bottom: none;
+    border-right: 1px solid var(--hairline);
+  }
+
+  .connect-workspace:not(:has(.connect-flow-pay:not([hidden]))) {
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+
+.connect-services-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.connect-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.connect-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent);
+  flex-shrink: 0;
+}
+
+.connect-step-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.connect-slots-panel--pulse {
+  animation: connect-slots-pulse 0.85s ease-out;
+}
+
+.connect-services-pane--pulse {
+  animation: connect-services-pulse 0.85s ease-out;
+}
+
+@keyframes connect-slots-pulse {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  35%,
+  65% {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--primary) 28%, transparent);
+  }
+}
+
+@keyframes connect-services-pulse {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  35%,
+  65% {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--primary) 32%, transparent);
+  }
+}
+
+.connect-slots-badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, var(--hairline));
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.connect-slots-signin-hint {
+  margin: -0.25rem 0 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.connect-slots-signin-hint a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.connect-slots-signin-hint a:hover {
+  text-decoration: underline;
+}
+
+.connect-my-bookings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+
+.connect-avail-feed {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--primary) 20%, var(--hairline)) transparent;
+}
+
+.connect-services-pane .connect-avail-feed {
+  overflow: visible;
+}
+
+.connect-svc-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow-x: visible;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--primary) 20%, var(--hairline)) transparent;
+}
+
+@media (max-width: 899px) {
+  .connect-workspace {
+    min-height: auto;
+    max-height: none;
+  }
+
+  .connect-avail-feed,
+  .connect-svc-list {
+    overflow: visible;
+    flex: none;
+  }
+}
+
+/* ── Service list (problem-table rows) ── */
+.connect-deck-slot-hint {
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 8px;
+}
+
+.connect-deck-slot-hint--await {
+  color: var(--muted);
+  background: color-mix(in oklab, var(--hairline) 35%, var(--offset));
+}
+
+.connect-deck-slot-hint--flash {
+  animation: connect-hint-flash 0.85s ease-out;
+}
+
+@keyframes connect-hint-flash {
+  0%,
+  100% {
+    transform: none;
+  }
+  35%,
+  65% {
+    transform: scale(1.01);
+  }
+}
+
+.connect-svc-row.connect-card {
+  --svc-accent: var(--primary);
+  appearance: none;
+  position: relative;
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  align-items: center;
+  gap: 0.65rem 0.75rem;
+  padding: 0.72rem 0.75rem 0.72rem 0.7rem;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid color-mix(in oklab, var(--hairline) 88%, transparent);
+  border-left: 3px solid var(--svc-accent);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--svc-accent) 6%, transparent),
+    0 0 0 0 transparent;
+  color: inherit;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.connect-svc-row.connect-card:hover {
+  background: color-mix(in oklab, var(--svc-accent) 4%, var(--offset));
+  border-color: color-mix(in oklab, var(--svc-accent) 28%, var(--hairline));
+  box-shadow:
+    0 2px 8px color-mix(in oklab, var(--svc-accent) 10%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--svc-accent) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+.connect-svc-row.connect-card:active {
+  transform: translateY(0);
+}
+
+.connect-svc-row.connect-card:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 40%, transparent);
+  outline-offset: 2px;
+}
+
+.connect-svc-icon {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  border-radius: 9px;
+  background: color-mix(in oklab, var(--svc-accent) 11%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--svc-accent) 22%, transparent);
+  flex-shrink: 0;
+}
+
+.connect-svc-body {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  min-width: 0;
+}
+
+.connect-svc-desc {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--muted);
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.connect-svc-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  color: var(--text);
+  min-width: 0;
+}
+
+.connect-svc-meta {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.connect-svc-price-amt {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.connect-svc-pick {
+  display: none;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--inv);
+  background: var(--primary);
+  white-space: nowrap;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+.connect-svc-radio {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklab, var(--muted) 45%, var(--hairline));
+  background: var(--surface);
+  opacity: 0;
+  transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  pointer-events: none;
+}
+
+.connect-svc-period {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--faint);
+}
+
+.connect-svc-tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--svc-accent);
+  vertical-align: middle;
+}
+
+/* Selection + awaiting-slot states */
+.connect-other--awaiting-slot .connect-svc-list .connect-card {
+  opacity: 0.55;
+}
+
+.connect-other--awaiting-slot .connect-svc-list .connect-card--soon {
+  opacity: 0.75;
+}
+
+.connect-other--slot-selected .connect-svc-list .connect-card {
+  opacity: 1;
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card {
+  padding-right: 1.35rem;
+  padding-top: 0.85rem;
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card:not(.connect-card--soon) {
+  cursor: pointer;
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card:not(.connect-card--soon) .connect-svc-pick {
+  display: inline-flex;
+  align-items: center;
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card:not(.connect-card--soon) .connect-svc-radio {
+  opacity: 1;
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card--soon .connect-svc-pick {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  background: color-mix(in oklab, var(--svc-accent) 12%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--svc-accent) 28%, transparent);
+}
+
+.connect-other--slot-selected:not(.connect-other--service-picked) .connect-svc-list .connect-card:not(.connect-card--soon):hover .connect-svc-pick {
+  background: var(--primary-h);
+}
+
+.connect-card--service-picked {
+  padding-right: 1.35rem !important;
+  padding-top: 0.85rem !important;
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface)) !important;
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--hairline)) !important;
+  border-left-color: var(--primary) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent),
+    0 4px 14px color-mix(in oklab, var(--primary) 12%, transparent) !important;
+  transform: none !important;
+}
+
+.connect-card--service-picked .connect-svc-pick {
+  display: none !important;
+}
+
+.connect-card--service-picked .connect-svc-radio {
+  opacity: 1;
+  border-color: var(--primary);
+  background: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+
+.connect-card--service-picked .connect-svc-radio::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 50%;
+  background: var(--surface);
+  transform: translate(-50%, -50%);
+}
+
+.connect-card--service-picked .connect-svc-name {
+  color: var(--primary);
+}
+
+.connect-card--soon {
+  cursor: pointer;
+}
+
+.connect-other--service-picked .connect-svc-list .connect-card:not(.connect-card--service-picked) {
+  opacity: 0.5;
+}
+
+.connect-other--service-picked .connect-svc-list .connect-card:not(.connect-card--service-picked):hover {
+  opacity: 0.78;
+}
+
+.connect-other--service-picked .connect-svc-list .connect-card--service-picked {
+  opacity: 1;
+}
+
+/* ── Pay bar (workspace footer) ── */
+.connect-flow-pay {
+  grid-column: 1 / -1;
+  flex-shrink: 0;
+  padding: 0.9rem 1rem 1rem;
+  border-top: 1px solid color-mix(in oklab, var(--hairline) 90%, transparent);
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.connect-flow-pay[hidden] {
+  display: none !important;
+}
+
+.connect-booking-bar p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 0.55rem;
+}
+
+.connect-booking-bar-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+.connect-other {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+/* ── Footer copy ── */
+.connect-aside {
+  margin: 1.1rem 0 0;
+  max-width: 36rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.connect-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--inv);
+  background: var(--primary);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.connect-cta-btn:hover {
+  background: var(--primary-h);
+}
+
+.connect-cta-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.connect-cta-sub {
+  margin-top: 0.65rem;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+.connect-footnote {
+  margin-top: 0.85rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+.connect-footnote-star {
+  color: var(--primary);
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
+/* ── Detail modal ── */
+.connect-detail {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.75rem, env(safe-area-inset-right, 0px))
+    max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.connect-detail.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.connect-detail-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: color-mix(in oklab, var(--text) 42%, transparent);
+}
+
+[data-theme='dark'] .connect-detail-backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.connect-detail-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 24rem);
+  max-height: min(88vh, 34rem);
+  overflow: auto;
+  padding: 1.25rem 1.15rem 1.1rem;
+  border-radius: var(--connect-sheet-radius);
+  background: var(--surface);
+  border: 1px solid color-mix(in oklab, var(--hairline) 90%, var(--detail-accent, var(--primary)));
+  box-shadow: var(--connect-sheet-shadow);
+  transform: translateY(10px) scale(0.98);
+  transition: transform 0.2s ease;
+}
+
+.connect-detail.active .connect-detail-panel {
+  transform: translateY(0) scale(1);
+}
+
+.connect-detail-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.connect-detail-close:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 30%, var(--hairline));
+}
+
+.connect-detail-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.connect-detail-benefit {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--detail-accent, var(--primary));
+  margin-bottom: 0.2rem;
+}
+
+.connect-detail-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  padding-right: 1.75rem;
+  line-height: 1.25;
+}
+
+.connect-detail-hook {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin-bottom: 0.85rem;
+}
+
+.connect-detail-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.35rem;
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--detail-accent, var(--primary)) 6%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, var(--hairline));
+}
+
+.connect-detail-price-amt {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--detail-accent, var(--primary));
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.connect-detail-price-period {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.connect-detail-note {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--faint);
+  margin-bottom: 0.85rem;
+}
+
+.connect-detail-book {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.connect-detail-soon-badge {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--detail-accent, var(--primary)) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 22%, var(--hairline));
+}
+
+.connect-detail-interest {
+  margin-bottom: 0.45rem;
+}
+
+.connect-detail-interest-lead {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.connect-detail-interest-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  margin-bottom: 0.3rem;
+}
+
+.connect-detail-interest-note {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 4.5rem;
+  resize: vertical;
+  padding: 0.55rem 0.65rem;
+  margin-bottom: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: var(--offset);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.connect-detail-interest-note:focus {
+  outline: none;
+  border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 40%, var(--hairline));
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--detail-accent, var(--primary)) 15%, transparent);
+}
+
+.connect-detail-interest-status {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin: 0 0 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--hairline));
+  color: var(--text);
+}
+
+.connect-detail-interest-status--done {
+  background: color-mix(in oklab, #16a34a 8%, var(--surface));
+  border-color: color-mix(in oklab, #16a34a 22%, var(--hairline));
+  color: color-mix(in oklab, #15803d 85%, var(--text));
+}
+
+[data-theme='dark'] .connect-detail-interest-status--done {
+  color: #86efac;
+}
+
+.connect-detail-interest-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.connect-detail-slots {
+  margin-bottom: 0.85rem;
+}
+
+.connect-detail-slots-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  margin-bottom: 0.45rem;
+}
+
+.connect-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 11rem;
+  overflow-y: auto;
+  margin-bottom: 0.65rem;
+}
+
+.connect-slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: var(--offset);
+  font-size: 0.8125rem;
+}
+
+.connect-slot-item strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.connect-slot-pick {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.32rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 30%, var(--hairline));
+  background: color-mix(in oklab, var(--detail-accent, var(--primary)) 8%, var(--surface));
+  color: var(--detail-accent, var(--primary));
+  cursor: pointer;
+}
+
+.connect-slot-pick:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.connect-slot-empty {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.5;
+  padding: 0.45rem 0;
+}
+
+.connect-slot-reserved {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text);
+  padding: 0.6rem 0.65rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--detail-accent, var(--primary)) 6%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, var(--hairline));
+  margin-bottom: 0.65rem;
+}
+
+.connect-detail-mentor-link {
+  display: inline-block;
+  margin-bottom: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.connect-detail-mentor-link:hover {
+  text-decoration: underline;
+}
+
+.connect-email-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.connect-email-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .connect-intro {
+    margin-bottom: 0.85rem;
+  }
+}

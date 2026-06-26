@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/app-shell.css';
 import LogoMark from '../components/LogoMark.astro';
 import ConnectFloat from '../components/ConnectFloat.astro';
 import DiscordJoin from '../components/DiscordJoin.astro';
@@ -18,6 +19,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           var saved = localStorage.getItem('theme');
           var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
+          var themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#f5f5f7');
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'light');
         }
@@ -35,7 +38,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#1f5c61" />
+    <meta name="theme-color" content="#f5f5f7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Questions by topic — DSA Mastery Guide</title>
@@ -56,12 +59,6 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       gtag('js', new Date());
       gtag('config', 'G-RKMP4BG1N2');
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
     <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
@@ -72,8 +69,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         <div class="logo">
           <LogoMark width={28} height={28} />
           <div class="logo-copy">
-            <div class="logo-text">DSA Mastery</div>
-            <div class="logo-sub">Problem tables · one topic at a time</div>
+            <div class="logo-text">algofrog</div>
           </div>
           <button
             type="button"
@@ -90,15 +86,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             <span class="sidebar-collapse-label">Hide list</span>
           </button>
         </div>
-        <p class="sidebar-purpose">Pick a topic here — the main column is always the question list.</p>
         <div id="nav-list"></div>
         <div class="sidebar-footer">
-          <button class="theme-btn" aria-label="Toggle theme">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <span class="theme-btn-label">Theme</span>
-          </button>
           <span class="progress-summary" id="topic-count"></span>
         </div>
       </nav>
@@ -138,8 +127,13 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
               <button type="button" class="streak-mini-meta" id="daily-streak-meta" title="Streak + last 7 days">
                 —
               </button>
-              <button type="button" class="streak-mini-btn" id="streak-open-year" title="Open activity calendar" aria-label="Open activity calendar">
-                Calendar
+              <button type="button" class="streak-mini-btn" id="streak-open-year" title="Activity calendar" aria-label="Open activity calendar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
               </button>
             </div>
           </div>
@@ -192,7 +186,12 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             </div>
           </div>
         </div>
-        <div class="content" id="content"></div>
+        <div class="content content--loading" id="content">
+          <div class="content-skeleton" aria-busy="true" aria-label="Loading your topics">
+            <div class="content-skeleton-line"></div>
+            <div class="content-skeleton-sheet"></div>
+          </div>
+        </div>
       </main>
 
       <button class="mob-nav-btn" id="mob-nav-btn" aria-label="Open topic list" aria-controls="sidebar" aria-expanded="false" type="button">
@@ -530,7 +529,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       // over the wire for ineligible topics (trial preview set, or is_free when expired).
       const TOPIC_LIST_SELECT =
         'id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta';
-      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, is_premium, sub_variant, key_insight)`;
+      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight)`;
 
       function mergeTopicShellWithEmbeds(shellRows: any[], fullById: Map<number, any>): any[] {
         return shellRows.map((row: any) => {
@@ -771,29 +770,40 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
 
       /**
+       * Strip leading nav-section name from titles/labels (e.g. "Algorithms · Two Pointers" → "Two Pointers").
+       * Normalizes look-alike bullets (∙ • ․ etc.).
+       */
+      function stripNavSectionPrefix(s: string, sectionName: string): string {
+        if (!s || !sectionName) return s;
+        let out = s.trim();
+        const plain = metaPlainForTags(out);
+        const esc = sectionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp(`^${esc}$`, 'i').test(plain)) return '';
+        out = out.replace(
+          /[\u2219\u2022\u2024\u2027\u30FB\u0387\u22C5\uFF65\u2023\u2043\u2E31\u2E33]/g,
+          '\u00B7',
+        );
+        const re = new RegExp(
+          `^${esc}\\b(?:[\\s\\u00A0]*(?:\\u00B7|·|&middot;|&#183;|&#8226;|:|[\\u2013\\u2014\\-/\\\\|;]|&nbsp;))+[\\s\\u00A0]*`,
+          'iu',
+        );
+        for (let i = 0; i < 6; i++) {
+          const next = out.replace(re, '').trim();
+          if (next === out) break;
+          out = next;
+          if (new RegExp(`^${esc}$`, 'i').test(metaPlainForTags(out))) return '';
+        }
+        return out;
+      }
+
+      /**
        * In the DP nav section, "Dynamic Programming · …" repeats the section name.
        * Strip that prefix (and bare "Dynamic Programming" alone). Requires real punctuation
        * after "Programming" so we do not strip titles like "Dynamic Programming Techniques".
        * Normalizes look-alike bullets (∙ • ․ etc.).
        */
       function stripDpNavSectionNoise(s: string): string {
-        if (!s) return s;
-        let out = s.trim();
-        if (/^dynamic\s+programming$/i.test(metaPlainForTags(out))) return '';
-        out = out.replace(
-          /[\u2219\u2022\u2024\u2027\u30FB\u0387\u22C5\uFF65\u2023\u2043\u2E31\u2E33]/g,
-          '\u00B7',
-        );
-        // "Programming" then optional space, then one+ punctuation tokens (middot, colon, dash, etc.).
-        const re =
-          /^Dynamic\s+Programming\b(?:[\s\u00A0]*(?:\u00B7|·|&middot;|&#183;|&#8226;|:|[\u2013\u2014\-/,;\\|]|&nbsp;))+[\s\u00A0]*/iu;
-        for (let i = 0; i < 6; i++) {
-          const next = out.replace(re, '').trim();
-          if (next === out) break;
-          out = next;
-          if (/^dynamic\s+programming$/i.test(metaPlainForTags(out))) return '';
-        }
-        return out;
+        return stripNavSectionPrefix(s, 'Dynamic Programming');
       }
 
       /** Same as stripDpNavSectionNoise for each line or HTML br chunk (multi-line topic-meta). */
@@ -845,7 +855,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         }
       }
       document.getElementById('nav-list')!.innerHTML = navHtml;
-      document.getElementById('topic-count')!.textContent = `${topics.length} topics · question lists`;
+      document.getElementById('topic-count')!.textContent = `${topics.length} topics`;
 
       // ── Build Topic Cards ──
 
@@ -956,8 +966,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         }
 
         if (problems.length) {
-          h += `<div class="sec-title">Problem Set</div><div class="tbl-wrap"><table>`;
-          h += `<thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>P</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead><tbody>`;
+          h += `<div class="tbl-wrap problem-set"><table>`;
+          h += `<thead><tr><th>#</th><th>Layer</th><th>Link</th><th>Problem</th><th>Diff</th><th>Sub-Variant</th><th>Key Insight</th></tr></thead><tbody>`;
           problems.forEach((p: any) => {
             const isTrap = p.layer === 'Trap';
             const lc = LAYER_CLS[p.layer] || 'l1';
@@ -967,14 +977,12 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             const diff = p.difficulty
               ? `<span class="${DIFF_CLS[p.difficulty] || ''}">${p.difficulty}</span>`
               : '';
-            const prem = p.is_premium ? `<span class="prem">✅</span>` : '';
             h += `<tr data-problem-id="${p.id}">`;
             h += `<td class="num-cell">${p.order_num}</td>`;
             h += `<td><span class="${lc}">${isTrap ? '⚠️Trap' : esc(p.layer)}</span></td>`;
             h += `<td>${link}</td>`;
             h += `<td class="prob-name${isTrap ? ' trap-name' : ''}">${isTrap ? '⚠️ ' : ''}${esc(p.title)}</td>`;
             h += `<td>${diff}</td>`;
-            h += `<td>${prem}</td>`;
             h += `<td class="variant-cell">${esc(p.sub_variant || '')}</td>`;
             h += `<td class="insight">${esc(p.key_insight || '')}</td>`;
             h += `</tr>`;
@@ -1064,22 +1072,19 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           meta = stripDpNavSectionNoiseDeep(meta);
         }
         const rawSummary = t.summary_meta || '';
-        const typeLabel = isDpTopic
-          ? stripRedundantDpMiddotLabel(stripDpNavSectionNoiseDeep(t.type_label || ''), rawSummary)
-          : (t.type_label || '');
         const tierLabelClean = isDpTopic
           ? stripRedundantDpMiddotLabel(stripDpNavSectionNoiseDeep(t.tier_label || ''), rawSummary)
           : (t.tier_label || '');
-        const topicTitle =
-          isDpTopic
-            ? (() => {
-                const cleaned = stripDpNavSectionNoiseDeep(t.title || '').trim();
-                return cleaned || t.title;
-              })()
-            : t.title;
-        cardsHtml += `<article class="topic-card topic-collapsed${isLocked ? ' topic-locked' : ''}" id="tp${t.id}" aria-labelledby="tp${t.id}-heading"><div class="topic-header"><div class="topic-num" aria-hidden="true">${t.display_number}</div><div class="topic-header-main"><div class="topic-header-row"><h2 class="topic-title" id="tp${t.id}-heading">${topicTitle}</h2><span class="tier-badge tier-${t.tier_code}">${tierLabelClean}</span><span class="topic-type">${typeLabel}</span><button type="button" class="topic-details-btn" aria-expanded="false" aria-controls="tp${t.id}-panel" title="Show topic details">Details</button></div><div class="topic-meta">${meta}</div></div></div><div class="topic-body" id="tp${t.id}-panel">${bodyHtml}</div></article>`;
+        const topicTitle = (() => {
+          let cleaned = stripNavSectionPrefix(t.title || '', t.nav_section || '');
+          if (isDpTopic) cleaned = stripDpNavSectionNoiseDeep(cleaned);
+          return cleaned.trim() || t.title;
+        })();
+        cardsHtml += `<article class="topic-card topic-collapsed${isLocked ? ' topic-locked' : ''}" id="tp${t.id}" aria-labelledby="tp${t.id}-heading"><div class="topic-header"><div class="topic-num" aria-hidden="true">${t.display_number}</div><div class="topic-header-main"><div class="topic-header-row"><h2 class="topic-title" id="tp${t.id}-heading">${esc(topicTitle)}</h2><span class="tier-badge tier-${t.tier_code}">${tierLabelClean}</span><button type="button" class="topic-details-btn" aria-expanded="false" aria-controls="tp${t.id}-panel" title="Show topic details">More</button></div><div class="topic-meta">${meta}</div></div></div><div class="topic-body" id="tp${t.id}-panel">${bodyHtml}</div></article>`;
       }
-      document.getElementById('content')!.innerHTML = cardsHtml;
+      const contentEl = document.getElementById('content')!;
+      contentEl.classList.remove('content--loading');
+      contentEl.innerHTML = cardsHtml;
 
       // ── Topic header collapse (questions-first) ──
       document.querySelectorAll('.topic-card').forEach((card) => {
@@ -1090,7 +1095,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           e.stopPropagation();
           const collapsed = card.classList.toggle('topic-collapsed');
           btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-          btn.textContent = collapsed ? 'Details' : 'Hide';
+          btn.textContent = collapsed ? 'More' : 'Less';
           btn.title = collapsed ? 'Show details' : 'Hide details';
         });
       });
@@ -1100,6 +1105,64 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         btn.addEventListener('click', () => {
           const p = (btn as HTMLElement).dataset.payPlan === 'quarterly' ? 'quarterly' : 'monthly';
           openRazorpay(p);
+        });
+      });
+
+      // ── Problem set: mark primary table, drop redundant "Problem Set" label ──
+      function markProblemSetSections() {
+        document.querySelectorAll('.topic-card').forEach((card) => {
+          const body = card.querySelector('.topic-body');
+          if (!body) return;
+          let marked = false;
+          for (const wrap of body.querySelectorAll('.tbl-wrap')) {
+            const table = wrap.querySelector('table');
+            if (!table) continue;
+            const headers = [...table.querySelectorAll('thead th')].map((th) =>
+              (th.textContent || '').trim().toLowerCase()
+            );
+            const isProblemTable =
+              Boolean(table.querySelector('.num-cell, a.lc-link'))
+              && (headers.some((h) => h.includes('insight'))
+                || headers.some((h) => h === 'problem' || h === 'diff' || h.includes('difficulty'))
+                || headers.includes('#'));
+            if (!isProblemTable) continue;
+            wrap.classList.add('problem-set');
+            marked = true;
+            break;
+          }
+          if (!marked) return;
+          body.querySelectorAll('.sec-title').forEach((el) => {
+            if (/problem\s*set/i.test(el.textContent || '')) {
+              el.classList.add('sec-title--problem-set');
+            }
+          });
+        });
+      }
+      markProblemSetSections();
+
+      // ── Unwrap legacy tbl-scroll-inner (broke table layout in some browsers) ──
+      document.querySelectorAll('.topic-body > .tbl-wrap > .tbl-scroll-inner').forEach((inner) => {
+        const table = inner.querySelector('table');
+        if (!table || !inner.parentElement) return;
+        inner.parentElement.insertBefore(table, inner);
+        inner.remove();
+      });
+
+      // ── Remove legacy Pro / premium "P" column from problem tables ──
+      document.querySelectorAll('.topic-body table').forEach((table) => {
+        const thr = table.querySelector('thead tr');
+        if (!thr) return;
+        const headers = Array.from(thr.querySelectorAll('th')).map((th) =>
+          (th.textContent || '').trim().toLowerCase()
+        );
+        const pIdx = headers.findIndex((h) => h === 'p');
+        if (pIdx < 0) return;
+        const isProblemTable =
+          headers.some((h) => h.includes('insight') || h === 'problem' || h === 'diff' || h.includes('difficulty'));
+        if (!isProblemTable) return;
+        thr.children[pIdx]?.remove();
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+          tr.children[pIdx]?.remove();
         });
       });
 
@@ -1582,8 +1645,9 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         card.querySelectorAll('tbody tr').forEach((row) => {
           const numCell = row.querySelector('.num-cell');
           if (!numCell) return;
-          const probNum = parseInt(numCell.textContent?.trim() || '0');
-          if (!probNum) return;
+          const numRaw = (numCell.querySelector('.num-text')?.textContent || numCell.textContent || '').trim();
+          const probNum = parseInt(numRaw.replace(/^[^\d]*/, ''), 10);
+          if (!Number.isFinite(probNum) || probNum < 1) return;
           const key = `${topicId}-${probNum}`;
           const isComplete = hasProFeatures && completedSet.has(key);
           const isRevision = hasProFeatures && revisionSet.has(key);
@@ -1603,7 +1667,6 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           if (isComplete) row.classList.add('row-done');
           if (isRevision) row.classList.add('row-revision');
           // Keep # column perfectly aligned: fixed-width controls + stable number text
-          const numRaw = (numCell.textContent || '').trim();
           const inner = document.createElement('span');
           inner.className = 'num-cell-inner';
 
@@ -1756,7 +1819,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         document.documentElement.setAttribute('data-theme', next);
         try { localStorage.setItem('theme', next); } catch (e) {}
       }
-      document.querySelectorAll('.theme-btn, #theme-toggle-top').forEach((btn) => {
+      document.querySelectorAll('#theme-toggle-top').forEach((btn) => {
         btn.addEventListener('click', toggleTheme);
       });
 
@@ -1770,12 +1833,9 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             const el = child as HTMLElement;
             const tbl = el.tagName === 'TABLE' ? el : el.querySelector('table');
             const isProblemTable = tbl && tbl.querySelector('.num-cell');
-            const txt = el.textContent || '';
-            const isProblemHeading = (el.classList.contains('sec-title') || /^H[1-6]$/.test(el.tagName))
-              && (/problem\s*set/i.test(txt) || /section\s*[A-Z]/i.test(txt));
             if (wantProblemFocus) {
-              if (isProblemTable || isProblemHeading) {
-                el.style.setProperty('display', isProblemTable ? 'block' : '', 'important');
+              if (isProblemTable) {
+                el.style.setProperty('display', 'block', 'important');
               } else {
                 el.style.setProperty('display', 'none', 'important');
               }
@@ -1862,9 +1922,9 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         }
         const numEl = activeCard.querySelector('.topic-num');
         const titleEl = activeCard.querySelector('.topic-title');
-        numOut.textContent = numEl?.textContent?.trim() || '';
+        numOut.textContent = '';
         titleOut.textContent = titleEl?.textContent?.trim() || '';
-        const label = [numOut.textContent, titleOut.textContent].filter(Boolean).join('. ');
+        const label = titleOut.textContent.trim();
         wrap.setAttribute('aria-label', label ? `Current topic: ${label}` : 'Current topic');
       }
 

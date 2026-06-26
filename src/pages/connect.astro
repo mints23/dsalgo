@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/connect.css';
 import '../styles/connect-client.css';
 import LogoMark from '../components/LogoMark.astro';
 import DiscordJoin from '../components/DiscordJoin.astro';
@@ -29,1025 +30,120 @@ const sessionFootnote = SESSION_FOOTNOTE;
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Connect — 1:1 Mentoring · algofrog.in</title>
+    <title>Mentor — algofrog</title>
     <meta
       name="description"
-      content="Personal mentoring for high-CTC prep — system design, roadmaps, CV review, DSA classes, and 1:1 mentorship. From the team behind DSA Mastery."
+      content="Book a live 1:1 session — DSA coaching, roadmaps, system design, and interview prep with the algofrog team."
     />
-    <meta name="theme-color" content="#1f5c61" />
+    <meta name="theme-color" content="#01696f" />
     <link rel="canonical" href="https://algofrog.in/connect" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      .connect-page {
-        min-height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        padding: clamp(0.75rem, 2.5vw, 1.5rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 3vh, 2rem);
-        position: relative;
-        overflow-x: hidden;
-        background:
-          radial-gradient(ellipse 90% 70% at 0% 0%, color-mix(in oklab, var(--royal-gold) 7%, transparent), transparent 52%),
-          radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 48%),
-          var(--bg);
-      }
-      .connect-shell {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        max-width: 52rem;
-        margin: 0 auto;
-      }
-      .connect-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1.75rem;
-      }
-      .connect-brand .logo-mark {
-        border-radius: 8px;
-        box-shadow: 0 4px 18px color-mix(in srgb, var(--primary) 14%, transparent);
-      }
-      .connect-brand-text {
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 1.02rem;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-      }
-      .connect-brand-sub {
-        display: none;
-      }
-      .connect-intro {
-        margin: 0 auto 1.5rem;
-        max-width: 28rem;
-        text-align: center;
-      }
-      .connect-intro-title {
-        margin: 0;
-        font-family: var(--font-display);
-        font-size: clamp(1.85rem, 5vw, 2.45rem);
-        font-weight: 600;
-        letter-spacing: -0.03em;
-        line-height: 1.1;
-        color: var(--text);
-      }
-      .connect-intro-title em {
-        font-style: italic;
-        font-weight: 500;
-        color: color-mix(in oklab, var(--royal-gold) 80%, var(--primary));
-      }
-      .connect-brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.55rem;
-        text-decoration: none;
-        color: var(--text);
-      }
-      .connect-top-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-      }
-      .connect-top-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.76rem;
-        font-weight: 600;
-        color: var(--muted);
-        text-decoration: none;
-        padding: 0.38rem 0.85rem;
-        border-radius: 999px;
-        border: 1px solid color-mix(in oklab, var(--border) 70%, var(--primary));
-        background: color-mix(in oklab, var(--surface) 88%, var(--bg));
-        white-space: nowrap;
-        transition:
-          color 0.15s,
-          background 0.15s,
-          border-color 0.15s,
-          box-shadow 0.15s,
-          transform 0.15s;
-      }
-      .connect-top-link:hover {
-        color: var(--primary);
-        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
-        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
-      }
-      .connect-pill--primary {
-        color: #fff;
-        font-weight: 700;
-        border-color: color-mix(in oklab, var(--primary) 55%, #0a5c62);
-        background: linear-gradient(
-          128deg,
-          color-mix(in oklab, var(--primary) 88%, #fff) 0%,
-          var(--primary) 48%,
-          color-mix(in oklab, var(--primary) 78%, #0a3d42) 100%
-        );
-        box-shadow:
-          inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
-          0 2px 10px color-mix(in oklab, var(--primary) 35%, transparent);
-      }
-      .connect-pill--primary:hover {
-        color: #fff;
-        transform: translateY(-1px);
-        background: linear-gradient(
-          128deg,
-          color-mix(in oklab, var(--primary) 75%, #fff) 0%,
-          color-mix(in oklab, var(--primary) 95%, #02b8b0) 50%,
-          color-mix(in oklab, var(--primary) 70%, #065a60) 100%
-        );
-        border-color: color-mix(in oklab, var(--primary) 65%, #f0c96a);
-        box-shadow:
-          inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent),
-          0 4px 16px color-mix(in oklab, var(--primary) 42%, transparent);
-      }
-      .connect-top-link:focus-visible,
-      .connect-pill:focus-visible {
-        outline: 2px solid color-mix(in oklab, var(--primary) 50%, transparent);
-        outline-offset: 2px;
-      }
-      .connect-theme-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        border: 1px solid var(--border);
-        border-radius: 0.4rem;
-        background: var(--surface);
-        color: var(--muted);
-        cursor: pointer;
-        transition: color 0.15s, border-color 0.15s;
-      }
-      .connect-theme-btn:hover {
-        color: var(--primary);
-        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
-      }
-
-      /* Single booking card */
-      .connect-flow {
-        max-width: 52rem;
-        margin: 0 auto;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 1rem;
-        overflow: hidden;
-        box-shadow: 0 8px 32px color-mix(in oklab, var(--text) 5%, transparent);
-      }
-      .connect-flow-body {
-        display: grid;
-        grid-template-columns: 1fr;
-      }
-      @media (min-width: 880px) {
-        .connect-flow-body {
-          grid-template-columns: 1fr 1fr;
-        }
-        .connect-flow-time {
-          border-right: 1px solid var(--divider);
-        }
-      }
-      .connect-flow-section {
-        padding: 1.15rem 1.2rem 1.2rem;
-        min-width: 0;
-      }
-      .connect-flow-label-row {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
-      .connect-flow-label {
-        margin: 0;
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--faint);
-      }
-      .connect-slots-panel--pulse {
-        animation: connect-slots-pulse 0.85s ease-out;
-      }
-      @keyframes connect-slots-pulse {
-        0%,
-        100% {
-          box-shadow: var(--shadow);
-        }
-        35%,
-        65% {
-          box-shadow:
-            0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent),
-            0 12px 28px color-mix(in oklab, var(--primary) 22%, transparent);
-        }
-      }
-      .connect-slots-badge {
-        font-size: 0.58rem;
-        font-weight: 700;
-        color: var(--primary);
-        background: color-mix(in oklab, var(--primary) 10%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
-        padding: 0.14rem 0.45rem;
-        border-radius: 999px;
-        white-space: nowrap;
-        margin-left: auto;
-      }
-      .connect-slots-signin-hint {
-        margin: 0 0 0.75rem;
-        font-size: 0.8rem;
-        line-height: 1.45;
-        color: var(--muted);
-      }
-      .connect-slots-signin-hint a {
-        color: var(--primary);
-        font-weight: 600;
-        text-decoration: none;
-      }
-      .connect-slots-signin-hint a:hover {
-        text-decoration: underline;
-      }
-      .connect-my-bookings {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
-      .connect-avail-feed {
-        width: 100%;
-        min-height: min(12rem, 32vh);
-        max-height: min(22rem, 50vh);
-        overflow: auto;
-        padding-right: 0.15rem;
-        scrollbar-width: thin;
-        scrollbar-color: color-mix(in oklab, var(--primary) 35%, var(--border)) transparent;
-      }
-      .connect-avail-feed::-webkit-scrollbar {
-        width: 5px;
-      }
-      .connect-avail-feed::-webkit-scrollbar-thumb {
-        border-radius: 999px;
-        background: color-mix(in oklab, var(--primary) 35%, var(--border));
-      }
-      .connect-service-row:hover {
-        border-color: color-mix(in oklab, var(--row-accent) 45%, var(--border));
-      }
-      .connect-service-row--selected {
-        box-shadow: 0 0 0 2px color-mix(in oklab, var(--row-accent) 35%, transparent);
-      }
-      .connect-service-meta {
-        font-size: 0.72rem;
-        color: var(--muted);
-        margin-top: 0.35rem;
-        line-height: 1.45;
-      }
-      .connect-cal-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.65rem;
-      }
-      .connect-cal-nav-btn {
-        width: 1.85rem;
-        height: 1.85rem;
-        border: 1px solid var(--border);
-        border-radius: 0.4rem;
-        background: var(--surface2);
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 1rem;
-        line-height: 1;
-      }
-      .connect-cal-nav-btn:hover {
-        color: var(--primary);
-        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
-      }
-      .connect-cal-label {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: var(--text);
-      }
-      .connect-cal-weekdays {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 0.15rem;
-        margin-bottom: 0.35rem;
-      }
-      .connect-cal-weekdays span {
-        text-align: center;
-        font-size: 0.62rem;
-        font-weight: 700;
-        color: var(--faint);
-        text-transform: uppercase;
-      }
-      .connect-cal-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 0.2rem;
-      }
-      .connect-cal-day {
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        border: 1px solid transparent;
-        border-radius: 0.45rem;
-        background: transparent;
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: default;
-        padding: 0;
-      }
-      .connect-cal-day--empty {
-        visibility: hidden;
-      }
-      .connect-cal-day--has-slots {
-        color: var(--text);
-        cursor: pointer;
-        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
-        border-color: color-mix(in oklab, var(--primary) 18%, var(--border));
-      }
-      .connect-cal-day--has-slots:hover {
-        border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
-        background: color-mix(in oklab, var(--primary) 14%, var(--surface));
-      }
-      .connect-cal-day--selected {
-        color: var(--inv);
-        background: var(--primary);
-        border-color: var(--primary);
-      }
-      .connect-cal-day--selected::after {
-        background: var(--inv);
-      }
-      .connect-cal-day--has-slots::after {
-        content: '';
-        position: absolute;
-        bottom: 0.18rem;
-        width: 0.28rem;
-        height: 0.28rem;
-        border-radius: 50%;
-        background: var(--primary);
-      }
-      .connect-cal-hint {
-        margin-top: 0.65rem;
-        font-size: 0.68rem;
-        line-height: 1.45;
-        color: var(--faint);
-      }
-      .connect-services-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.65rem;
-        margin-top: 0.15rem;
-      }
-      .connect-service-row {
-        --row-accent: var(--primary);
-        appearance: none;
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid color-mix(in oklab, var(--row-accent) 22%, var(--border));
-        border-radius: 0.65rem;
-        padding: 0.75rem 0.85rem;
-        background: color-mix(in oklab, var(--row-accent) 5%, var(--surface));
-        text-align: left;
-        font: inherit;
-        color: inherit;
-        cursor: pointer;
-        transition: border-color 0.15s, box-shadow 0.15s;
-      }
-      .connect-service-row-head {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.55rem;
-        margin-bottom: 0.55rem;
-      }
-      .connect-service-row-icon {
-        font-size: 1.35rem;
-        line-height: 1;
-      }
-      .connect-service-row-title {
-        font-size: 0.92rem;
-        font-weight: 800;
-        color: var(--text);
-        line-height: 1.25;
-      }
-      .connect-service-row-benefit {
-        font-size: 0.68rem;
-        font-weight: 700;
-        color: var(--row-accent);
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-      }
-      .connect-service-row-price {
-        margin-left: auto;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--row-accent);
-        white-space: nowrap;
-      }
-      .connect-time-chips {
-        display: none;
-      }
-      .connect-flow-services .connect-flow-label {
-        font-family: var(--font-display);
-        font-size: 1.05rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        text-transform: none;
-        color: var(--text);
-        margin-bottom: 0.75rem;
-      }
-      .connect-other--awaiting-slot .connect-deck .connect-card {
-        opacity: 0.5;
-      }
-      .connect-other--awaiting-slot .connect-deck .connect-card--soon {
-        opacity: 0.85;
-      }
-      .connect-other--slot-selected .connect-deck .connect-card {
-        opacity: 1;
-      }
-      .connect-card--service-picked {
-        background: color-mix(in oklab, var(--royal-gold) 7%, var(--surface));
-      }
-      .connect-card--service-picked .connect-card-price {
-        color: color-mix(in oklab, var(--royal-gold) 80%, var(--primary));
-      }
-      .connect-card--soon {
-        cursor: pointer;
-      }
-      .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked) {
-        opacity: 0.65;
-      }
-      .connect-other--service-picked .connect-deck .connect-card:not(.connect-card--service-picked):hover {
-        opacity: 0.9;
-      }
-      .connect-other--service-picked .connect-deck .connect-card--service-picked {
-        opacity: 1;
-      }
-      .connect-booking-bar-note {
-        font-size: 0.72rem;
-        color: var(--muted);
-        margin-top: 0.35rem;
-      }
-      .connect-flow-pay {
-        padding: 1rem 1.2rem 1.15rem;
-        border-top: 1px solid var(--divider);
-        background: color-mix(in oklab, var(--primary) 4%, var(--surface));
-      }
-      .connect-booking-bar p {
-        font-size: 0.84rem;
-        line-height: 1.5;
-        color: var(--text);
-        margin-bottom: 0.65rem;
-      }
-      .connect-other {
-        margin-bottom: 0;
-        min-width: 0;
-      }
-
-      /* Service list */
-      .connect-deck-slot-hint {
-        margin: 0 0 0.65rem;
-        padding: 0.5rem 0.65rem;
-        font-size: 0.78rem;
-        font-weight: 600;
-        line-height: 1.45;
-        color: #b45309;
-        background: color-mix(in oklab, #f59e0b 12%, var(--surface));
-        border: 1px solid color-mix(in oklab, #f59e0b 35%, var(--border));
-        border-radius: 0.5rem;
-      }
-      [data-theme='dark'] .connect-deck-slot-hint {
-        color: #fbbf24;
-        background: color-mix(in oklab, #f59e0b 14%, var(--surface));
-        border-color: color-mix(in oklab, #f59e0b 40%, var(--border));
-      }
-      .connect-deck-slot-hint--flash {
-        color: #c2410c;
-        border-color: color-mix(in oklab, #ea580c 50%, var(--border));
-        background: color-mix(in oklab, #f97316 16%, var(--surface));
-      }
-      [data-theme='dark'] .connect-deck-slot-hint--flash {
-        color: #fdba74;
-        background: color-mix(in oklab, #f97316 18%, var(--surface));
-      }
-      .connect-deck {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-      .connect-card {
-        appearance: none;
-        width: 100%;
-        font: inherit;
-        cursor: pointer;
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 1.25rem;
-        padding: 0.8rem 0.35rem;
-        text-align: left;
-        background: transparent;
-        border: none;
-        border-bottom: 1px solid color-mix(in oklab, var(--royal-gold-soft) 30%, var(--divider));
-        border-radius: 0;
-        box-shadow: none;
-        text-decoration: none;
-        color: inherit;
-        position: relative;
-        transition: background 0.18s ease, opacity 0.18s ease;
-      }
-      .connect-card:last-child {
-        border-bottom: none;
-        padding-bottom: 0.35rem;
-      }
-      .connect-card:first-child {
-        padding-top: 0.15rem;
-      }
-      .connect-card:hover {
-        background: color-mix(in oklab, var(--royal-gold) 6%, transparent);
-      }
-      .connect-card:focus-visible {
-        outline: 2px solid color-mix(in oklab, var(--royal-gold-soft) 55%, var(--primary));
-        outline-offset: 2px;
-        border-radius: 0.35rem;
-        z-index: 1;
-      }
-      .connect-card-main {
-        flex: 1;
-        min-width: 0;
-      }
-      .connect-card-title {
-        display: block;
-        font-family: var(--font-display);
-        font-size: 1.02rem;
-        font-weight: 600;
-        letter-spacing: -0.015em;
-        line-height: 1.25;
-        color: var(--text);
-      }
-      .connect-card-note {
-        display: block;
-        margin-top: 0.2rem;
-        font-size: 0.72rem;
-        font-style: italic;
-        line-height: 1.35;
-        color: var(--muted);
-      }
-      .connect-card-price {
-        flex-shrink: 0;
-        font-family: var(--font-display);
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        color: color-mix(in oklab, var(--royal-gold) 65%, var(--primary));
-        white-space: nowrap;
-      }
-
-      .connect-aside {
-        margin: 1.35rem auto 0;
-        max-width: 32rem;
-        text-align: center;
-        font-size: 0.8rem;
-        line-height: 1.55;
-        color: var(--muted);
-      }
-      .connect-cta-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.45rem;
-        padding: 0.72rem 1.35rem;
-        border-radius: 0.55rem;
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: var(--inv);
-        background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 75%, #02a6a0));
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        box-shadow:
-          0 4px 14px color-mix(in oklab, var(--primary) 35%, transparent),
-          inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
-      }
-      .connect-cta-btn:hover {
-        filter: brightness(1.05);
-      }
-      .connect-cta-btn:focus-visible {
-        outline: 2px solid var(--primary);
-        outline-offset: 3px;
-      }
-      .connect-cta-sub {
-        margin-top: 0.75rem;
-        font-size: 0.72rem;
-        color: var(--faint);
-      }
-      .connect-footnote {
-        margin-top: 1rem;
-        text-align: center;
-        font-size: 0.65rem;
-        line-height: 1.5;
-        color: var(--faint);
-      }
-      .connect-footnote-star {
-        color: var(--primary);
-        font-weight: 700;
-        margin-right: 0.2rem;
-      }
-      .connect-detail {
-        position: fixed;
-        inset: 0;
-        z-index: 200;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.75rem, env(safe-area-inset-right, 0px))
-          max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px));
-        box-sizing: border-box;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.18s ease;
-      }
-      .connect-detail.active {
-        opacity: 1;
-        pointer-events: all;
-      }
-      .connect-detail-backdrop {
-        position: absolute;
-        inset: 0;
-        border: none;
-        padding: 0;
-        margin: 0;
-        cursor: pointer;
-        background: color-mix(in oklab, var(--text) 52%, transparent);
-      }
-      [data-theme='dark'] .connect-detail-backdrop {
-        background: rgba(0, 0, 0, 0.72);
-      }
-      .connect-detail-panel {
-        position: relative;
-        z-index: 1;
-        width: min(100%, 24rem);
-        max-height: min(88vh, 34rem);
-        overflow: auto;
-        padding: 1.35rem 1.25rem 1.2rem;
-        border-radius: 1rem;
-        background: var(--surface);
-        border: 1px solid color-mix(in oklab, var(--border) 80%, var(--detail-accent, var(--primary)));
-        box-shadow:
-          var(--shadow),
-          0 18px 48px color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, transparent);
-        transform: translateY(12px) scale(0.98);
-        transition: transform 0.2s ease;
-      }
-      .connect-detail.active .connect-detail-panel {
-        transform: translateY(0) scale(1);
-      }
-      .connect-detail-close {
-        position: absolute;
-        top: 0.65rem;
-        right: 0.65rem;
-        width: 2rem;
-        height: 2rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border);
-        border-radius: 0.45rem;
-        background: var(--surface2);
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1;
-        cursor: pointer;
-        transition: color 0.15s, border-color 0.15s, background 0.15s;
-      }
-      .connect-detail-close:hover {
-        color: var(--text);
-        border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 35%, var(--border));
-      }
-      .connect-detail-icon {
-        font-size: 2rem;
-        line-height: 1;
-        margin-bottom: 0.35rem;
-      }
-      .connect-detail-benefit {
-        font-size: 0.68rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--detail-accent, var(--primary));
-        margin-bottom: 0.25rem;
-      }
-      .connect-detail-title {
-        font-size: 1.2rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--text);
-        margin-bottom: 0.55rem;
-        padding-right: 1.75rem;
-        line-height: 1.25;
-      }
-      .connect-detail-hook {
-        font-size: 0.84rem;
-        line-height: 1.55;
-        color: var(--muted);
-        margin-bottom: 0.9rem;
-      }
-      .connect-detail-price {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 0.2rem 0.35rem;
-        margin-bottom: 0.55rem;
-        padding: 0.65rem 0.75rem;
-        border-radius: 0.65rem;
-        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 9%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 22%, var(--border));
-      }
-      .connect-detail-price-amt {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: var(--detail-accent, var(--primary));
-        letter-spacing: -0.02em;
-        line-height: 1;
-      }
-      .connect-detail-price-period {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: var(--muted);
-        line-height: 1.2;
-      }
-      .connect-detail-note {
-        font-size: 0.68rem;
-        line-height: 1.5;
-        color: var(--faint);
-        margin-bottom: 1rem;
-      }
-      .connect-detail-book {
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .connect-detail-soon-badge {
-        display: inline-block;
-        margin-bottom: 0.65rem;
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.58rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        color: #5b21b6;
-        background: color-mix(in oklab, var(--detail-accent, #6d28d9) 12%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--detail-accent, #6d28d9) 28%, var(--border));
-      }
-      [data-theme='dark'] .connect-detail-soon-badge {
-        color: #ddd6fe;
-      }
-      .connect-detail-interest {
-        margin-bottom: 0.5rem;
-      }
-      .connect-detail-interest-lead {
-        font-size: 0.82rem;
-        line-height: 1.55;
-        color: var(--muted);
-        margin: 0 0 0.85rem;
-      }
-      .connect-detail-interest-label {
-        display: block;
-        font-size: 0.68rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--faint);
-        margin-bottom: 0.35rem;
-      }
-      .connect-detail-interest-note {
-        width: 100%;
-        box-sizing: border-box;
-        min-height: 4.5rem;
-        resize: vertical;
-        padding: 0.6rem 0.7rem;
-        margin-bottom: 0.75rem;
-        border-radius: 0.55rem;
-        border: 1px solid var(--border);
-        background: var(--surface2);
-        color: var(--text);
-        font: inherit;
-        font-size: 0.8rem;
-        line-height: 1.45;
-      }
-      .connect-detail-interest-note:focus {
-        outline: none;
-        border-color: color-mix(in oklab, var(--detail-accent, var(--primary)) 45%, var(--border));
-        box-shadow: 0 0 0 2px color-mix(in oklab, var(--detail-accent, var(--primary)) 18%, transparent);
-      }
-      .connect-detail-interest-status {
-        font-size: 0.78rem;
-        line-height: 1.45;
-        margin: 0 0 0.65rem;
-        padding: 0.55rem 0.65rem;
-        border-radius: 0.5rem;
-        background: color-mix(in oklab, var(--primary) 8%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
-        color: var(--text);
-      }
-      .connect-detail-interest-status--done {
-        background: color-mix(in oklab, #16a34a 10%, var(--surface));
-        border-color: color-mix(in oklab, #16a34a 28%, var(--border));
-        color: color-mix(in oklab, #15803d 85%, var(--text));
-      }
-      [data-theme='dark'] .connect-detail-interest-status--done {
-        color: #86efac;
-      }
-      .connect-detail-interest-btn:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-      }
-      .connect-detail-slots {
-        margin-bottom: 1rem;
-      }
-      .connect-detail-slots-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--faint);
-        margin-bottom: 0.5rem;
-      }
-      .connect-slot-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.45rem;
-        max-height: 11rem;
-        overflow-y: auto;
-        margin-bottom: 0.75rem;
-      }
-      .connect-slot-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding: 0.55rem 0.65rem;
-        border-radius: 0.55rem;
-        border: 1px solid var(--border);
-        background: var(--surface2);
-        font-size: 0.78rem;
-      }
-      .connect-slot-item strong {
-        font-weight: 700;
-        color: var(--text);
-      }
-      .connect-slot-pick {
-        flex-shrink: 0;
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 0.35rem 0.6rem;
-        border-radius: 0.4rem;
-        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 40%, var(--border));
-        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 10%, var(--surface));
-        color: var(--detail-accent, var(--primary));
-        cursor: pointer;
-      }
-      .connect-slot-pick:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-      .connect-slot-empty {
-        font-size: 0.78rem;
-        color: var(--muted);
-        line-height: 1.5;
-        padding: 0.5rem 0;
-      }
-      .connect-slot-reserved {
-        font-size: 0.8rem;
-        line-height: 1.5;
-        color: var(--text);
-        padding: 0.65rem 0.75rem;
-        border-radius: 0.55rem;
-        background: color-mix(in oklab, var(--detail-accent, var(--primary)) 9%, var(--surface));
-        border: 1px solid color-mix(in oklab, var(--detail-accent, var(--primary)) 22%, var(--border));
-        margin-bottom: 0.75rem;
-      }
-      .connect-detail-mentor-link {
-        display: inline-block;
-        margin-bottom: 0.75rem;
-        font-size: 0.72rem;
-        font-weight: 600;
-        color: var(--primary);
-        text-decoration: none;
-      }
-      .connect-detail-mentor-link:hover {
-        text-decoration: underline;
-      }
-      .connect-email-link {
-        color: var(--primary);
-        font-weight: 600;
-        text-decoration: none;
-      }
-      .connect-email-link:hover {
-        text-decoration: underline;
-      }
-
-      @media (max-width: 768px) {
-        .connect-avail-feed {
-          min-height: 0;
-          max-height: min(14rem, 38vh);
-        }
-      }
-    </style>
   </head>
   <body>
     <div class="connect-page">
-      <div class="connect-shell">
-        <header class="connect-top">
-          <a class="connect-brand" href="/">
-            <LogoMark width={28} height={28} />
-            <div>
-              <div class="connect-brand-text">DSA Mastery</div>
-              <div class="connect-brand-sub">algofrog.in</div>
-            </div>
-          </a>
-          <div class="connect-top-actions">
-            <DiscordJoin variant="pill" />
-            <a class="connect-top-link connect-pill" href="/login?redirect=/connect" id="connect-nav-auth">Sign in</a>
-            <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="12" cy="12" r="5"></circle>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-              </svg>
-            </button>
-          </div>
-        </header>
+      <header class="connect-topbar" role="banner">
+        <a class="connect-brand" href="/">
+          <LogoMark width={28} height={28} alt="" />
+          <span class="connect-brand-text">algofrog</span>
+        </a>
+        <div class="connect-topbar-actions">
+          <a class="connect-topbar-link" href="/">Guide</a>
+          <DiscordJoin variant="topbar" />
+          <a class="connect-top-link connect-pill" href="/login?redirect=/connect" id="connect-nav-auth">Sign in</a>
+          <button class="connect-theme-btn" id="connect-theme" type="button" aria-label="Toggle theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"></circle>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
 
-        <main>
-          <header class="connect-intro">
-            <h1 class="connect-intro-title">Book a <em>live session</em></h1>
-          </header>
+      <div class="connect-stage">
+        <div class="connect-shell">
+          <main class="connect-main">
+            <header class="connect-intro">
+              <h1 class="connect-intro-title">Book a <em>live session</em></h1>
+            </header>
 
           <div class="connect-flow">
-            <div class="connect-flow-body">
-              <section class="connect-flow-section connect-flow-time connect-slots-panel" aria-label="Pick a time">
-                <div class="connect-flow-label-row">
-                  <h2 class="connect-flow-label">Time</h2>
+            <div class="connect-workspace">
+              <aside
+                class="connect-time-rail connect-slots-panel"
+                aria-label="Pick a time"
+              >
+                <div class="connect-step-head">
+                  <span class="connect-step-num" aria-hidden="true">1</span>
+                  <h2 class="connect-step-title">Time</h2>
                   <span class="connect-slots-badge" id="connect-slots-count" hidden></span>
                 </div>
                 <p class="connect-slots-signin-hint" id="connect-slots-signin-hint" hidden>
                   <a href="/login?redirect=/connect">Sign in</a> to pick a slot.
                 </p>
                 <div id="connect-my-bookings" class="connect-my-bookings" hidden aria-label="Your booked sessions"></div>
-                <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Date and time slots"></div>
-              </section>
+                <div class="connect-avail-feed" id="connect-avail-feed" aria-label="Available times"></div>
+              </aside>
 
               <section
-                class="connect-flow-section connect-flow-services connect-other connect-other--awaiting-slot"
+                class="connect-services-pane connect-other connect-other--awaiting-slot"
                 id="connect-service-deck"
                 aria-label="Choose your service"
               >
-                <h2 class="connect-flow-label">Choose a session</h2>
-                <p class="connect-deck-slot-hint" id="connect-deck-slot-hint" hidden role="status" aria-live="polite">
-                  Pick a time first, then choose a service.
+                <div class="connect-step-head">
+                  <span class="connect-step-num" aria-hidden="true">2</span>
+                  <h2 class="connect-step-title">Session</h2>
+                </div>
+                <p class="connect-deck-slot-hint" id="connect-deck-slot-hint" role="status" aria-live="polite">
+                  Pick a time on the left first.
                 </p>
-                <div class="connect-deck" role="list">
+                <div class="connect-svc-list" id="connect-svc-list">
                   {
-                    services.map((s, i) => (
+                    services.map((s) => (
                       <button
                         type="button"
-                        class:list={['connect-card', s.comingSoon && 'connect-card--soon']}
-                        role="listitem"
-                        style={`--i: ${i}`}
+                        class:list={['connect-svc-row', 'connect-card', s.comingSoon && 'connect-card--soon']}
+                        style={`--svc-accent: ${s.accent}`}
                         data-connect-id={s.id}
                         data-connect-bookable={isConnectSlotBookable(s) ? '1' : '0'}
                         data-connect-coming-soon={s.comingSoon ? '1' : '0'}
+                        aria-describedby="connect-deck-slot-hint"
                         title={s.comingSoon ? `${s.title} — ${connectBatchCopy.cardHint}` : s.hook}
                       >
-                        <span class="connect-card-main">
-                          <span class="connect-card-title">{s.title}</span>
-                          {s.comingSoon && (
-                            <span class="connect-card-note">{connectBatchCopy.cardHint}</span>
-                          )}
+                        <span class="connect-svc-icon" aria-hidden="true">{s.icon}</span>
+                        <span class="connect-svc-body">
+                          <span class="connect-svc-name">
+                            {s.title}
+                            {s.comingSoon && (
+                              <span class="connect-svc-tag">{connectBatchCopy.badge}</span>
+                            )}
+                          </span>
+                          <span class="connect-svc-desc">
+                            {s.comingSoon ? connectBatchCopy.cardHint : s.hook}
+                          </span>
                         </span>
-                        <span class="connect-card-price">{s.price}</span>
+                        <span class="connect-svc-meta">
+                          <span class="connect-svc-price-amt">{s.price}</span>
+                          {s.pricePeriod && (
+                            <span class="connect-svc-period">{s.pricePeriod}</span>
+                          )}
+                          <span class="connect-svc-pick">
+                            {s.comingSoon ? connectBatchCopy.cta : 'Book →'}
+                          </span>
+                        </span>
+                        <span class="connect-svc-radio" aria-hidden="true"></span>
                       </button>
                     ))
                   }
                 </div>
               </section>
-            </div>
 
-            <div class="connect-flow-pay connect-booking-bar" id="connect-booking-bar" hidden>
-              <p id="connect-booking-msg"></p>
-              <p class="connect-booking-bar-note" id="connect-booking-note" hidden>
-                Change service above before paying. Slot held for 7 minutes after you start checkout.
-              </p>
-              <button type="button" class="connect-cta-btn" id="connect-booking-pay" hidden>Pay to confirm →</button>
+              <div class="connect-flow-pay connect-booking-bar" id="connect-booking-bar" hidden>
+                <p id="connect-booking-msg"></p>
+                <p class="connect-booking-bar-note" id="connect-booking-note" hidden>
+                  Change service above before paying. Slot held for 7 minutes after you start checkout.
+                </p>
+                <button type="button" class="connect-cta-btn" id="connect-booking-pay" hidden>Pay to confirm →</button>
+              </div>
             </div>
           </div>
 
@@ -1062,6 +158,7 @@ const sessionFootnote = SESSION_FOOTNOTE;
             {sessionFootnote}
           </p>
         </main>
+        </div>
       </div>
     </div>
 
@@ -1153,7 +250,9 @@ const sessionFootnote = SESSION_FOOTNOTE;
         weekday: 'short',
       });
 
-      const SLOT_COLUMNS = 3;
+      function slotListSelector() {
+        return '#connect-service-deck .connect-card[data-connect-id]';
+      }
 
       type SlotRow = ConnectSlot;
 
@@ -1195,8 +294,16 @@ const sessionFootnote = SESSION_FOOTNOTE;
       let selectedDateKey: string | null = null;
       let selectedSlotId: number | null = null;
       let activeHoldSlotId: number | null = null;
+      let calYear = 0;
+      let calMonth = 0; // 1–12, IST month shown in the grid
 
       const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: IST });
+      const monthTitleFmt = new Intl.DateTimeFormat('en-IN', {
+        timeZone: IST,
+        month: 'long',
+        year: 'numeric',
+      });
+      const IST_WD: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 
       function istDateKey(iso: string) {
         return dayKeyFmt.format(new Date(iso));
@@ -1204,6 +311,75 @@ const sessionFootnote = SESSION_FOOTNOTE;
 
       function todayKey() {
         return dayKeyFmt.format(new Date());
+      }
+
+      function dateKeyAtIST(dateKey: string) {
+        return new Date(`${dateKey}T12:00:00+05:30`);
+      }
+
+      function pad2(n: number) {
+        return String(n).padStart(2, '0');
+      }
+
+      function dateKeyFromParts(y: number, m: number, d: number) {
+        return `${y}-${pad2(m)}-${pad2(d)}`;
+      }
+
+      function daysInMonth(y: number, m: number) {
+        return new Date(y, m, 0).getDate();
+      }
+
+      function istWeekdayIndex(dateKey: string) {
+        const wd = new Intl.DateTimeFormat('en-US', { timeZone: IST, weekday: 'short' }).format(
+          dateKeyAtIST(dateKey),
+        );
+        return IST_WD[wd] ?? 0;
+      }
+
+      function initCalendarMonthIfNeeded(byDate: Map<string, FeedCell[]>) {
+        if (calYear > 0 && calMonth > 0) return;
+        const keys = [...byDate.keys()].sort();
+        if (selectedDateKey) {
+          const [y, m] = selectedDateKey.split('-').map(Number);
+          calYear = y;
+          calMonth = m;
+          return;
+        }
+        const firstOpen = keys.find((k) => byDate.get(k)?.some((c) => c.kind === 'open'));
+        const anchor = firstOpen ?? keys[0];
+        if (anchor) {
+          const [y, m] = anchor.split('-').map(Number);
+          calYear = y;
+          calMonth = m;
+          return;
+        }
+        const [y, m] = todayKey().split('-').map(Number);
+        calYear = y;
+        calMonth = m;
+      }
+
+      function shiftCalendarMonth(delta: number) {
+        calMonth += delta;
+        if (calMonth < 1) {
+          calMonth = 12;
+          calYear -= 1;
+        } else if (calMonth > 12) {
+          calMonth = 1;
+          calYear += 1;
+        }
+        renderAvailabilityFeed();
+      }
+
+      function selectCalendarDay(dateKey: string) {
+        if (selectedDateKey === dateKey) return;
+        selectedSlotId = null;
+        resetBookingBar();
+        selectedDateKey = dateKey;
+        const [y, m] = dateKey.split('-').map(Number);
+        calYear = y;
+        calMonth = m;
+        renderAvailabilityFeed();
+        updateDeckState();
       }
 
       function requireConnectAuth(): boolean {
@@ -1239,7 +415,7 @@ const sessionFootnote = SESSION_FOOTNOTE;
           'connect-other--service-picked',
           !!selectedSlotId && !!activeOffering,
         );
-        document.querySelectorAll('.connect-deck .connect-card[data-connect-id]').forEach((el) => {
+        document.querySelectorAll(slotListSelector()).forEach((el) => {
           const id = el.getAttribute('data-connect-id');
           if (el.getAttribute('data-connect-coming-soon') === '1') {
             el.classList.remove('connect-card--service-picked');
@@ -1268,25 +444,26 @@ const sessionFootnote = SESSION_FOOTNOTE;
       function updateDeckState() {
         serviceDeck?.classList.toggle('connect-other--awaiting-slot', !selectedSlotId);
         serviceDeck?.classList.toggle('connect-other--slot-selected', !!selectedSlotId);
-        if (deckSlotHint && selectedSlotId) deckSlotHint.hidden = true;
-        document.querySelectorAll('.connect-deck .connect-card[data-connect-id]').forEach((card) => {
-          const cta = card.querySelector('.connect-card-cta');
-          if (!cta) return;
-          if (card.getAttribute('data-connect-coming-soon') === '1') {
-            cta.textContent = connectBatchCopy.cta;
-            return;
+        if (deckSlotHint) {
+          if (!selectedSlotId) {
+            deckSlotHint.hidden = false;
+            deckSlotHint.textContent = 'Pick a time on the left first.';
+            deckSlotHint.classList.remove('connect-deck-slot-hint--flash');
+            deckSlotHint.classList.add('connect-deck-slot-hint--await');
+          } else {
+            deckSlotHint.hidden = true;
+            deckSlotHint.classList.remove('connect-deck-slot-hint--await', 'connect-deck-slot-hint--flash');
           }
-          cta.textContent = selectedSlotId ? 'Book this →' : 'Pick a time first →';
-        });
+        }
         syncServicePickHighlight();
       }
 
       function promptPickSlotFirst() {
         if (deckSlotHint) {
           deckSlotHint.hidden = false;
-          deckSlotHint.classList.remove('connect-deck-slot-hint--flash');
+          deckSlotHint.textContent = 'Pick a time on the left first.';
+          deckSlotHint.classList.add('connect-deck-slot-hint--await', 'connect-deck-slot-hint--flash');
           void deckSlotHint.offsetWidth;
-          deckSlotHint.classList.add('connect-deck-slot-hint--flash');
         }
         slotsPanel?.classList.remove('connect-slots-panel--pulse');
         void (slotsPanel as HTMLElement | null)?.offsetWidth;
@@ -1295,6 +472,16 @@ const sessionFootnote = SESSION_FOOTNOTE;
         window.setTimeout(() => {
           slotsPanel?.classList.remove('connect-slots-panel--pulse');
           deckSlotHint?.classList.remove('connect-deck-slot-hint--flash');
+        }, 900);
+      }
+
+      function promptPickService() {
+        serviceDeck?.classList.remove('connect-services-pane--pulse');
+        void (serviceDeck as HTMLElement | null)?.offsetWidth;
+        serviceDeck?.classList.add('connect-services-pane--pulse');
+        document.getElementById('connect-svc-list')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        window.setTimeout(() => {
+          serviceDeck?.classList.remove('connect-services-pane--pulse');
         }, 900);
       }
 
@@ -1443,75 +630,142 @@ const sessionFootnote = SESSION_FOOTNOTE;
           slotsCountBadge.textContent = parts.join(' · ') || 'Your booking';
         }
 
-        const rows = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
-        for (const [, cells] of rows) {
-          cells.sort((a, b) => {
+        initCalendarMonthIfNeeded(byDate);
+
+        if (!selectedDateKey || !byDate.has(selectedDateKey)) {
+          const firstOpen = [...byDate.entries()]
+            .sort(([a], [b]) => a.localeCompare(b))
+            .find(([, cells]) => cells.some((c) => c.kind === 'open'));
+          selectedDateKey = firstOpen?.[0] ?? [...byDate.keys()].sort()[0] ?? null;
+        }
+
+        const calRoot = document.createElement('div');
+        calRoot.className = 'connect-cal';
+
+        const nav = document.createElement('div');
+        nav.className = 'connect-cal-nav';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'connect-cal-nav-btn';
+        prevBtn.setAttribute('aria-label', 'Previous month');
+        prevBtn.textContent = '‹';
+        prevBtn.addEventListener('click', () => shiftCalendarMonth(-1));
+
+        const label = document.createElement('div');
+        label.className = 'connect-cal-label';
+        label.textContent = monthTitleFmt.format(dateKeyAtIST(dateKeyFromParts(calYear, calMonth, 1)));
+
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'connect-cal-nav-btn';
+        nextBtn.setAttribute('aria-label', 'Next month');
+        nextBtn.textContent = '›';
+        nextBtn.addEventListener('click', () => shiftCalendarMonth(1));
+
+        nav.appendChild(prevBtn);
+        nav.appendChild(label);
+        nav.appendChild(nextBtn);
+        calRoot.appendChild(nav);
+
+        const weekdays = document.createElement('div');
+        weekdays.className = 'connect-cal-weekdays';
+        weekdays.setAttribute('aria-hidden', 'true');
+        for (const wd of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) {
+          const span = document.createElement('span');
+          span.textContent = wd;
+          weekdays.appendChild(span);
+        }
+        calRoot.appendChild(weekdays);
+
+        const grid = document.createElement('div');
+        grid.className = 'connect-cal-grid';
+        grid.setAttribute('role', 'grid');
+        grid.setAttribute('aria-label', 'Choose a date');
+
+        const firstKey = dateKeyFromParts(calYear, calMonth, 1);
+        const leadingEmpty = istWeekdayIndex(firstKey);
+        const dim = daysInMonth(calYear, calMonth);
+        const today = todayKey();
+
+        for (let i = 0; i < leadingEmpty; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'connect-cal-day connect-cal-day--empty';
+          empty.setAttribute('aria-hidden', 'true');
+          grid.appendChild(empty);
+        }
+
+        for (let day = 1; day <= dim; day++) {
+          const dateKey = dateKeyFromParts(calYear, calMonth, day);
+          const cells = byDate.get(dateKey) ?? [];
+          const hasOpen = cells.some((c) => c.kind === 'open');
+          const hasMine = cells.some((c) => c.kind === 'mine');
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'connect-cal-day';
+          btn.textContent = String(day);
+          btn.setAttribute('data-date-key', dateKey);
+
+          if (!cells.length) {
+            btn.classList.add('connect-cal-day--disabled');
+            btn.disabled = true;
+          } else {
+            btn.classList.add('connect-cal-day--has-slots');
+            btn.setAttribute(
+              'aria-label',
+              `${weekdayFmt.format(dateKeyAtIST(dateKey))}, ${dayMonthFmt.format(dateKeyAtIST(dateKey))}${
+                hasOpen ? `, ${cells.filter((c) => c.kind === 'open').length} open` : ''
+              }`,
+            );
+            btn.addEventListener('click', () => selectCalendarDay(dateKey));
+          }
+
+          if (dateKey === today) btn.classList.add('connect-cal-day--today');
+          if (dateKey === selectedDateKey) btn.classList.add('connect-cal-day--selected');
+          if (hasMine) btn.classList.add('connect-cal-day--mine');
+
+          grid.appendChild(btn);
+        }
+
+        calRoot.appendChild(grid);
+
+        const hint = document.createElement('p');
+        hint.className = 'connect-cal-hint';
+        hint.textContent = 'Dates with a dot have open slots. Tap a date, then pick a time.';
+        calRoot.appendChild(hint);
+
+        if (selectedDateKey && byDate.has(selectedDateKey)) {
+          const cells = [...(byDate.get(selectedDateKey) ?? [])].sort((a, b) => {
             if (a.kind !== b.kind) return a.kind === 'mine' ? -1 : 1;
             return a.slot.starts_at.localeCompare(b.slot.starts_at);
           });
-        }
 
-        const bookingFirstRows = rows.filter(([, cells]) => cells.some((c) => c.kind === 'mine'));
-        const openOnlyRows = rows.filter(([, cells]) => !cells.some((c) => c.kind === 'mine'));
-        const orderedRows = [...bookingFirstRows, ...openOnlyRows];
+          const times = document.createElement('div');
+          times.className = 'connect-cal-times';
 
-        const today = todayKey();
+          const timesLabel = document.createElement('p');
+          timesLabel.className = 'connect-cal-times-label';
+          timesLabel.textContent = `${weekdayFmt.format(dateKeyAtIST(selectedDateKey))}, ${dayMonthFmt.format(
+            dateKeyAtIST(selectedDateKey),
+          )}`;
+          times.appendChild(timesLabel);
 
-        const table = document.createElement('table');
-        table.className = 'connect-avail-table';
-        table.setAttribute('role', 'grid');
-        table.setAttribute('aria-label', 'Available session times and your bookings');
+          const slotsWrap = document.createElement('div');
+          slotsWrap.className = 'connect-cal-time-slots';
+          slotsWrap.setAttribute('role', 'listbox');
+          slotsWrap.setAttribute('aria-label', 'Available times on selected date');
 
-        const thead = document.createElement('thead');
-        const headRow = document.createElement('tr');
-        headRow.innerHTML = '<th>Date</th><th>Slot 1</th><th>Slot 2</th><th>Slot 3</th>';
-        thead.appendChild(headRow);
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        for (const [dateKey, cells] of orderedRows) {
-          const tr = document.createElement('tr');
-          if (dateKey === today) tr.classList.add('connect-avail-row--today');
-          const hasMine = cells.some((c) => c.kind === 'mine');
-          if (hasMine) tr.classList.add('connect-avail-row--mine');
-
-          const dateTd = document.createElement('td');
-          const dateCell = document.createElement('div');
-          dateCell.className = 'connect-avail-date-cell';
-
-          const wd = document.createElement('span');
-          wd.className = 'connect-avail-day-wd';
-          wd.textContent = weekdayFmt.format(new Date(cells[0].slot.starts_at));
-
-          const dm = document.createElement('span');
-          dm.className = 'connect-avail-day-dm';
-          dm.textContent = dayMonthFmt.format(new Date(cells[0].slot.starts_at));
-
-          dateCell.appendChild(wd);
-          dateCell.appendChild(dm);
-          dateTd.appendChild(dateCell);
-          tr.appendChild(dateTd);
-
-          for (let i = 0; i < SLOT_COLUMNS; i++) {
-            const td = document.createElement('td');
-            td.className = 'connect-avail-slot-cell';
-            td.setAttribute('role', 'gridcell');
-            const cell = cells[i];
-            if (cell) {
-              td.appendChild(cell.kind === 'open' ? buildSlotButton(cell.slot) : buildBookedPill(cell.slot));
-            } else {
-              td.classList.add('connect-avail-slot-cell--empty');
-              td.textContent = '—';
-            }
-            tr.appendChild(td);
+          for (const cell of cells) {
+            slotsWrap.appendChild(cell.kind === 'open' ? buildSlotButton(cell.slot) : buildBookedPill(cell.slot));
           }
 
-          tbody.appendChild(tr);
+          times.appendChild(slotsWrap);
+          calRoot.appendChild(times);
         }
-        table.appendChild(tbody);
 
         availFeed.innerHTML = '';
-        availFeed.appendChild(table);
+        availFeed.appendChild(calRoot);
       }
 
       function selectTimeSlot(slot: SlotRow) {
@@ -1526,6 +780,7 @@ const sessionFootnote = SESSION_FOOTNOTE;
         resetBookingBar();
         renderAvailabilityFeed();
         updateDeckState();
+        promptPickService();
       }
 
       function pickServiceForSlot(svc: ConnectService) {
@@ -1575,6 +830,7 @@ const sessionFootnote = SESSION_FOOTNOTE;
         bookingMsg.innerHTML = `Selected <strong>${activeOffering.title}</strong> at ${when}. Complete payment to confirm your booking.`;
 
         syncServicePickHighlight();
+        bookingBar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
       async function loadAllSlots() {
@@ -1637,7 +893,7 @@ const sessionFootnote = SESSION_FOOTNOTE;
             email: authSession.user.email,
             name: authSession.user.user_metadata?.full_name || '',
           },
-          theme: { color: '#0f766e' },
+          theme: { color: '#01696f' },
           modal: {
             ondismiss: () => {
               void (async () => {
