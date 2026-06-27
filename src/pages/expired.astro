@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import ThemeInit from '../components/ThemeInit.astro';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 import { PRO_MONTHLY_INR } from '../lib/payment-await';
 ---
@@ -7,17 +8,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script is:inline>
-      (function () {
-        try {
-          var saved = localStorage.getItem('theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      })();
-    </script>
+    <ThemeInit />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trial Expired — DSA Mastery Guide</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

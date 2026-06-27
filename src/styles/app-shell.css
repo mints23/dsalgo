@@ -55,9 +55,9 @@
 /* ── Top bar: three zones, no filler ── */
 .topbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem 1.25rem;
+  gap: 0.65rem 0.85rem;
   padding: 0.7rem var(--shell-pad);
   background: var(--surface);
   border-bottom: 1px solid var(--hairline);
@@ -70,16 +70,22 @@
 .topbar-lead {
   grid-column: 1;
   min-width: 0;
+  flex-shrink: 0;
   opacity: 1;
 }
 
 .topbar-metrics {
   grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 
 .topbar-actions {
   grid-column: 3;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .topbar-topic-num {
@@ -89,6 +95,264 @@
 .topbar-topic-title {
   font-size: 0.9375rem;
   font-weight: 600;
+}
+
+.topbar-metrics .topbar-topic:not([hidden]) {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 10rem;
+  padding-right: 0.65rem;
+  margin-right: 0.25rem;
+  border-right: 1px solid var(--hairline);
+}
+
+.topbar-metrics .topbar-topic-title {
+  max-width: 100%;
+}
+
+.topbar-metrics .overall-progress--topbar {
+  flex-shrink: 0;
+}
+
+.topbar-metrics .streak-mini {
+  flex-shrink: 0;
+}
+
+.streak-mini--compact .heatmap-cell-num {
+  display: none;
+}
+
+/* ── User menu ── */
+.topbar-user-menu {
+  position: relative;
+}
+
+.topbar-user-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: min(14rem, 28vw);
+  min-height: 34px;
+  padding: 0.2rem 0.45rem 0.2rem 0.25rem;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.topbar-user-trigger:hover {
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary) 22%, var(--hairline));
+}
+
+.topbar-user-trigger[aria-expanded='true'] {
+  background: color-mix(in oklab, var(--primary) 7%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary) 28%, var(--hairline));
+}
+
+.topbar-user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+}
+
+.topbar-user-trigger-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.06rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.topbar-user-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.topbar-user-subline {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.topbar-user-subline[hidden] {
+  display: none !important;
+}
+
+.topbar-user-subline .topbar-trial-pill,
+.topbar-user-subline .topbar-pro-pill,
+.topbar-user-subline .topbar-expired-pill {
+  font-size: 0.5625rem;
+  padding: 0.1rem 0.38rem;
+}
+
+.topbar-user-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+
+.topbar-user-trigger[aria-expanded='true'] .topbar-user-chevron {
+  transform: rotate(180deg);
+}
+
+.topbar-user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 30;
+  width: min(16.5rem, calc(100vw - 1.5rem));
+  padding: 0.35rem;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shell-sheet-shadow);
+}
+
+.topbar-user-dropdown[hidden] {
+  display: none !important;
+}
+
+.topbar-user-dropdown-head {
+  padding: 0.55rem 0.65rem 0.45rem;
+}
+
+.topbar-user-dropdown-name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.topbar-user-dropdown-email {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-user-dropdown-status {
+  margin: 0 0.35rem 0.35rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--primary) 12%, var(--hairline));
+}
+
+.topbar-user-dropdown-status[hidden] {
+  display: none !important;
+}
+
+.topbar-user-dropdown-plan {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.topbar-user-dropdown-plan--warn {
+  color: var(--warn);
+}
+
+.topbar-user-dropdown-pay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.topbar-user-dropdown-pay-btn {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.28rem 0.55rem;
+  border-radius: 7px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.topbar-user-dropdown-pay-btn:hover {
+  border-color: color-mix(in oklab, var(--primary) 25%, var(--hairline));
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+}
+
+.topbar-user-dropdown-pay-btn--primary {
+  color: var(--inv);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.topbar-user-dropdown-pay-btn--primary:hover {
+  background: var(--primary-h);
+  border-color: var(--primary-h);
+}
+
+.topbar-user-dropdown-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-top: 0.15rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.topbar-user-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.48rem 0.65rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topbar-user-menu-item:hover {
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+  color: var(--primary);
+}
+
+.topbar-user-menu-item[hidden] {
+  display: none !important;
+}
+
+.topbar-user-menu-item--danger {
+  color: var(--error);
+}
+
+.topbar-user-trigger:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 45%, transparent);
+  outline-offset: 2px;
 }
 
 /* ── Sidebar nav ── */
@@ -731,11 +995,6 @@ th.th-insight-walkthrough::after {
   }
 }
 
-.topbar-user {
-  max-width: 6.5rem;
-  font-size: 0.75rem;
-}
-
 .theme-btn-top {
   width: 34px;
   height: 34px;
@@ -743,8 +1002,7 @@ th.th-insight-walkthrough::after {
 
 /* Secondary links stay small */
 .topbar-lead .discord-join--topbar {
-  transform: scale(0.92);
-  transform-origin: left center;
+  transform: none;
 }
 
 /* Method / pro strips — whisper */
@@ -773,10 +1031,11 @@ th.th-insight-walkthrough::after {
 
   .topbar {
     position: sticky;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.45rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 0.45rem 0.55rem;
     padding:
       max(0.5rem, env(safe-area-inset-top, 0px))
       0.85rem
@@ -788,23 +1047,23 @@ th.th-insight-walkthrough::after {
   }
 
   .topbar-lead {
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.35rem;
     min-width: 0;
-    width: 100%;
-    order: 1 !important;
+    width: auto;
+    order: unset !important;
   }
 
   .topbar-actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-rows: auto auto;
-    align-items: center;
-    gap: 0.3rem 0.35rem;
-    width: 100%;
-    order: 2 !important;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    width: auto;
+    order: unset !important;
     margin-left: 0;
     padding: 0;
     background: transparent;
@@ -812,60 +1071,22 @@ th.th-insight-walkthrough::after {
     box-shadow: none;
   }
 
-  .topbar-user {
-    display: none !important;
+  .topbar-user-trigger {
+    max-width: min(11rem, 42vw);
   }
 
-  .topbar-admin-pill:not([hidden]) {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    font-size: 0.6rem;
-    padding: 0.16rem 0.42rem;
+  .topbar-user-trigger-copy {
+    display: none;
   }
 
-  .topbar-subscription-badge:not([hidden]) {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    margin: 0;
-    min-width: 0;
-    max-width: calc(100vw - 8.5rem);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .topbar-admin-pill:not([hidden]) ~ .topbar-subscription-badge:not([hidden]) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  #theme-toggle-top {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  #logout-btn {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  .topbar-pay-btns {
-    display: none !important;
-  }
-
-  .topbar-trial-pill,
-  .topbar-pro-pill,
-  .topbar-expired-pill {
-    font-size: 0.625rem;
-    padding: 0.18rem 0.42rem;
-    white-space: nowrap;
+  .topbar-user-trigger {
+    padding: 0.15rem 0.35rem 0.15rem 0.15rem;
   }
 
   .topbar-metrics {
-    order: 3 !important;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    order: unset !important;
     flex: none !important;
     width: 100%;
     max-width: none;
@@ -875,6 +1096,10 @@ th.th-insight-walkthrough::after {
     background: transparent;
     border: none;
     box-shadow: none;
+  }
+
+  .topbar-metrics .topbar-topic:not([hidden]) {
+    max-width: 8rem;
   }
 
   .topbar .overall-progress--topbar {
@@ -923,8 +1148,8 @@ th.th-insight-walkthrough::after {
 
   .topbar-lead .discord-join--topbar {
     transform: none;
-    height: 1.55rem;
-    min-height: 1.55rem;
+    height: 32px;
+    min-height: 32px;
     padding: 0 0.55rem 0 0.38rem;
   }
 

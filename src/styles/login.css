@@ -10,6 +10,9 @@
     0 0 0 1px color-mix(in oklab, var(--hairline) 90%, transparent),
     0 2px 4px rgba(0, 0, 0, 0.02),
     0 16px 48px rgba(1, 105, 111, 0.1);
+  --login-mock-shadow:
+    0 0 0 1px color-mix(in oklab, var(--hairline) 92%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.03);
   --login-ambient:
     radial-gradient(
       ellipse 100% 80% at 0% -20%,
@@ -27,6 +30,9 @@
   --login-sheet-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 12px 40px rgba(0, 0, 0, 0.5);
+  --login-mock-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 4px 14px rgba(0, 0, 0, 0.22);
   --login-ambient:
     radial-gradient(
       ellipse 90% 70% at 0% -15%,
@@ -83,9 +89,16 @@
   }
 
   .login-header-actions .discord-join--topbar {
-    min-height: 32px;
-    height: 32px;
-    padding: 0 0.45rem;
+    width: 34px;
+    min-height: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .login-header-actions .discord-join-topbar-icon {
+    width: 22px;
+    height: 22px;
   }
 }
 
@@ -167,8 +180,8 @@
 @media (min-width: 960px) {
   .login-stage {
     overflow: hidden;
-    align-items: center;
-    align-content: center;
+    align-items: stretch;
+    align-content: stretch;
     grid-template-columns: minmax(0, 1.08fr) minmax(300px, 380px);
     gap: clamp(1.25rem, 3vw, 3rem);
   }
@@ -235,6 +248,15 @@
   .login-showcase {
     order: 0;
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    gap: clamp(0.45rem, 1.1vh, 0.9rem);
+    justify-content: flex-start;
+  }
+
+  .login-showcase-copy {
+    flex-shrink: 0;
   }
 }
 
@@ -338,16 +360,14 @@
 
 @media (min-width: 960px) {
   .login-app-mock {
-    display: block;
-    max-height: min(34vh, 290px);
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    align-self: flex-start;
+    width: min(100%, 34rem);
+    max-height: min(calc(100dvh - 19rem), 17.5rem);
+    min-height: 0;
     overflow: hidden;
-    animation: login-mock-float 6s ease-in-out infinite;
-  }
-}
-
-@media (min-width: 960px) and (min-height: 860px) {
-  .login-app-mock {
-    max-height: min(38vh, 340px);
   }
 }
 
@@ -357,24 +377,48 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
   }
 }
 
 .login-mock-chrome {
   display: grid;
-  grid-template-columns: 148px minmax(0, 1fr);
-  border-radius: 16px;
+  grid-template-columns: 168px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--surface);
-  box-shadow: var(--login-sheet-shadow);
+  box-shadow: var(--login-mock-shadow);
   border: none;
+  opacity: 0.94;
 }
 
 .login-mock-sidebar {
-  padding: 0.85rem 0.55rem;
+  padding: 0.65rem 0.5rem;
   background: var(--surface);
   border-right: 1px solid var(--hairline);
+}
+
+@media (min-width: 960px) {
+  .login-mock-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .login-mock-sec {
+    flex-shrink: 0;
+  }
+
+  .login-mock-nav-item {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: clamp(0.22rem, 0.65vh, 0.42rem) 0.38rem;
+    align-items: center;
+  }
 }
 
 .login-mock-logo {
@@ -386,21 +430,21 @@
 }
 
 .login-mock-sec {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--faint);
-  padding: 0.5rem 0.35rem 0.2rem;
+  padding: 0.35rem 0.35rem 0.12rem;
 }
 
 .login-mock-nav-item {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.32rem 0.4rem;
+  gap: 0.4rem;
+  padding: 0.32rem 0.42rem;
   border-radius: 7px;
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -416,10 +460,10 @@
 
 .login-mock-nav-num {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--faint);
-  min-width: 1.1rem;
+  min-width: 1.2rem;
 }
 
 .login-mock-nav-item.is-active .login-mock-nav-num {
@@ -428,7 +472,16 @@
 
 .login-mock-main {
   min-width: 0;
+  min-height: 0;
   background: color-mix(in oklab, var(--bg) 40%, var(--surface));
+}
+
+@media (min-width: 960px) {
+  .login-mock-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 .login-mock-topbar {
@@ -436,10 +489,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.55rem 0.85rem;
+  padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--hairline);
   background: var(--surface);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
 }
 
 .login-mock-topbar-topic {
@@ -459,8 +512,8 @@
 }
 
 .login-mock-progress-bar {
-  width: 3.5rem;
-  height: 3px;
+  width: 4rem;
+  height: 4px;
   border-radius: 2px;
   background: var(--offset);
   overflow: hidden;
@@ -479,12 +532,22 @@
 }
 
 .login-mock-content {
-  padding: 0.85rem 0.85rem 1rem;
+  padding: 0.55rem 0.7rem 0.65rem;
+}
+
+@media (min-width: 960px) {
+  .login-mock-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 .login-mock-topic-title {
-  margin: 0 0 0.75rem;
-  font-size: 1.125rem;
+  margin: 0 0 0.4rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1.15;
@@ -492,30 +555,35 @@
 }
 
 .login-mock-sheet {
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--surface);
-  box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--hairline) 85%, transparent),
-    0 8px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--hairline) 88%, transparent);
   overflow: hidden;
 }
 
+@media (min-width: 960px) {
+  .login-mock-sheet {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 [data-theme='dark'] .login-mock-sheet {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 8px 28px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .login-mock-sheet table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
 }
 
 .login-mock-sheet th {
-  padding: 0.45rem 0.5rem;
+  padding: 0.45rem 0.55rem;
   text-align: left;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: var(--muted);
   border-bottom: 1px solid var(--hairline);
@@ -523,9 +591,51 @@
 }
 
 .login-mock-sheet td {
-  padding: 0.42rem 0.5rem;
+  padding: 0.42rem 0.55rem;
   border-bottom: 1px solid color-mix(in oklab, var(--hairline) 60%, transparent);
   vertical-align: middle;
+}
+
+.login-mock-sheet .prob-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.login-mock-sheet .diff-e,
+.login-mock-sheet .diff-m,
+.login-mock-sheet .diff-h {
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 960px) {
+  .login-mock-sheet th {
+    padding: clamp(0.36rem, 0.85vh, 0.5rem) 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .login-mock-sheet td {
+    padding: clamp(0.36rem, 1.35vh, 0.58rem) 0.5rem;
+  }
+
+  .login-mock-sheet table {
+    font-size: 0.8125rem;
+  }
+
+  .login-mock-sheet .prob-name {
+    font-size: 0.8125rem;
+  }
+
+  .login-mock-sheet .diff-e,
+  .login-mock-sheet .diff-m,
+  .login-mock-sheet .diff-h {
+    font-size: 0.6875rem;
+  }
+
+  .login-mock-topic-title {
+    margin-bottom: clamp(0.35rem, 0.85vh, 0.55rem);
+    font-size: clamp(1.0625rem, 1vh + 0.75rem, 1.1875rem);
+  }
 }
 
 .login-mock-sheet tr:last-child td {
@@ -543,13 +653,13 @@
 
 .login-mock-sheet .progress-cb {
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 3px;
   border: 1.5px solid var(--hairline);
   background: var(--surface);
   vertical-align: middle;
-  margin-right: 0.2rem;
+  margin-right: 0.25rem;
 }
 
 .login-mock-sheet .progress-cb:checked {
@@ -558,7 +668,7 @@
 }
 
 .login-mock-sheet .progress-cb:checked::after {
-  left: 3px;
+  left: 4px;
   top: 1px;
   width: 4px;
   height: 7px;
@@ -580,15 +690,7 @@
 }
 
 .login-mock-fade::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2.5rem;
-  background: linear-gradient(to bottom, transparent, var(--surface));
-  pointer-events: none;
-  border-radius: 0 0 12px 12px;
+  content: none;
 }
 
 /* Mobile compact teaser */

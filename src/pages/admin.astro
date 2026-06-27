@@ -2,22 +2,13 @@
 import '../styles/global.css';
 import '../styles/admin-client.css';
 import LogoMark from '../components/LogoMark.astro';
+import ThemeInit from '../components/ThemeInit.astro';
 ---
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script is:inline>
-      (function () {
-        try {
-          var saved = localStorage.getItem('theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      })();
-    </script>
+    <ThemeInit />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin · Connect · algofrog.in</title>
     <meta name="robots" content="noindex" />

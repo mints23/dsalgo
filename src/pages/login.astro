@@ -6,6 +6,7 @@ import '../styles/global.css';
 import '../styles/login.css';
 import LogoMark from '../components/LogoMark.astro';
 import DiscordJoin from '../components/DiscordJoin.astro';
+import ThemeInit from '../components/ThemeInit.astro';
 import { GUIDE_PROBLEM_ROW_COUNT } from '../data/site-stats';
 import {
   LOGIN_SNEAK_NAV,
@@ -58,24 +59,14 @@ for (const section of sections) {
 
 const tableStaggerBase = 26;
 
-const mockNavTopics = LOGIN_SNEAK_NAV.slice(0, 5);
-const mockTableRows = LOGIN_SNEAK_SAMPLE_ROWS.slice(0, 4);
+const mockNavTopics = LOGIN_SNEAK_NAV.slice(0, 9);
+const mockTableRows = LOGIN_SNEAK_SAMPLE_ROWS.slice(0, 5);
 ---
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script is:inline>
-      (function () {
-        try {
-          var saved = localStorage.getItem('theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      })();
-    </script>
+    <ThemeInit />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sign in — algofrog</title>
     <meta
@@ -197,7 +188,6 @@ const mockTableRows = LOGIN_SNEAK_SAMPLE_ROWS.slice(0, 4);
       <div class="login-stage">
         <aside class="login-showcase" aria-label="About algofrog">
           <div class="login-showcase-copy">
-            <p class="login-eyebrow">algofrog</p>
             <h1 class="login-hero-title">
               Your sheet<br />
               <em>remembers.</em>
@@ -228,7 +218,6 @@ const mockTableRows = LOGIN_SNEAK_SAMPLE_ROWS.slice(0, 4);
           <div class="login-app-mock" aria-hidden="true">
             <div class="login-mock-chrome">
               <div class="login-mock-sidebar">
-                <div class="login-mock-logo">algofrog</div>
                 <div class="login-mock-sec">Algorithms</div>
                 {
                   mockNavTopics.map((t, i) => (

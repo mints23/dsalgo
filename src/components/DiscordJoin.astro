@@ -86,12 +86,13 @@ if (!hasDiscordInvite()) return null;
 
 <style>
   .discord-join--link {
-    color: #5865f2;
+    color: var(--primary);
     text-decoration: none;
-    font-weight: 650;
+    font-weight: 600;
   }
   .discord-join--link:hover {
     text-decoration: underline;
+    color: var(--primary-h);
   }
 
   .discord-join--pill {
@@ -99,17 +100,18 @@ if (!hasDiscordInvite()) return null;
     align-items: center;
     gap: 0.4rem;
     padding: 0.38rem 0.75rem;
-    border-radius: 999px;
+    border-radius: 8px;
     font-size: 0.78rem;
-    font-weight: 650;
-    color: #fff;
+    font-weight: 600;
+    color: var(--primary);
     text-decoration: none;
-    background: #5865f2;
-    border: 1px solid color-mix(in oklab, #5865f2 80%, #000);
-    box-shadow: 0 1px 0 color-mix(in srgb, #fff 12%, transparent) inset;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    box-shadow: none;
   }
   .discord-join--pill:hover {
-    background: color-mix(in oklab, #5865f2 88%, #000);
+    background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+    border-color: color-mix(in oklab, var(--primary) 22%, var(--hairline));
   }
 
   .discord-join--card {
@@ -118,9 +120,10 @@ if (!hasDiscordInvite()) return null;
     gap: 0.85rem 1rem;
     align-items: center;
     padding: 0.95rem 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid color-mix(in oklab, #5865f2 28%, var(--border));
-    background: color-mix(in oklab, #5865f2 7%, var(--surface));
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--hairline) 85%, transparent);
   }
   .discord-join-icon {
     display: flex;
@@ -128,9 +131,9 @@ if (!hasDiscordInvite()) return null;
     justify-content: center;
     width: 2.35rem;
     height: 2.35rem;
-    border-radius: 0.55rem;
-    color: #fff;
-    background: #5865f2;
+    border-radius: 8px;
+    color: var(--primary);
+    background: color-mix(in oklab, var(--primary) 9%, var(--surface));
   }
   .discord-join-copy {
     min-width: 0;
@@ -138,7 +141,8 @@ if (!hasDiscordInvite()) return null;
   .discord-join-title {
     margin: 0 0 0.2rem;
     font-size: 0.88rem;
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: -0.02em;
     color: var(--text);
   }
   .discord-join-text {
@@ -152,16 +156,18 @@ if (!hasDiscordInvite()) return null;
     align-items: center;
     gap: 0.35rem;
     padding: 0.45rem 0.8rem;
-    border-radius: 0.5rem;
+    border-radius: 8px;
     font-size: 0.78rem;
-    font-weight: 650;
-    color: #fff;
+    font-weight: 600;
+    color: var(--inv);
     text-decoration: none;
-    background: #5865f2;
+    background: var(--primary);
+    border: 1px solid color-mix(in oklab, var(--primary) 85%, #000);
     white-space: nowrap;
   }
   .discord-join-btn:hover {
-    background: color-mix(in oklab, #5865f2 88%, #000);
+    background: var(--primary-h);
+    border-color: var(--primary-h);
   }
 
   @media (max-width: 640px) {

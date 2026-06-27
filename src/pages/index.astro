@@ -4,6 +4,7 @@ import '../styles/app-shell.css';
 import LogoMark from '../components/LogoMark.astro';
 import ConnectFloat from '../components/ConnectFloat.astro';
 import DiscordJoin from '../components/DiscordJoin.astro';
+import ThemeInit from '../components/ThemeInit.astro';
 import { hasDiscordInvite } from '../data/community';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 import { PRO_MONTHLY_INR } from '../lib/payment-await';
@@ -12,19 +13,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <ThemeInit syncThemeColor />
     <script is:inline>
-      // Apply theme before paint: saved pref → OS pref → light
-      (function () {
-        try {
-          var saved = localStorage.getItem('theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-          var themeMeta = document.querySelector('meta[name="theme-color"]');
-          if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#f5f5f7');
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      })();
       // Sidebar rail collapsed (desktop only — CSS applies ≥1025px)
       (function () {
         try {
@@ -105,13 +95,13 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           <div class="topbar-lead">
             <ConnectFloat topbar />
             <DiscordJoin variant="topbar" />
+          </div>
+          <div class="topbar-spacer" aria-hidden="true"></div>
+          <div class="topbar-metrics">
             <div class="topbar-topic" id="topbar-topic" hidden>
               <span class="topbar-topic-num" id="topbar-topic-num" aria-hidden="true"></span>
               <span class="topbar-topic-title" id="topbar-topic-title"></span>
             </div>
-          </div>
-          <div class="topbar-spacer" aria-hidden="true"></div>
-          <div class="topbar-metrics">
             <div
               class="overall-progress overall-progress--topbar"
               id="overall-progress"
@@ -122,39 +112,45 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
               <span class="overall-progress-text" id="overall-text" aria-live="polite" aria-atomic="true">0/0</span>
             </div>
 
-            <div class="streak-mini" id="daily-streak-card" hidden aria-label="7 day streak">
-              <div class="streak-mini-days" id="daily-streak-row" aria-label="Solved in the last 7 days"></div>
-              <button type="button" class="streak-mini-meta" id="daily-streak-meta" title="Streak + last 7 days">
-                —
-              </button>
-              <button type="button" class="streak-mini-btn" id="streak-open-year" title="Activity calendar" aria-label="Open activity calendar">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </button>
+            <div class="streak-mini streak-mini--compact" id="daily-streak-card" hidden aria-label="Last 7 days solved">
+              <div class="streak-mini-days" id="daily-streak-row"></div>
             </div>
           </div>
 
           <div class="topbar-actions">
-            <a href="/admin" id="topbar-admin-link" class="topbar-admin-pill" hidden>Admin</a>
-            <span id="user-name" class="topbar-user"></span>
-            <span id="user-subscription-badge" class="topbar-subscription-badge" hidden></span>
-            <button class="theme-btn-top" id="theme-toggle-top" aria-label="Toggle theme">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            </button>
-            <button class="theme-btn-top" id="logout-btn" aria-label="Sign out" title="Sign out">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
+            <div class="topbar-user-menu" id="topbar-user-menu">
+              <button
+                type="button"
+                class="topbar-user-trigger"
+                id="topbar-user-trigger"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-controls="topbar-user-dropdown"
+              >
+                <span class="topbar-user-avatar" id="user-avatar" aria-hidden="true"></span>
+                <span class="topbar-user-trigger-copy">
+                  <span class="topbar-user-name" id="user-name"></span>
+                  <span class="topbar-user-subline" id="user-subscription-badge" hidden></span>
+                </span>
+                <svg class="topbar-user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="topbar-user-dropdown" id="topbar-user-dropdown" role="menu" hidden>
+                <div class="topbar-user-dropdown-head">
+                  <span class="topbar-user-dropdown-name" id="user-dropdown-name"></span>
+                  <span class="topbar-user-dropdown-email" id="user-dropdown-email"></span>
+                </div>
+                <div class="topbar-user-dropdown-status" id="user-dropdown-status" hidden></div>
+                <div class="topbar-user-dropdown-nav">
+                  <a href="/admin" id="topbar-admin-link" class="topbar-user-menu-item" role="menuitem" hidden>Admin</a>
+                  <a href="/connect" class="topbar-user-menu-item" role="menuitem">Book mentor</a>
+                  <button type="button" class="topbar-user-menu-item" id="open-activity-calendar" role="menuitem">Activity calendar</button>
+                  <button type="button" class="topbar-user-menu-item" id="theme-toggle-top" role="menuitem">Toggle theme</button>
+                  <button type="button" class="topbar-user-menu-item topbar-user-menu-item--danger" id="logout-btn" role="menuitem">Sign out</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
@@ -362,71 +358,119 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
 
       type PayPlan = 'monthly' | 'quarterly';
 
-      // Display user name + status badge (badge is separate from .topbar-user so days-left isn’t ellipsized away)
+      // Display user name + status badge (compact on trigger; details + pay actions in menu)
       const userName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || '';
       const userNameEl = document.getElementById('user-name')!;
+      const userAvatarEl = document.getElementById('user-avatar')!;
+      const userDropdownNameEl = document.getElementById('user-dropdown-name')!;
+      const userDropdownEmailEl = document.getElementById('user-dropdown-email')!;
       const subBadgeEl = document.getElementById('user-subscription-badge')!;
+      const subDropdownEl = document.getElementById('user-dropdown-status')!;
+      const userMenu = document.getElementById('topbar-user-menu')!;
+      const userTrigger = document.getElementById('topbar-user-trigger') as HTMLButtonElement;
+      const userDropdown = document.getElementById('topbar-user-dropdown')!;
+
       userNameEl.textContent = userName;
+      userDropdownNameEl.textContent =
+        session.user.user_metadata?.full_name || userName || 'Signed in';
+      userDropdownEmailEl.textContent = session.user.email || '';
+      const initials = userName
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+      userAvatarEl.textContent = initials || '?';
+
+      function setUserMenuOpen(open: boolean) {
+        userTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        userDropdown.hidden = !open;
+      }
+
+      userTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setUserMenuOpen(userDropdown.hidden);
+      });
+      document.addEventListener('click', (e) => {
+        if (!userMenu.contains(e.target as Node)) setUserMenuOpen(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setUserMenuOpen(false);
+      });
+
       setAdminNavLink(document.getElementById('topbar-admin-link'), !!sub?.is_admin);
 
       function clearSubscriptionUi() {
         subBadgeEl.textContent = '';
         subBadgeEl.innerHTML = '';
         subBadgeEl.hidden = true;
+        subDropdownEl.textContent = '';
+        subDropdownEl.innerHTML = '';
+        subDropdownEl.hidden = true;
         subBadgeEl.removeAttribute('title');
+      }
+
+      function appendPayButtons(container: HTMLElement, mkBtn: (label: string, plan: PayPlan) => HTMLButtonElement, labels: [string, PayPlan][]) {
+        const wrap = document.createElement('div');
+        wrap.className = 'topbar-user-dropdown-pay';
+        labels.forEach(([label, plan]) => wrap.appendChild(mkBtn(label, plan)));
+        container.appendChild(wrap);
       }
 
       if (isTrialActive) {
         clearSubscriptionUi();
         const daysLeft = Math.max(0, Math.ceil((new Date(sub!.trial_ends_at).getTime() - now.getTime()) / 86400000));
         subBadgeEl.hidden = false;
-        subBadgeEl.innerHTML = `<span class="topbar-trial-pill">Trial · ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left</span>`;
-        const trialBtns = document.createElement('span');
-        trialBtns.className = 'topbar-pay-btns';
-        trialBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
+        subBadgeEl.innerHTML = `<span class="topbar-trial-pill">Trial · ${daysLeft}d</span>`;
+        subDropdownEl.hidden = false;
+        subDropdownEl.innerHTML = `<p class="topbar-user-dropdown-plan">Trial · ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left</p>`;
         const mkTrialPay = (label: string, plan: 'monthly' | 'quarterly') => {
           const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'topbar-user-dropdown-pay-btn';
           b.textContent = label;
-          b.style.cssText =
-            'font-size:0.65rem;padding:0.22rem 0.5rem;border-radius:0.3rem;background:var(--primary);color:var(--inv);border:none;cursor:pointer;font-weight:600;';
           b.addEventListener('click', () => openRazorpay(plan));
           return b;
         };
-        trialBtns.appendChild(mkTrialPay(`₹${PRO_MONTHLY_INR}/mo`, 'monthly'));
-        trialBtns.appendChild(mkTrialPay('₹299/3 mo', 'quarterly'));
-        subBadgeEl.appendChild(trialBtns);
+        appendPayButtons(subDropdownEl, mkTrialPay, [
+          [`₹${PRO_MONTHLY_INR}/mo`, 'monthly'],
+          ['₹299/3 mo', 'quarterly'],
+        ]);
       } else if (isPaid) {
         clearSubscriptionUi();
         const paidUntil = new Date(sub!.paid_until!);
         const paidDaysLeft = Math.max(0, Math.ceil((paidUntil.getTime() - now.getTime()) / 86400000));
         const dayWord = paidDaysLeft === 1 ? 'day' : 'days';
         subBadgeEl.hidden = false;
-        subBadgeEl.innerHTML = `<span class="topbar-pro-pill">&#9733; Pro · ${paidDaysLeft} ${dayWord} left</span>`;
+        subBadgeEl.innerHTML = `<span class="topbar-pro-pill">Pro · ${paidDaysLeft}d</span>`;
+        subDropdownEl.hidden = false;
+        subDropdownEl.innerHTML = `<p class="topbar-user-dropdown-plan">&#9733; Pro · ${paidDaysLeft} ${dayWord} left</p>`;
         try {
           const endStr = paidUntil.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-          subBadgeEl.setAttribute('title', `Pro access through ${endStr}`);
+          subDropdownEl.setAttribute('title', `Pro access through ${endStr}`);
         } catch {
-          subBadgeEl.setAttribute('title', 'Pro subscription');
+          subDropdownEl.setAttribute('title', 'Pro subscription');
         }
       } else {
         // Expired: show banner + upgrade choices
         clearSubscriptionUi();
         subBadgeEl.hidden = false;
         subBadgeEl.innerHTML = `<span class="topbar-expired-pill">Trial ended</span>`;
-        const expBtns = document.createElement('span');
-        expBtns.className = 'topbar-pay-btns';
-        expBtns.style.cssText = 'display:inline-flex;gap:0.3rem;margin-left:0.35rem;flex-wrap:wrap;align-items:center;';
+        subDropdownEl.hidden = false;
+        subDropdownEl.innerHTML = `<p class="topbar-user-dropdown-plan topbar-user-dropdown-plan--warn">Trial ended — upgrade to keep Pro features</p>`;
         const mkExp = (label: string, plan: PayPlan) => {
           const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'topbar-user-dropdown-pay-btn topbar-user-dropdown-pay-btn--primary';
           b.textContent = label;
-          b.style.cssText =
-            'font-size:0.65rem;padding:0.24rem 0.55rem;border-radius:0.3rem;background:linear-gradient(135deg,#01696f,#02a6a0);color:#fff;border:none;cursor:pointer;font-weight:700;box-shadow:0 1px 6px rgba(1,105,111,0.35);';
           b.addEventListener('click', () => openRazorpay(plan));
           return b;
         };
-        expBtns.appendChild(mkExp(`₹${PRO_MONTHLY_INR}/mo`, 'monthly'));
-        expBtns.appendChild(mkExp('₹299/3 mo', 'quarterly'));
-        subBadgeEl.appendChild(expBtns);
+        appendPayButtons(subDropdownEl, mkExp, [
+          [`₹${PRO_MONTHLY_INR}/mo`, 'monthly'],
+          ['₹299/3 mo', 'quarterly'],
+        ]);
       }
 
       // ── Razorpay Checkout ──
@@ -1378,12 +1422,11 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
 
       // ── Daily solved heatmap (GitHub-style) ──
-      const streakCard = document.getElementById('daily-streak-card') as HTMLElement | null;
-      const streakRow = document.getElementById('daily-streak-row') as HTMLElement | null;
-      const streakMeta = document.getElementById('daily-streak-meta') as HTMLButtonElement | null;
       const heatmapGrid = document.getElementById('daily-heatmap-grid') as HTMLElement | null;
       const heatmapMeta = document.getElementById('daily-heatmap-meta') as HTMLElement | null;
-      const streakOpenYear = document.getElementById('streak-open-year') as HTMLButtonElement | null;
+      const streakCard = document.getElementById('daily-streak-card') as HTMLElement | null;
+      const streakRow = document.getElementById('daily-streak-row') as HTMLElement | null;
+      const activityCalendarBtn = document.getElementById('open-activity-calendar') as HTMLButtonElement | null;
       const heatmapModal = document.getElementById('heatmap-modal') as HTMLElement | null;
       const heatmapModalClose = document.getElementById('heatmap-modal-close') as HTMLButtonElement | null;
       const heatmapMonths = document.getElementById('daily-heatmap-months') as HTMLElement | null;
@@ -1417,7 +1460,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         if (n <= 6) return 3;
         return 4;
       }
-      /** Faded count inside every heatmap / streak cell (0 included). */
+      /** Faded count inside every heatmap cell (0 included). */
       function appendCellSolveCount(cell: HTMLElement, count: number) {
         const span = document.createElement('span');
         span.className = 'heatmap-cell-num';
@@ -1512,37 +1555,11 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           (bestDay.count > 0 ? ` · Best day: ${bestDay.count} solved` : '');
       }
 
-      /** e.g. May 2–8 (no year in UI) */
-      function streakRangeLabel(a: Date, b: Date) {
-        const mo = new Intl.DateTimeFormat(undefined, { month: 'short' });
-        const dayNum = new Intl.DateTimeFormat(undefined, { day: 'numeric' });
-        const sameMonth = a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
-        if (sameMonth) {
-          return `${mo.format(a)} ${dayNum.format(a)}–${dayNum.format(b)}`;
-        }
-        return `${mo.format(a)} ${dayNum.format(a)} – ${mo.format(b)} ${dayNum.format(b)}`;
-      }
-
-      function renderStreak(map: Record<string, number>) {
-        if (!hasProFeatures || !streakCard || !streakRow || !streakMeta) return;
+      function renderLast7Days(map: Record<string, number>) {
+        if (!hasProFeatures || !streakCard || !streakRow) return;
         streakRow.innerHTML = '';
         const today = startOfDay(new Date());
         const fmtCell = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
-        let streak = 0;
-        for (let i = 0; i < 365; i++) {
-          const k = ymd(addDays(today, -i));
-          const c = map[k] || 0;
-          if (c > 0) streak++;
-          else break;
-        }
-        const first = addDays(today, -6);
-        const range = streakRangeLabel(first, today);
-        streakMeta.textContent = streak > 0 ? `${streak} streak` : '—';
-        streakMeta.title = `${range}. ${streak} day streak (tap to refresh activity)`;
-        streakMeta.setAttribute(
-          'aria-label',
-          `${range}. ${streak} day streak. Tap to refresh activity data.`,
-        );
 
         for (let i = 6; i >= 0; i--) {
           const d = addDays(today, -i);
@@ -1560,11 +1577,6 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             openYearView();
           });
           streakRow.appendChild(cell);
-        }
-        if (streakOpenYear) {
-          const hideCal = streak === 0;
-          streakOpenYear.hidden = hideCal;
-          streakOpenYear.setAttribute('aria-hidden', hideCal ? 'true' : 'false');
         }
         streakCard.hidden = false;
       }
@@ -1600,19 +1612,15 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           const k = typeof r.day === 'string' ? r.day : String(r.day);
           dailySolvedMap[k] = Number(r.solved_count || 0);
         });
-        renderStreak(dailySolvedMap);
+        renderLast7Days(dailySolvedMap);
         renderHeatmap(dailySolvedMap, rangeStartDate);
       }
 
-      if (streakMeta) {
-        streakMeta.addEventListener('click', async () => {
+      if (activityCalendarBtn) {
+        activityCalendarBtn.addEventListener('click', async () => {
+          setUserMenuOpen(false);
           if (!hasProFeatures) return openRazorpay('monthly');
           await fetchDailySolved();
-        });
-      }
-      if (streakOpenYear) {
-        streakOpenYear.addEventListener('click', () => {
-          if (!hasProFeatures) return openRazorpay('monthly');
           openYearView();
         });
       }
@@ -1632,10 +1640,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         // Don’t block the rest of the UI; render when ready.
         fetchDailySolved();
       } else {
-        if (streakCard) {
-          streakCard.hidden = true;
-          streakCard.classList.remove('streak-card--locked');
-        }
+        if (streakCard) streakCard.hidden = true;
         closeYearView();
       }
       const REV_PIN_SVG =
@@ -1820,7 +1825,10 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         try { localStorage.setItem('theme', next); } catch (e) {}
       }
       document.querySelectorAll('#theme-toggle-top').forEach((btn) => {
-        btn.addEventListener('click', toggleTheme);
+        btn.addEventListener('click', () => {
+          toggleTheme();
+          setUserMenuOpen(false);
+        });
       });
 
       // ── Problems only (global) + Revision only (per topic): strip non–problem-set sections ──
@@ -1869,6 +1877,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
 
       document.getElementById('logout-btn')!.addEventListener('click', async () => {
+        setUserMenuOpen(false);
         window.clearTimeout(persistStudyTimer);
         if (hasProFeatures) await persistStudyPrefsNow();
         await supabase.auth.signOut();

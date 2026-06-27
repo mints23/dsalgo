@@ -1,0 +1,22 @@
+---
+/** Inline before paint — avoids flash. First visit defaults to light; toggle persists in localStorage. */
+interface Props {
+  syncThemeColor?: boolean;
+}
+const { syncThemeColor = false } = Astro.props;
+---
+<script is:inline define:vars={{ syncThemeColor }}>
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      var theme = saved === 'dark' || saved === 'light' ? saved : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (syncThemeColor) {
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#f5f5f7');
+      }
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>

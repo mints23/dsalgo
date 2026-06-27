@@ -516,76 +516,62 @@ summary:focus-visible {
 .discord-join--topbar {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  min-height: 1.9rem;
-  padding: 0.28rem 0.85rem 0.28rem 0.5rem;
-  border-radius: 999px;
+  gap: 0.45rem;
+  min-height: 34px;
+  padding: 0.3rem 0.75rem 0.3rem 0.45rem;
+  border-radius: 8px;
   text-decoration: none;
   white-space: normal;
-  background: color-mix(in oklab, #5865f2 9%, var(--surface));
-  border: 1px solid color-mix(in oklab, #5865f2 30%, var(--border));
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent),
-    0 2px 8px -4px color-mix(in oklab, #5865f2 35%, transparent);
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .discord-join-topbar-icon {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  color: #5865f2;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 9%, var(--surface));
 }
 .discord-join-topbar-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.06rem;
+  gap: 0.05rem;
   min-width: 0;
   text-align: left;
 }
 .discord-join-topbar-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.02em;
-  color: #5865f2;
-}
-.discord-join-topbar-hint {
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.15;
-  letter-spacing: 0.01em;
-  color: color-mix(in oklab, #5865f2 55%, var(--muted));
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.discord-join-topbar-hint {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--muted);
 }
 .discord-join--topbar:hover {
-  background: color-mix(in oklab, #5865f2 14%, var(--surface));
-  border-color: color-mix(in oklab, #5865f2 42%, var(--border));
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary) 22%, var(--hairline));
 }
 .discord-join--topbar:hover .discord-join-topbar-label {
-  color: color-mix(in oklab, #5865f2 88%, #000);
+  color: var(--primary);
 }
-[data-theme='dark'] .discord-join-topbar-label {
-  color: #aeb7ff;
-}
-[data-theme='dark'] .discord-join-topbar-hint {
-  color: color-mix(in oklab, #aeb7ff 72%, var(--muted));
-}
-[data-theme='dark'] .discord-join-topbar-icon {
-  color: #aeb7ff;
-}
-[data-theme='dark'] .discord-join--topbar {
-  color: #aeb7ff;
-  background: color-mix(in oklab, #5865f2 18%, var(--surface));
-  border-color: color-mix(in oklab, #5865f2 38%, var(--border));
-}
-[data-theme='dark'] .discord-join--topbar:hover {
-  background: color-mix(in oklab, #5865f2 24%, var(--surface));
-}
-[data-theme='dark'] .discord-join--topbar:hover .discord-join-topbar-label {
-  color: #c8ceff;
+.discord-join--topbar:hover .discord-join-topbar-icon {
+  color: var(--primary-h);
+  background: color-mix(in oklab, var(--primary) 14%, var(--surface));
 }
 .discord-join--topbar:focus-visible {
-  outline: 2px solid color-mix(in oklab, #5865f2 55%, transparent);
+  outline: 2px solid color-mix(in oklab, var(--primary) 40%, transparent);
   outline-offset: 2px;
 }
 @media (max-width: 720px) {
@@ -593,25 +579,26 @@ summary:focus-visible {
     display: none;
   }
   .discord-join--topbar {
-    padding: 0 0.72rem 0 0.5rem;
+    padding: 0 0.55rem;
+    min-height: 34px;
   }
 }
 @media (max-width: 380px) {
   .discord-join-topbar-label {
-    font-size: 0.62rem;
+    font-size: 0.625rem;
   }
   .discord-join--topbar {
-    padding: 0 0.6rem 0 0.45rem;
-    gap: 0.32rem;
+    padding: 0 0.5rem;
+    gap: 0.35rem;
   }
 }
 
 /* DSA sheet (.topbar): single-line Discord pill — same width as before the subtitle */
 .topbar .discord-join--topbar {
-  height: 1.9rem;
-  min-height: 1.9rem;
-  padding: 0 0.8rem 0 0.55rem;
-  gap: 0.32rem;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 0.7rem 0 0.45rem;
+  gap: 0.38rem;
   white-space: nowrap;
 }
 .topbar .discord-join-topbar-hint {
@@ -983,7 +970,9 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
   white-space: nowrap;
   line-height: 1.35;
 }
-.topbar-user :where(span) {
+
+.topbar-user-name {
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -1333,12 +1322,19 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
   display: flex;
   align-items: baseline;
   gap: 0.45rem;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: min(44vw, 22rem);
   padding-right: 0.5rem;
   margin-right: 0.15rem;
   border-right: none;
+}
+.topbar-metrics .topbar-topic:not([hidden]) {
+  flex-shrink: 0;
+  max-width: none;
+  padding-right: 0.75rem;
+  margin-right: 0.35rem;
+  border-right: 1px solid var(--hairline);
 }
 .topbar-topic[hidden] {
   display: none !important;
@@ -1363,6 +1359,9 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.topbar-metrics .topbar-topic-title {
+  max-width: 16rem;
+}
 /* Grows so metrics + actions stay grouped on the right (no topic title in topbar). */
 .topbar-spacer {
   flex: 1 1 auto;
@@ -1371,11 +1370,12 @@ html[data-connect-scroll-pause='1'] .connect-float:hover {
 }
 .topbar-metrics {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.5rem 0.75rem;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
   justify-content: flex-end;
   padding: 0;
   border-radius: 0;
@@ -2851,6 +2851,15 @@ th.th-insight-walkthrough:hover::after {
     max-width: min(50vw, 18rem);
     padding-right: 0.4rem;
   }
+  .topbar-metrics .topbar-topic:not([hidden]) {
+    max-width: none;
+    flex: 0 1 auto;
+    padding-right: 0.55rem;
+    margin-right: 0.25rem;
+  }
+  .topbar-metrics .topbar-topic-title {
+    max-width: min(42vw, 10rem);
+  }
   .topbar-topic-num {
     font-size: clamp(0.8rem, 2.8vw, 0.92rem);
   }
@@ -2912,6 +2921,12 @@ th.th-insight-walkthrough:hover::after {
     border-right: none;
     margin-right: 0;
     padding-right: 0.25rem;
+  }
+  .topbar-metrics .topbar-topic:not([hidden]) {
+    max-width: none;
+  }
+  .topbar-metrics .topbar-topic-title {
+    max-width: min(52vw, 11rem);
   }
   .topbar-topic-num {
     display: none;
