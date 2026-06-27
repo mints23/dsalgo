@@ -42,14 +42,20 @@
 
 /* ── Page shell ── */
 .login-page {
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--login-ambient), var(--bg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 960px) {
+  .login-page {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
 }
 
 .login-header {
@@ -62,9 +68,25 @@
   max-width: min(1180px, 100%);
   margin: 0 auto;
   padding:
-    max(0.85rem, env(safe-area-inset-top, 0px))
-    clamp(1.1rem, 3vw, 2rem)
-    0.75rem;
+    max(0.55rem, env(safe-area-inset-top, 0px))
+    clamp(0.85rem, 3vw, 2rem)
+    0.45rem;
+}
+
+@media (max-width: 959px) {
+  .login-header-brand span {
+    font-size: 0.875rem;
+  }
+
+  .login-header-actions .discord-join-topbar-label {
+    display: none;
+  }
+
+  .login-header-actions .discord-join--topbar {
+    min-height: 32px;
+    height: 32px;
+    padding: 0 0.45rem;
+  }
 }
 
 .login-header-brand {
@@ -124,28 +146,31 @@
   padding:
     clamp(0.5rem, 1.5vh, 1.25rem)
     clamp(1rem, 3vw, 2rem)
-    max(0.65rem, env(safe-area-inset-bottom, 0px));
+    max(1rem, env(safe-area-inset-bottom, 0px));
   display: grid;
   grid-template-columns: 1fr;
   gap: clamp(1rem, 2.5vh, 2rem);
-  align-items: center;
-  overflow: hidden;
+  align-items: start;
+  align-content: start;
 }
 
 @media (max-width: 959px) {
   .login-stage {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    align-content: start;
+    flex: none;
+    min-height: auto;
+    padding-top: 0.35rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+    gap: 0.75rem;
   }
 }
 
 @media (min-width: 960px) {
   .login-stage {
+    overflow: hidden;
+    align-items: center;
+    align-content: center;
     grid-template-columns: minmax(0, 1.08fr) minmax(300px, 380px);
     gap: clamp(1.25rem, 3vw, 3rem);
-    align-items: center;
   }
 }
 
@@ -156,13 +181,60 @@
   gap: clamp(0.65rem, 1.8vh, 1.5rem);
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
   order: 2;
+}
+
+@media (max-width: 959px) {
+  .login-showcase {
+    display: none;
+  }
+
+  .login-stage {
+    flex: none;
+    min-height: auto;
+    padding-top: 0.35rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    gap: 0;
+  }
+
+  .login-panel {
+    width: 100%;
+  }
+
+  .login-card {
+    padding: 1.1rem 1.1rem 0.95rem;
+    animation: none;
+  }
+
+  .login-card-lede {
+    margin-bottom: 0.75rem;
+  }
+
+  .login-return-hints {
+    display: none;
+  }
+
+  .divider-row {
+    margin: 0.75rem 0 0.65rem;
+  }
+
+  .login-tabs {
+    margin-bottom: 0.7rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.6rem;
+  }
+
+  .login-card-footer {
+    margin-top: 0.75rem;
+  }
 }
 
 @media (min-width: 960px) {
   .login-showcase {
     order: 0;
+    overflow: hidden;
   }
 }
 
@@ -530,8 +602,22 @@
 }
 
 @media (max-width: 959px) and (max-height: 700px) {
-  .login-mobile-teaser {
-    display: none;
+  .login-header {
+    padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+    padding-bottom: 0.4rem;
+  }
+
+  .login-card-kicker {
+    margin-bottom: 0.2rem;
+  }
+
+  .login-card-title {
+    font-size: 1.25rem;
+  }
+
+  .login-card-lede {
+    font-size: 0.8125rem;
+    margin-bottom: 0.65rem;
   }
 }
 
@@ -559,7 +645,45 @@
   order: 1;
   width: 100%;
   min-width: 0;
-  min-height: 0;
+}
+
+@media (max-width: 959px) {
+  .login-panel {
+    order: 1;
+  }
+
+  .login-card {
+    padding: 1.15rem 1.15rem 1rem;
+    animation: none;
+  }
+
+  .login-card-lede {
+    margin-bottom: 0.85rem;
+  }
+
+  .login-return-hints {
+    display: none;
+  }
+
+  .login-oauth-stack .oauth-btn--primary {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .divider-row {
+    margin: 0.85rem 0 0.7rem;
+  }
+
+  .login-tabs {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.65rem;
+  }
+
+  .login-card-footer {
+    margin-top: 0.85rem;
+  }
 }
 
 @media (min-width: 960px) {
@@ -839,13 +963,8 @@
 }
 
 @media (max-width: 959px) and (max-height: 640px) {
-  .login-showcase-copy .login-hero-lead,
-  .login-showcase-copy .login-hero-stats {
+  .login-showcase-copy {
     display: none;
-  }
-
-  .login-hero-title {
-    font-size: clamp(1.45rem, 5vw, 1.85rem);
   }
 }
 
