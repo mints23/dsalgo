@@ -1,4 +1,4 @@
-const i={cta:"Add me to batch →",signInCta:"Sign in to join batch →",success:"You're on the batch list. We'll email you when the next DSA Classes batch opens.",priceSuffix:"next batch"},s=[{id:"system-design",title:"System Design",benefit:"Think like a senior engineer",hook:"Trade-offs, scale narratives, and interview-ready design stories.",icon:"🏗️",subject:"Connect — System Design",accent:"#0f766e",section:"interview",price:"₹499",pricePeriod:"· 1 session",sessionPricePaise:49900,mailBody:`Hi,
+const i={cta:"Add me to batch →",signInCta:"Sign in to join batch →",modalLead:"Small live batches — patterns, live coding, and what interviewers actually test. Add yourself and we’ll email when the next batch opens.",success:"You're on the batch list. We'll email you when the next DSA Classes batch opens."},s=[{id:"system-design",title:"System Design",benefit:"Think like a senior engineer",hook:"Trade-offs, scale narratives, and interview-ready design stories.",icon:"🏗️",subject:"Connect — System Design",accent:"#0f766e",section:"interview",price:"₹499",pricePeriod:"· 1 session",sessionPricePaise:49900,mailBody:`Hi,
 
 I need help with: System Design
 
