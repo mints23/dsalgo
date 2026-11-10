@@ -68,13 +68,18 @@ Do not replace the current walkthrough overlay with raw Java code only. Keep the
 
 The data model should make language explicit and distinguish pseudocode from executable code. A code field must never be labelled Java unless it has been compiled and tested.
 
-## First implementation milestone
+## First implementation milestone — completed
 
-1. Define Java 17 as the baseline (unless project constraints require otherwise).
-2. Add a compilation/test harness with no external dependency.
-3. Implement and verify the first representative set across foundational patterns.
-4. Connect source files to problem IDs.
-5. Expand topic-by-topic, prioritising foundational and high-frequency interview concepts.
-6. Run compile/test validation on every added batch before exposing it in the product.
+Java 17 is the reference baseline. The first verified batch is now committed:
 
-**Verdict:** Java implementation coverage is currently **Gap / Not verified**. This is based on a complete repository tree scan, not only a search for likely filenames.
+- solutions/java/two-pointers/LC_0167_Two_Sum_II.java
+- solutions/java/two-pointers/LC_0015_Three_Sum.java
+- solutions/java/two-pointers/LC_0011_Container_With_Most_Water.java
+- solutions/java/tests/TwoPointersSmokeTest.java
+- solutions/java/README.md
+
+The three solutions were compiled with `javac --release 17 -Xlint:all -Werror` and the dependency-free smoke tests passed. Tests cover sorted pair lookup, negative values, 3Sum duplicate suppression, no-solution input, minimum-size container and the canonical container example.
+
+Next: expand topic-by-topic, connect source files to problem IDs, and run compilation/test validation on every batch before product integration.
+
+**Verdict:** The repository-wide Java coverage gap remains **Gap** (3 of 919 required placements now have verified Java references). The first batch itself is **verified** against Java 17 and its smoke tests.
