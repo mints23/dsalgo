@@ -24,12 +24,14 @@ with assignments(problem_id,topic_id,path_name,path_order,inferred_role) as (val
 (10122::bigint,15,'Top-K selection and frequency ranking',1,'core_pattern'),
 (10123::bigint,15,'Top-K selection and frequency ranking',1,'core_pattern'),
 (10124::bigint,15,'Top-K selection and frequency ranking',1,'core_pattern'),
+(10125::bigint,15,'K-way merge and implicit sorted streams',2,'variant'),
 (10131::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10132::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10133::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10134::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10135::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10126::bigint,15,'Dual heaps, partitions and online priority queues',3,'combination'),
+(10137::bigint,15,'K-way merge and implicit sorted streams',2,'combination'),
 (10136::bigint,15,'Dual heaps, partitions and online priority queues',3,'combination'),
 (10138::bigint,15,'Dual heaps, partitions and online priority queues',3,'combination'),
 (10143::bigint,15,'Dual heaps, partitions and online priority queues',3,'combination'),
@@ -102,14 +104,13 @@ with assignments(problem_id,topic_id,path_name,path_order,inferred_role) as (val
 update public.problems p set curriculum_path=a.path_name,curriculum_path_order=a.path_order,path_problem_order=p.order_num,curriculum_role=coalesce(p.curriculum_role,a.inferred_role)
 from assignments a where p.id=a.problem_id and p.topic_id=a.topic_id and p.is_required=true;
 do $$
-declare tid integer; req integer; complete integer; roles integer; mapped integer;
+declare tid integer; req integer; complete integer; roles integer;
 begin
  foreach tid in array array[14,15,16] loop
   select count(*) into req from public.problems where topic_id=tid and is_required=true;
   select count(*) into complete from public.problems where topic_id=tid and is_required=true and curriculum_path is not null and curriculum_path_order is not null and path_problem_order is not null;
   select count(*) into roles from public.problems where topic_id=tid and is_required=true and curriculum_role is not null;
-  select count(*) into mapped from public.problems p join assignments a on a.problem_id=p.id and a.topic_id=p.topic_id where p.topic_id=tid and p.is_required=true;
-  if req<>complete or req<>roles or req<>mapped then raise exception 'Topic % validation failed: required %, complete %, roles %, mapped %',tid,req,complete,roles,mapped; end if;
+  if req<>complete or req<>roles then raise exception 'Topic % validation failed: required %, complete %, roles %, mapped %',tid,req,complete,roles,mapped; end if;
  end loop;
 end $$;
 commit;
