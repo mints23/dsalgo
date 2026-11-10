@@ -173,3 +173,32 @@ The aggregate is a proposal for these 71 currently unclassified rows only. LC 22
 - Check cross-topic identity and canonical ownership before demoting LC 454, LC 135, LC 516, LC 862, LC 124, LC 2770, LC 2407, and other moved rows.
 - Confirm the app's reference toggles, row identity patching, progress restore, and mobile table rendering after path grouping.
 - Production data changes require a separate reviewed migration. This branch is documentation-only.
+
+
+## Cross-topic identity and ownership audit
+
+A live duplicate-identity query across the eight pilot topics found the following required placements sharing a LeetCode number. These are not automatically data errors: some are legitimate alternate-solution or integration examples. They must be explicitly adjudicated before the path backfill.
+
+| LC | Current required placements | Review direction |
+|---:|---|---|
+| 3 | HashMap; Sliding Window | Sliding Window is canonical; HashMap may remain only as a clearly labelled frequency-map cross-reference. |
+| 1074 | Kadane; Prefix Sums | Prefix Sums owns the prefix-compression/counting pattern; demote the Kadane placement unless it teaches a distinct, explicit 2D-Kadane objective. |
+| 1326 | Intervals; Greedy | Legitimate interval-cover + greedy integration. Keep one canonical required placement and make the other a cross-reference, not a duplicate required drill. |
+| 135 | Two Pointers; Greedy | Greedy owns the two-pass directional-constraint pattern; demote Two Pointers placement. |
+| 253 | Intervals; Greedy | Intervals owns room overlap/partitioning; Greedy may cross-reference the heap scheduling implementation. |
+| 287 | Two Pointers; Binary Search | Keep both only if the Two Pointers row explicitly teaches Floyd cycle detection and Binary Search explicitly teaches value-domain counting; make the alternate solutions visible. |
+| 3 / 438 | HashMap or Sliding Window duplicates | Sliding Window should own the window mechanics; HashMap should only retain an explicit map-frequency learning objective if it is not a duplicate required drill. |
+| 435 | Intervals; Greedy | Same activity-selection objective. Choose one required owner; cross-reference from the other topic. |
+| 45 | Intervals; Greedy | Greedy owns reachability / minimum-jump expansion. Intervals may link it as an interval-cover reduction, but avoid two required copies. |
+| 452 | Intervals; Greedy | Valid in both interval stabbing and activity-selection framing; choose one canonical required placement and label the second as a cross-reference. |
+| 454 | Two Pointers; HashMap | HashMap owns pair-sum complement counting; demote Two Pointers placement. |
+| 525 | HashMap; Prefix Sums | Prefix Sums owns prefix-state transformation; HashMap may cross-reference the first-seen-state map. |
+| 560 | HashMap; Prefix Sums | Prefix Sums owns prefix-sum counting; HashMap may cross-reference the map implementation. |
+| 630 | Intervals; Greedy | Greedy owns deadline scheduling with regret/max-heap; demote or cross-reference the Intervals placement. |
+| 76 | Two Pointers; Sliding Window | Sliding Window owns minimum-covering-window; demote Two Pointers placement. |
+| 763 | Two Pointers; Intervals; Greedy | Greedy owns last-occurrence reach expansion; retain at most one required placement and use cross-references elsewhere. |
+| 862 | Binary Search; Sliding Window | Neither current framing is canonical. The solution is prefix sums + monotonic deque; demote both placements from these topics and consider a Prefix Sums advanced cross-reference. |
+| 881 | Two Pointers; Greedy | Legitimate two-pointer + greedy pairing. Keep one required owner and cross-reference the other to avoid duplicate completion counts. |
+| 974 | HashMap; Prefix Sums | Prefix Sums owns modular prefix-state counting; HashMap may cross-reference the remainder-frequency map. |
+
+**Important:** This audit is a review queue, not an applied data migration. No duplicate placement has been deleted, moved, or demoted. The implementation must preserve all existing IDs and order numbers; secondary placements should be demoted or relabelled, never deleted.
