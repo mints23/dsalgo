@@ -31,11 +31,11 @@ The path labels below were used for the production backfill. They group rows wit
 | Greedy | 47 | 43 | 10 |
 | **Total** | **353** | **275** | **71** |
 
-## Proposed row-level decisions
+## Reviewed and applied row-level decisions
 
 ### Topic 01 — Two Pointers
 
-| DB ID | Order | Problem | Proposed role | Required? | Proposed path | Reason |
+| DB ID | Order | Problem | Applied role | Required? | Applied path | Reason |
 |---:|---:|---|---|:---:|---|---|
 | 9669 | 31 | LC 1658 — Minimum Operations to Reduce X to Zero | out_of_scope | No | — | Canonical reduction is longest subarray / prefix sum; belongs with Prefix Sums and Sliding Window. |
 | 9671 | 33 | LC 454 — 4Sum II | out_of_scope | No | — | Pair-sum frequency map is the canonical O(n²) solution; HashMap owns it. |
@@ -144,7 +144,7 @@ The path labels below were used for the production backfill. They group rows wit
 | 10019 | 43 | LC 2449 — Minimum Number of Operations to Make Arrays Similar | variant | Yes | Invariant-preserving sorted matching | Parity is invariant under ±2; sort parity classes and pair in order. |
 | 10020 | 44 | LC 2571 — Minimum Operations to Reduce Integer to 0 | core_pattern | Yes | Bitwise local greedy | Choose increment/decrement to merge runs of set bits; prove the local carry decision. |
 
-## Aggregate proposal
+## Original classification totals (applied)
 
 | Outcome | Count |
 |---|---:|
@@ -179,27 +179,27 @@ The aggregate is a proposal for these 71 currently unclassified rows only. LC 22
 
 A live duplicate-identity query across the eight pilot topics found the following required placements sharing a LeetCode number. These are not automatically data errors: some are legitimate alternate-solution or integration examples. They must be explicitly adjudicated before the path backfill.
 
-| LC | Current required placements | Review direction |
+| LC | Current required placements before this pass | Applied canonical ownership |
 |---:|---|---|
-| 3 | HashMap; Sliding Window | Sliding Window is canonical; HashMap may remain only as a clearly labelled frequency-map cross-reference. |
-| 1074 | Kadane; Prefix Sums | Prefix Sums owns the prefix-compression/counting pattern; demote the Kadane placement unless it teaches a distinct, explicit 2D-Kadane objective. |
-| 1326 | Intervals; Greedy | Legitimate interval-cover + greedy integration. Keep one canonical required placement and make the other a cross-reference, not a duplicate required drill. |
-| 135 | Two Pointers; Greedy | Greedy owns the two-pass directional-constraint pattern; demote Two Pointers placement. |
-| 253 | Intervals; Greedy | Intervals owns room overlap/partitioning; Greedy may cross-reference the heap scheduling implementation. |
-| 287 | Two Pointers; Binary Search | Keep both only if the Two Pointers row explicitly teaches Floyd cycle detection and Binary Search explicitly teaches value-domain counting; make the alternate solutions visible. |
-| 438 | HashMap; Sliding Window | Sliding Window should own the window mechanics; HashMap should only retain an explicit map-frequency learning objective if it is not a duplicate required drill. |
-| 435 | Intervals; Greedy | Same activity-selection objective. Choose one required owner; cross-reference from the other topic. |
-| 45 | Intervals; Greedy | Greedy owns reachability / minimum-jump expansion. Intervals may link it as an interval-cover reduction, but avoid two required copies. |
-| 452 | Intervals; Greedy | Valid in both interval stabbing and activity-selection framing; choose one canonical required placement and label the second as a cross-reference. |
-| 454 | Two Pointers; HashMap | HashMap owns pair-sum complement counting; demote Two Pointers placement. |
-| 525 | HashMap; Prefix Sums | Prefix Sums owns prefix-state transformation; HashMap may cross-reference the first-seen-state map. |
-| 560 | HashMap; Prefix Sums | Prefix Sums owns prefix-sum counting; HashMap may cross-reference the map implementation. |
-| 630 | Intervals; Greedy | Greedy owns deadline scheduling with regret/max-heap; demote or cross-reference the Intervals placement. |
-| 76 | Two Pointers; Sliding Window | Sliding Window owns minimum-covering-window; demote Two Pointers placement. |
-| 763 | Two Pointers; Intervals; Greedy | Greedy owns last-occurrence reach expansion; retain at most one required placement and use cross-references elsewhere. |
-| 862 | Binary Search; Sliding Window | Neither current framing is canonical. The solution is prefix sums + monotonic deque; demote both placements from these topics and consider a Prefix Sums advanced cross-reference. |
-| 881 | Two Pointers; Greedy | Legitimate two-pointer + greedy pairing. Keep one required owner and cross-reference the other to avoid duplicate completion counts. |
-| 974 | HashMap; Prefix Sums | Prefix Sums owns modular prefix-state counting; HashMap may cross-reference the remainder-frequency map. |
+| 3 | HashMap; Sliding Window | Sliding Window remains required; HashMap placement is an optional reference. |
+| 1074 | Kadane; Prefix Sums | Both remain required: 2D Kadane compression and 2D prefix row-pair counting are distinct solution lenses. |
+| 1326 | Intervals; Greedy | Intervals remains required; Greedy placement is an optional reference. |
+| 135 | Two Pointers; Greedy | Greedy is canonical; Two Pointers placement is out_of_scope. |
+| 253 | Intervals; Greedy | Intervals remains required; Greedy placement is an optional reference. |
+| 287 | Two Pointers; Binary Search | Both remain required: Floyd cycle detection and value-domain pigeonhole search are distinct algorithms. |
+| 438 | HashMap; Sliding Window | Sliding Window remains required; HashMap placement is an optional reference. |
+| 435 | Intervals; Greedy | Intervals remains required; Greedy placement is an optional reference. |
+| 45 | Intervals; Greedy | Intervals remains required as interval coverage; Greedy placement is an optional reference. |
+| 452 | Intervals; Greedy | Intervals remains required; Greedy placement is an optional reference. |
+| 454 | Two Pointers; HashMap | HashMap is canonical; Two Pointers placement is out_of_scope. |
+| 525 | HashMap; Prefix Sums | Both remain required: first-seen index map and Boolean prefix transform are distinct learning lenses. |
+| 560 | HashMap; Prefix Sums | Both remain required as the canonical prefix-sum-plus-frequency-map pattern in each topic context. |
+| 630 | Intervals; Greedy | Greedy remains required; Intervals placement is an optional reference. |
+| 76 | Two Pointers; Sliding Window | Sliding Window remains required; Two Pointers placement is an optional reference. |
+| 763 | Two Pointers; Intervals; Greedy | Greedy remains required; Two Pointers and Intervals placements are optional references. |
+| 862 | Binary Search; Sliding Window | Both placements are out_of_scope; the canonical technique is prefix sums plus a monotonic deque. |
+| 881 | Two Pointers; Greedy | Two Pointers remains required; Greedy placement is an optional reference. |
+| 974 | HashMap; Prefix Sums | Both remain required as distinct prefix-state and remainder-frequency learning lenses. |
 
 **Applied ownership decision:** Secondary duplicates were demoted to optional references, never deleted or moved. The production migration preserves all existing IDs and order numbers.
 
