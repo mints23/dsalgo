@@ -69,14 +69,14 @@ The current live query reports 63 duplicated LeetCode identities across topics a
 
 ## Verification and QA
 
-- Live Supabase: 922 required placements, 922 complete paths, 922 explicit roles.
+- Live Supabase: 919 required placements, 919 complete paths, 919 explicit roles.
 - Zero null curriculum roles across all placements.
 - Zero invalid/non-positive path order values among required rows.
 - All 43 topics pass the per-topic required/path/role equality check.
 - Global path-order/name collisions: 0; duplicate problem-order values within a path: 0. The Segment Tree path-order collision in topic 12 was fixed by `20261110_z_zzzzzz_segment_tree_path_order_collision_fix.sql`.
 - LC 1000's invalid general Knuth-optimisation claim was corrected in both structured metadata and authored topic HTML; the unsupported data-structure-optimised placement is now optional.
 - LC 1584's Prim implementation was removed from the Bellman-Ford topic, and the duplicate Prim placement was made optional; the required Prim (Graph Fundamentals) and Kruskal (DSU) solution lenses remain.
-- Production build/deploy run #84 succeeded; `gh-pages/index.html` reports `v1.0.84`.
+- Curriculum data release run #84 succeeded; the latest application/docs build and GitHub Pages deployment run #86 succeeded, and `gh-pages/index.html` reports `v1.0.86`.
 - Static source inspection confirms the path fields are selected in the topic embeds, row IDs are matched before filtering, grouping runs after optional/editorial rows are filtered, and grouping fails open when any visible required row lacks consistent metadata.
 - Path headings use `th[scope="rowgroup"]`; original problem rows and visible number cells are moved intact rather than recreated.
 - CSS for path headings is present.
