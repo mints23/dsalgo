@@ -162,8 +162,8 @@ The aggregate is a proposal for these 71 currently unclassified rows only. LC 22
 3. Keep the authored HTML and structured row in sync. The frontend matches authored rows to structured records by URL, LeetCode number, then normalized title; unmatched rows are excluded from the learner-facing curriculum.
 4. Do not implement path grouping by mutating `order_num` or by relying on DOM row order as progress identity.
 5. Before applying any data changes, verify every proposed decision against the canonical topic owner, the full topic audit, and any same-ID alternate-solution placement.
-6. Path metadata should be separate from the existing progress identity. The next design pass should decide between additive columns on `problems` and a normalized path-membership table; a many-to-many membership model is preferable if the same problem needs more than one pedagogical path.
-7. Do not add a migration until the UI behavior is tested against all authored table shapes, including topics with multiple tables and custom rows.
+6. Path metadata is separate from the existing progress identity. The current pilot assigns one primary path to each retained placement. If a placement later needs to belong to multiple paths simultaneously, introduce a normalized membership table rather than overloading these columns.
+7. The feature branch now contains the additive three-column schema migration and fail-open frontend grouping. The migration has not been applied to production; do not deploy the frontend until the schema migration is applied and the reviewed path data migration is ready.
 
 ## Verification items before production
 
