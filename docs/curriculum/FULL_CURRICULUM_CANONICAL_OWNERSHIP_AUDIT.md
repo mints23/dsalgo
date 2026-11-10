@@ -3,7 +3,7 @@
 **Date:** 2026-11-10  
 **Repository:** `mints23/dsalgo`  
 **Branch:** `main`  
-**Latest production release:** `v1.0.78` (run #78)
+**Latest curriculum data release:** `v1.0.84` (run #84)
 
 ## Decision policy
 
@@ -19,14 +19,14 @@ All demotions:
 
 | Metric | Before ownership passes | Current |
 |---|---:|---:|
-| Required placements | 1,070 | 922 |
-| Optional references | 55 | 203 |
+| Required placements | 1,070 | 919 |
+| Optional references | 55 | 206 |
 | Cross-topic duplicate LeetCode identities | 178 | 63 |
-| Secondary required placements among those duplicates | 217 | 70 |
-| Required placements with complete paths and roles | 1,070 | 922 |
+| Secondary required placements among those duplicates | 217 | 67 |
+| Required placements with complete paths and roles | 1,070 | 919 |
 | Required rows missing paths or roles | 0 | 0 |
 
-The five passes demoted 148 placements in total. Each pass recalculated the per-path problem sequence and asserted that every remaining required row still has a complete path and role.
+The six passes demoted 151 placements in total. Each pass recalculated the per-path problem sequence and asserted that every remaining required row still has a complete path and role.
 
 ## Applied passes
 
@@ -37,7 +37,8 @@ The five passes demoted 148 placements in total. Each pass recalculated the per-
 | 3 | 16 | `20261110_z_zzz_full_curriculum_canonical_owner_pass_3.sql` |
 | 4 | 10 | `20261110_z_zzzz_full_curriculum_canonical_owner_pass_4.sql` |
 | 5 | 2 | `20261110_z_zzzzz_full_curriculum_canonical_owner_pass_5.sql` |
-| **Total** | **148** | |
+| 6 | 3 | `20261110_z_zzzzzzz_full_curriculum_canonical_owner_pass_6.sql` |
+| **Total** | **151** | |
 
 Pass 2's SQL contains 17 IDs, two of which were already optional after pass 1; 15 were newly demoted in that pass.
 
@@ -64,7 +65,7 @@ The same-topic duplicate audit found three pairs, all retained as distinct varia
 
 ## Remaining duplicate review
 
-The current live query reports 63 duplicated LeetCode identities across topics and 70 secondary required placements. The remaining set has been reviewed as alternate algorithmic lenses or deliberate cross-topic integrations. No further bulk demotions are justified by identity alone. Future changes should require a concrete row-level reason and preserve the same identity invariants.
+The current live query reports 63 duplicated LeetCode identities across topics and 67 secondary required placements. The remaining set has been reviewed as alternate algorithmic lenses or deliberate cross-topic integrations. No further bulk demotions are justified by identity alone. Future changes should require a concrete row-level reason and preserve the same identity invariants.
 
 ## Verification and QA
 
@@ -72,7 +73,10 @@ The current live query reports 63 duplicated LeetCode identities across topics a
 - Zero null curriculum roles across all placements.
 - Zero invalid/non-positive path order values among required rows.
 - All 43 topics pass the per-topic required/path/role equality check.
-- Production deployment run #78 succeeded; `gh-pages/index.html` reports `v1.0.78`.
+- Global path-order/name collisions: 0; duplicate problem-order values within a path: 0. The Segment Tree path-order collision in topic 12 was fixed by `20261110_z_zzzzzz_segment_tree_path_order_collision_fix.sql`.
+- LC 1000's invalid general Knuth-optimisation claim was corrected in both structured metadata and authored topic HTML; the unsupported data-structure-optimised placement is now optional.
+- LC 1584's Prim implementation was removed from the Bellman-Ford topic, and the duplicate Prim placement was made optional; the required Prim (Graph Fundamentals) and Kruskal (DSU) solution lenses remain.
+- Production build/deploy run #84 succeeded; `gh-pages/index.html` reports `v1.0.84`.
 - Static source inspection confirms the path fields are selected in the topic embeds, row IDs are matched before filtering, grouping runs after optional/editorial rows are filtered, and grouping fails open when any visible required row lacks consistent metadata.
 - Path headings use `th[scope="rowgroup"]`; original problem rows and visible number cells are moved intact rather than recreated.
 - CSS for path headings is present.
