@@ -577,7 +577,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
       // over the wire for ineligible topics (trial preview set, or is_free when expired).
       const TOPIC_LIST_SELECT =
         'id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta';
-      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight, is_required, curriculum_role)`;
+      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight, is_required, curriculum_role, curriculum_path, curriculum_path_order, path_problem_order)`;
 
       function mergeTopicShellWithEmbeds(shellRows: any[], fullById: Map<number, any>): any[] {
         return shellRows.map((row: any) => {
@@ -1431,6 +1431,88 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         });
       }
       applyRequiredDifficultyFilter();
+
+      // ── Curriculum paths ──
+      // Group only after the required-row filter has removed editorial leftovers.
+      // A table is regrouped only when every visible learner row has complete,
+      // internally consistent path metadata; otherwise its authored order is kept.
+      function applyCurriculumPathGrouping() {
+        topics.forEach((topic: any) => {
+          const card = document.getElementById(`tp${topic.id}`);
+          if (!card || !Array.isArray(topic.problems) || !topic.problems.length) return;
+
+          const problemById = new Map<number, any>(
+            topic.problems.map((problem: any) => [Number(problem.id), problem])
+          );
+
+          card.querySelectorAll('table[data-curriculum-problem-table="true"]').forEach((table) => {
+            const body = table.tBodies[0];
+            if (!body) return;
+
+            const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>(
+              'tr[data-problem-candidate="true"]'
+            )).filter((row) => !row.hidden);
+            if (!rows.length) return;
+
+            const entries = rows.map((row) => {
+              const problem = problemById.get(Number(row.getAttribute('data-problem-id')));
+              if (!problem) return null;
+              const path = String(problem.curriculum_path || '').trim();
+              const pathOrder = Number(problem.curriculum_path_order);
+              const problemOrder = Number(problem.path_problem_order);
+              if (!path || !Number.isInteger(pathOrder) || pathOrder < 1
+                || !Number.isInteger(problemOrder) || problemOrder < 1) return null;
+              return { row, path, pathOrder, problemOrder, stableOrder: Number(problem.order_num) };
+            });
+
+            // Fail open: never partially regroup a table or hide an unclassified row.
+            if (entries.some((entry) => !entry)) return;
+            const complete = entries as Array<{
+              row: HTMLTableRowElement;
+              path: string;
+              pathOrder: number;
+              problemOrder: number;
+              stableOrder: number;
+            }>;
+            const pathOrderByName = new Map<string, number>();
+            const pathNameByOrder = new Map<number, string>();
+            for (const entry of complete) {
+              const knownOrder = pathOrderByName.get(entry.path);
+              const knownName = pathNameByOrder.get(entry.pathOrder);
+              if ((knownOrder !== undefined && knownOrder !== entry.pathOrder)
+                || (knownName !== undefined && knownName !== entry.path)) return;
+              pathOrderByName.set(entry.path, entry.pathOrder);
+              pathNameByOrder.set(entry.pathOrder, entry.path);
+            }
+
+            complete.sort((a, b) =>
+              a.pathOrder - b.pathOrder
+              || a.problemOrder - b.problemOrder
+              || a.stableOrder - b.stableOrder
+            );
+
+            const columnCount = Math.max(1, table.querySelectorAll('thead th').length);
+            let currentPath = '';
+            for (const entry of complete) {
+              if (entry.path !== currentPath) {
+                currentPath = entry.path;
+                const headingRow = document.createElement('tr');
+                headingRow.className = 'curriculum-path-heading';
+                const heading = document.createElement('th');
+                heading.scope = 'rowgroup';
+                heading.colSpan = columnCount;
+                heading.textContent = currentPath;
+                headingRow.appendChild(heading);
+                body.appendChild(headingRow);
+              }
+              body.appendChild(entry.row);
+            }
+            table.setAttribute('data-curriculum-paths-applied', 'true');
+          });
+        });
+      }
+      applyCurriculumPathGrouping();
+
       let w98Active = studyProblemsOnlyPref;
 
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
