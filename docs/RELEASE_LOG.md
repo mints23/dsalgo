@@ -21,3 +21,11 @@ The small version label in the top-right corner is generated automatically from 
 
 - Added a compact release identifier in the top-right application bar.
 - Production builds display a unique version; local development displays dev.
+
+## v1.0.21 — Topic-relevant trap curation
+
+- Audited all 142 trap/reference rows across the 43 topics.
+- Retained 137 topic-relevant diagnostic questions, including method-selection contrasts such as bitmask DP versus frontier Profile DP.
+- Removed five unrelated questions from their visible topic paths: Merge Intervals from Kadane, Count Pairs of Nodes from Floyd-Warshall, CF 768C and AGC017B from Game Theory, and CF 1202D from Digit DP.
+- Added the explicit `out_of_scope` curriculum role. Excluded rows remain stored with their original problem IDs; progress and playback references are preserved.
+- Updated migration and remigration scripts so future data imports preserve the out-of-scope classification.
