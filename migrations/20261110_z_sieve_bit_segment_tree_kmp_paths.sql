@@ -31,6 +31,7 @@ with assignments(problem_id,topic_id,path_name,path_order,inferred_role) as (val
 (10051::bigint,11,'Offline queries and sweep-line combinations',3,'combination'),
 (10057::bigint,11,'Offline queries and sweep-line combinations',3,'combination'),
 (10056::bigint,11,'Order statistics with Fenwick binary lifting',4,'combination'),
+(10060::bigint,12,'Point updates and range transformations',1,'core_pattern'),
 (10061::bigint,12,'Lazy propagation and range transformations',1,'variant'),
 (10062::bigint,12,'Lazy propagation and range transformations',1,'variant'),
 (10063::bigint,12,'Lazy propagation and range transformations',1,'variant'),
