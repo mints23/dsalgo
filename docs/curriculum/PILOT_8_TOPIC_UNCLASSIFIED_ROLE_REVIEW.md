@@ -3,7 +3,7 @@
 **Source of truth:** Live Supabase `public.problems` rows on 2026-11-10, joined to `public.topics`.  
 **Branch:** `main`  
 **Scope:** The 71 placements that originally had null `curriculum_role`, plus cross-topic ownership corrections in the eight-topic pilot.  
-**Status:** Applied to production on 2026-11-10. All changes preserve problem IDs, topic IDs, `order_num`, and learner progress keys.
+**Status:** Historical record for the original eight-topic pilot. The rollout has since been extended to all 43 topics; see [FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md](./FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md) for current production counts and remaining ownership/QA work. All changes preserve problem IDs, topic IDs, `order_num`, and learner progress keys.
 
 ## Executive summary
 
@@ -163,16 +163,13 @@ The aggregate is a proposal for these 71 currently unclassified rows only. LC 22
 4. Do not implement path grouping by mutating `order_num` or by relying on DOM row order as progress identity.
 5. Before applying any data changes, verify every proposed decision against the canonical topic owner, the full topic audit, and any same-ID alternate-solution placement.
 6. Path metadata is separate from the existing progress identity. The current pilot assigns one primary path to each retained placement. If a placement later needs to belong to multiple paths simultaneously, introduce a normalized membership table rather than overloading these columns.
-7. The feature branch now contains the additive three-column schema migration and fail-open frontend grouping. The migration has not been applied to production; do not deploy the frontend until the schema migration is applied and the reviewed path data migration is ready.
+7. The additive three-column schema migration and fail-open frontend grouping are live in production. The original eight-topic pilot was extended to all 43 topics; use the full rollout document as the current source of truth.
 
-## Verification items before production
+## Remaining verification and follow-up
 
-- Re-check all 71 rows against the latest live data immediately before migration; IDs and role nullability must still match.
-- Verify custom source statements for Talent Show, Weighted Matroid Greedy, Haybale Stacking, and Maximum Subarray Sum Divisible by K.
-- Independently validate LC 2770's transition and solution claim; the current `key_insight` says a linear scan with a running maximum, which is not a generally valid solution for arbitrary value-range predecessors.
-- Check cross-topic identity and canonical ownership before demoting LC 454, LC 135, LC 516, LC 862, LC 124, LC 2770, LC 2407, and other moved rows.
-- Confirm the app's reference toggles, row identity patching, progress restore, and mobile table rendering after path grouping.
-- Production data changes require a separate reviewed migration. This branch is documentation-only.
+- Browser-level QA of progress restore, completion/revision toggles, narrow mobile widths, and every authored table layout remains outstanding.
+- The full rollout has 178 duplicated LeetCode identities across topics (217 secondary placements). These are retained pending a dedicated canonical-owner review; do not automatically demote them because some are intentional alternate algorithmic lenses.
+- The original eight-topic migration and row decisions remain documented above as a historical pilot record; current live totals are in the full rollout document.
 
 
 ## Cross-topic identity and ownership audit
