@@ -1,6 +1,6 @@
 # Eight-Topic Curriculum Paths — Data and UI Design
 
-**Status:** Implemented and released to production on 2026-11-10 across all 43 topics. The path schema, frontend grouping, and full required-row backfill are live. Five canonical-owner passes have since refined the required set. See [FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md](./FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md) for current totals and decisions.
+**Status:** Historical design record for the original eight-topic pilot; implementation and rollout are now complete across all 43 topics. The current production state is 919 required placements with complete path metadata and explicit roles, plus 206 optional references. Six canonical-owner passes refined the required set. See [FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md](./FULL_43_TOPIC_CURRICULUM_PATH_ROLLOUT.md) and [FULL_CURRICULUM_CANONICAL_OWNERSHIP_AUDIT.md](./FULL_CURRICULUM_CANONICAL_OWNERSHIP_AUDIT.md) for the authoritative current state.
 
 ## Decision
 
@@ -55,7 +55,7 @@ A topic may contain multiple authored problem tables with different column layou
 - Grouping is fail-open: a table is left untouched if any visible required row has missing or inconsistent path metadata.
 - Accessible row-group headings are rendered as `th[scope=rowgroup]`; original `.num-cell` text is not modified.
 - The additive SQL migration for the three nullable columns, all-null-or-all-populated check constraint, and partial lookup index has been applied to production.
-- The role/path backfill is applied across all 43 topics. Following five canonical-owner passes, 922 required placements have complete path metadata and explicit curriculum roles; 203 placements are optional references. The original eight-topic pilot decisions remain documented separately.
+- The role/path backfill is applied across all 43 topics. Following six canonical-owner passes, 919 required placements have complete path metadata and explicit curriculum roles; 206 placements are optional references. The original eight-topic pilot decisions remain documented separately.
 - Production Astro build and GitHub Pages deployment succeeded; release footer is generated from the workflow run number.
 - The corrected authored explanations for Talent Show and LC 2770 are in the database HTML, in addition to the structured problem metadata.
 
@@ -65,7 +65,7 @@ A topic may contain multiple authored problem tables with different column layou
 2. Reviewed role/path data migration applied with assertions for complete metadata, no null roles among required rows, and unique path labels per topic/path order.
 3. Production build and GitHub Pages deployment succeeded.
 4. The production index.html and generated JS bundle were inspected: version footer is present, and path grouping code plus the required metadata fields are bundled.
-5. Latest production SQL verification returned 922 required rows, zero incomplete path rows, and zero missing required curriculum roles across 43 topics.
+5. Latest production SQL verification returned 919 required rows, zero incomplete path rows, and zero missing required curriculum roles across 43 topics.
 6. Browser-level verification of progress restore, completion/revision toggles, mobile widths, and each authored table layout remains a final manual QA task; the deployment is live and the grouping code fails open if a table's row metadata cannot be matched.
 
 ## Non-negotiable invariants
@@ -74,4 +74,4 @@ A topic may contain multiple authored problem tables with different column layou
 - Never delete a placement to remove a duplicate.
 - Never change the existing progress key (`topic_id` + visible `num-cell`).
 - Do not expose out-of-scope or excluded-trap rows as required problems.
-- Do not claim the full rollout is complete until all retained required placements have a reviewed path and sequence (1,070 across 43 topics).
+- The full rollout is complete for the 919 currently required placements across all 43 topics. Optional references are intentionally excluded from required path sequencing; see the canonical ownership audit for the review policy.
