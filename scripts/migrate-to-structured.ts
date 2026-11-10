@@ -63,9 +63,11 @@ const LAYER_CLEAN: Record<string, string> = {
   Hard: 'Hard',
   '⚠️Trap': 'Trap',
   '⚠️ Trap': 'Trap',
+  'Out of Scope': 'Out of Scope',
 };
 
 function classifyCurriculumRole(layer: string, difficulty: string | null): string | null {
+  if (/^out of scope$/i.test(layer.trim())) return 'out_of_scope';
   if (/^easy$/i.test(difficulty ?? '')) return 'optional_reference';
   const normalized = layer.trim().toLowerCase();
   if (normalized === 'foundation' || normalized === 'found') return 'core_pattern';
@@ -104,7 +106,7 @@ function parseProblems(topicId: number, html: string) {
         is_premium: /<span class="prem">/.test(row),
         sub_variant: clean(tds[6][1]) || null,
         key_insight: clean(tds[7][1]) || null,
-        is_required: /^(med|medium|hard)$/i.test(diffM?.[1] ?? ''),
+        is_required: !/^out of scope$/i.test(LAYER_CLEAN[layerRaw] ?? layerRaw) && /^(med|medium|hard)$/i.test(diffM?.[1] ?? ''),
         curriculum_role: classifyCurriculumRole(LAYER_CLEAN[layerRaw] ?? layerRaw, diffM?.[1] ?? null),
       });
     }
