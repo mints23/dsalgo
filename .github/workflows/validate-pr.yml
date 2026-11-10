@@ -27,6 +27,6 @@ jobs:
         env:
           NODE_ENV: production
           PUBLIC_SUPABASE_URL: https://api.algofrog.in
-          PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+          PUBLIC_SUPABASE_ANON_KEY: sb_publishable_IIIsziBlBINYSfTBtHyY4g_9i_pJmCs
           PUBLIC_AUTH_REDIRECT_ORIGIN: https://algofrog.in
           PUBLIC_APP_VERSION: pr-validation
