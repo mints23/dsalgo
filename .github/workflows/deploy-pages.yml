@@ -1,0 +1,47 @@
+name: Build and deploy Astro site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: algofrog-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Astro site
+        run: npm run build
+        env:
+          NODE_ENV: production
+          PUBLIC_SUPABASE_URL: https://api.algofrog.in
+          PUBLIC_SUPABASE_ANON_KEY: sb_publishable_IIIsziBlBINYSfTBtHyY4g_9i_pJmCs
+          PUBLIC_AUTH_REDIRECT_ORIGIN: https://algofrog.in
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist
+          cname: algofrog.in
+          force_orphan: true
