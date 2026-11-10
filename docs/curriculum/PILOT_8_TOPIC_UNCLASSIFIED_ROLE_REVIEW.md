@@ -187,7 +187,7 @@ A live duplicate-identity query across the eight pilot topics found the followin
 | 135 | Two Pointers; Greedy | Greedy owns the two-pass directional-constraint pattern; demote Two Pointers placement. |
 | 253 | Intervals; Greedy | Intervals owns room overlap/partitioning; Greedy may cross-reference the heap scheduling implementation. |
 | 287 | Two Pointers; Binary Search | Keep both only if the Two Pointers row explicitly teaches Floyd cycle detection and Binary Search explicitly teaches value-domain counting; make the alternate solutions visible. |
-| 3 / 438 | HashMap or Sliding Window duplicates | Sliding Window should own the window mechanics; HashMap should only retain an explicit map-frequency learning objective if it is not a duplicate required drill. |
+| 438 | HashMap; Sliding Window | Sliding Window should own the window mechanics; HashMap should only retain an explicit map-frequency learning objective if it is not a duplicate required drill. |
 | 435 | Intervals; Greedy | Same activity-selection objective. Choose one required owner; cross-reference from the other topic. |
 | 45 | Intervals; Greedy | Greedy owns reachability / minimum-jump expansion. Intervals may link it as an interval-cover reduction, but avoid two required copies. |
 | 452 | Intervals; Greedy | Valid in both interval stabbing and activity-selection framing; choose one canonical required placement and label the second as a cross-reference. |
