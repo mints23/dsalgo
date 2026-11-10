@@ -905,7 +905,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         }
       }
       document.getElementById('nav-list')!.innerHTML = navHtml;
-      document.getElementById('topic-count')!.textContent = `${topics.length} topics`;
+      document.getElementById('topic-count')!.textContent = `${guideProblemRowCount.toLocaleString()} problems · ${topics.length} topics`;
 
       // ── Build Topic Cards ──
 
@@ -1890,13 +1890,24 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           const card = document.getElementById(`tp${topicId}`);
           if (!card) return;
           const totalRows = card.querySelectorAll('tbody tr:not(.optional-easy-row):not(.unclassified-problem-row) .num-cell').length;
-          if (!totalRows) return;
+          const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
+          if (!indicator) return;
+          if (!totalRows) {
+            // Locked / trial-excluded topics intentionally omit problem rows from the
+            // payload. Keep their curriculum size visible without implying solve progress.
+            const topic = topics.find((t: any) => Number(t.id) === Number(navItem.getAttribute('data-topic-id')));
+            const count = String(topic?.summary_meta || '').match(/(\d+)\s*problems?/i)?.[1];
+            if (count) {
+              indicator.textContent = count;
+              indicator.style.color = 'var(--faint)';
+              indicator.title = `${count} problems · Unlock this topic to track progress`;
+            }
+            return;
+          }
           let doneCount = 0;
           card.querySelectorAll('tbody tr').forEach((row) => {
             if (!row.classList.contains('optional-easy-row') && !row.classList.contains('unclassified-problem-row') && row.classList.contains('row-done')) doneCount++;
           });
-          const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
-          if (!indicator) return;
           let color: string;
           let label: string;
           if (doneCount === 0) {
@@ -2133,16 +2144,15 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
             || (activeCard.querySelector('.topic-body a.lc-link')?.closest('table') as HTMLElement | null)
             || (tables[0] as HTMLElement | undefined)
             || null;
-          if (target) {
-            // scrollIntoView + adjust for sticky topbar
-            setTimeout(() => {
-              // Avoid non-standard behavior values ("instant") which can throw in some browsers.
-              target.scrollIntoView({ block: 'start', behavior: 'auto' });
-              const tb = document.querySelector('.topbar') as HTMLElement | null;
-              const tbH = tb ? tb.getBoundingClientRect().height : 0;
-              window.scrollBy(0, -Math.round(tbH + 10));
-            }, 0);
-          }
+          // Locked topics have no problem table to target. Scroll to the card itself
+          // so switching to one is visibly acknowledged instead of appearing to do nothing.
+          setTimeout(() => {
+            const destination = target || activeCard;
+            destination.scrollIntoView({ block: 'start', behavior: 'auto' });
+            const tb = document.querySelector('.topbar') as HTMLElement | null;
+            const tbH = tb ? tb.getBoundingClientRect().height : 0;
+            window.scrollBy(0, -Math.round(tbH + 10));
+          }, 0);
         }
       }
 
