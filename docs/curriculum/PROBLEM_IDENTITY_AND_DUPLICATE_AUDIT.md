@@ -1,7 +1,7 @@
 # Problem Identity and Duplicate Placement Audit
 
 **Scope:** Live production `public.problems` inventory across topics 1–43.  
-**Status:** Diagnostic audit only. No problem rows or topic HTML were deleted or rewritten as part of this audit.
+**Status:** Identity audit with subsequent trap-path curation. Trap-category rows are now removed from visible topic HTML and preserved in the database as `excluded_trap`; learner history is retained.
 
 ## Summary
 
@@ -9,7 +9,7 @@
 - 823 distinct non-empty LeetCode IDs are present.
 - 229 numeric LeetCode IDs occur across more than one topic (559 placements; 330 placements beyond the first).
 - 25 topic/LeetCode-ID pairs repeat inside the same topic, accounting for 26 extra rows.
-- Most same-topic repeats are deliberate trap records: a canonical problem is followed by a row explaining a wrong invariant, edge case, or implementation failure.
+- Many same-topic repeats historically included diagnostic trap records. Those trap-category rows have since been removed from learner-facing topic paths; their database records remain for audit and historical progress.
 - Repeated IDs should therefore be evaluated by pedagogical role, not removed by a uniqueness constraint.
 
 ## Same-topic repeats: interpretation
@@ -71,7 +71,7 @@ A safe, additive classification was applied using explicit layer labels:
 - `Foundation` / `Found` → `core_pattern`
 - `Variants` → `variant`
 - `Combo` / `Combination` → `combination`
-- `Trap` / `⚠️ Trap` → `trap`
+- `Trap` / `⚠️ Trap` → historical `excluded_trap` for rows removed from learner paths
 - Easy → `optional_reference`
 - Hard / Hard-Insight remains unclassified until its specific pedagogical role is reviewed; a difficulty label is not enough to infer optimization or mastery assessment.
 
@@ -79,12 +79,13 @@ Current role counts after this additive classification:
 - `core_pattern`: 189
 - `variant`: 314
 - `combination`: 300
-- `trap`: 136 (111 currently required by difficulty)
+- `trap`: 0 active learner-path rows
+- `excluded_trap`: 165 (all non-required; preserved in database)
 - `optional_reference`: 51
 - `optimization`: 1 (the corrected Knapsack meet-in-the-middle row)
 - role pending manual classification: 320
 
-No records were deleted. Existing `is_required` values were not changed by this role normalization.
+No problem records were deleted. Trap rows are now explicitly non-required and hidden from topic HTML. Existing progress and playback rows remain intact.
 
 ### Advanced DP metadata
 Topics 38–43 have 145 rows with an empty structured `key_insight`, but their `sub_variant` fields contain detailed explanations and learning progressions. Do not blindly copy these fields into each other. Review the authored HTML and preserve the distinction between the new idea introduced and the concise key insight.
