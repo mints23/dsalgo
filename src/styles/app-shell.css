@@ -84,8 +84,26 @@
 
 .topbar-actions {
   grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   flex-shrink: 0;
   min-width: 0;
+}
+
+.app-version {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.18rem 0.38rem;
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .topbar-topic-num {
@@ -1063,6 +1081,8 @@ th.th-insight-walkthrough::after {
     grid-row: 1;
     justify-self: end;
     width: auto;
+    display: flex;
+    align-items: center;
     order: unset !important;
     margin-left: 0;
     padding: 0;

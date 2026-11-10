@@ -8,6 +8,8 @@ import ThemeInit from '../components/ThemeInit.astro';
 import { hasDiscordInvite } from '../data/community';
 import { GUIDE_PROBLEM_ROW_COUNT, GUIDE_TOPIC_COUNT } from '../data/site-stats';
 import { PRO_MONTHLY_INR } from '../lib/payment-await';
+
+const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -151,6 +153,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
                 </div>
               </div>
             </div>
+            <span class="app-version" aria-label={`Application version ${APP_VERSION}`} title={`Release ${APP_VERSION}`}>v{APP_VERSION}</span>
           </div>
         </div>
         <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
