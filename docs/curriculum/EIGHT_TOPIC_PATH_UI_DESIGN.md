@@ -55,7 +55,7 @@ A topic may contain multiple authored problem tables with different column layou
 - Grouping is fail-open: a table is left untouched if any visible required row has missing or inconsistent path metadata.
 - Accessible row-group headings are rendered as `th[scope=rowgroup]`; original `.num-cell` text is not modified.
 - The additive SQL migration for the three nullable columns, all-null-or-all-populated check constraint, and partial lookup index has been applied to production.
-- The role/path backfill is applied: 256 required placements across the eight topics have complete metadata; 71 originally unclassified placements were all resolved, with 56 retained and 15 demoted. Three preclassified Two Pointers duplicates became optional references and one date-arithmetic row was demoted.
+- The role/path backfill is applied: 246 required placements across the eight topics have complete metadata; 71 originally unclassified placements were all resolved, with 56 retained and 15 demoted. Thirteen secondary duplicate placements became optional references, and one preclassified date-arithmetic row was demoted.
 - Production Astro build and GitHub Pages deployment succeeded; release footer is generated from the workflow run number.
 - The corrected authored explanations for Talent Show and LC 2770 are in the database HTML, in addition to the structured problem metadata.
 
@@ -65,7 +65,7 @@ A topic may contain multiple authored problem tables with different column layou
 2. Reviewed role/path data migration applied with assertions for complete metadata, no null roles among required rows, and unique path labels per topic/path order.
 3. Production build and GitHub Pages deployment succeeded.
 4. The production index.html and generated JS bundle were inspected: version footer is present, and path grouping code plus the required metadata fields are bundled.
-5. Production SQL verification returned 256 required rows, zero incomplete path rows, and zero missing required curriculum roles.
+5. Production SQL verification returned 246 required rows, zero incomplete path rows, and zero missing required curriculum roles.
 6. Browser-level verification of progress restore, completion/revision toggles, mobile widths, and each authored table layout remains a final manual QA task; the deployment is live and the grouping code fails open if a table's row metadata cannot be matched.
 
 ## Non-negotiable invariants
