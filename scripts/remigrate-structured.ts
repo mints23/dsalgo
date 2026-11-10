@@ -201,6 +201,17 @@ const LAYER_CLEAN: Record<string, string> = {
   '5 ⚠️': 'Trap',
 };
 
+function classifyCurriculumRole(layer: string, difficulty: string | null): string | null {
+  if (/^easy$/i.test(difficulty ?? '')) return 'optional_reference';
+  const normalized = layer.trim().toLowerCase();
+  if (normalized === 'foundation' || normalized === 'found') return 'core_pattern';
+  if (normalized === 'variants') return 'variant';
+  if (normalized === 'combo' || normalized === 'combination') return 'combination';
+  if (normalized === 'trap' || normalized === '⚠️ trap') return 'trap';
+  // Hard is a difficulty/layer bucket, not a precise pedagogical role.
+  return null;
+}
+
 /**
  * Detect table format from the <thead> row and return column indices.
  * Known formats:
@@ -522,7 +533,7 @@ function parseProblems(topicId: number, html: string): ProblemRow[] {
         sub_variant: subVariant,
         key_insight: keyInsight,
         is_required: /^(med|medium|hard)$/i.test(difficulty ?? ''),
-        curriculum_role: /^easy$/i.test(difficulty ?? '') ? 'optional_reference' : null,
+        curriculum_role: classifyCurriculumRole(layer, difficulty),
       });
     }
   }

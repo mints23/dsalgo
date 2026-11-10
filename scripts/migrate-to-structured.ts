@@ -62,7 +62,19 @@ const LAYER_CLEAN: Record<string, string> = {
   Combo: 'Combo',
   Hard: 'Hard',
   '⚠️Trap': 'Trap',
+  '⚠️ Trap': 'Trap',
 };
+
+function classifyCurriculumRole(layer: string, difficulty: string | null): string | null {
+  if (/^easy$/i.test(difficulty ?? '')) return 'optional_reference';
+  const normalized = layer.trim().toLowerCase();
+  if (normalized === 'foundation' || normalized === 'found') return 'core_pattern';
+  if (normalized === 'variants') return 'variant';
+  if (normalized === 'combo' || normalized === 'combination') return 'combination';
+  if (normalized === 'trap' || normalized === '⚠️ trap') return 'trap';
+  // Hard is a difficulty/layer bucket, not a precise pedagogical role.
+  return null;
+}
 
 function parseProblems(topicId: number, html: string) {
   const rows: ReturnType<typeof parseProblems> = [];
@@ -93,7 +105,7 @@ function parseProblems(topicId: number, html: string) {
         sub_variant: clean(tds[6][1]) || null,
         key_insight: clean(tds[7][1]) || null,
         is_required: /^(med|medium|hard)$/i.test(diffM?.[1] ?? ''),
-        curriculum_role: /^easy$/i.test(diffM?.[1] ?? '') ? 'optional_reference' : null,
+        curriculum_role: classifyCurriculumRole(LAYER_CLEAN[layerRaw] ?? layerRaw, diffM?.[1] ?? null),
       });
     }
   }
