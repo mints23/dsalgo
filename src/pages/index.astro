@@ -79,9 +79,6 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           </button>
         </div>
         <div id="nav-list"></div>
-        <div class="sidebar-footer">
-          <span class="progress-summary" id="topic-count"></span>
-        </div>
       </nav>
 
       <button
@@ -905,7 +902,6 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         }
       }
       document.getElementById('nav-list')!.innerHTML = navHtml;
-      document.getElementById('topic-count')!.textContent = `${guideProblemRowCount.toLocaleString()} problems · ${topics.length} topics`;
 
       // ── Build Topic Cards ──
 
