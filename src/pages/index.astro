@@ -573,7 +573,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       // over the wire for ineligible topics (trial preview set, or is_free when expired).
       const TOPIC_LIST_SELECT =
         'id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta';
-      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight, is_required)`;
+      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight, is_required, curriculum_role)`;
 
       function mergeTopicShellWithEmbeds(shellRows: any[], fullById: Map<number, any>): any[] {
         return shellRows.map((row: any) => {
