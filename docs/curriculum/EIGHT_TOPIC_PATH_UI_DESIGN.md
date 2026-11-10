@@ -49,15 +49,24 @@ A topic may contain multiple authored problem tables with different column layou
 - Ensure horizontal scrolling remains owned by the existing `.tbl-wrap`.
 - Verify light and dark themes, desktop and narrow mobile widths.
 
+## Implementation status on the feature branch
+
+- The frontend now reads the three path metadata fields and groups visible required rows within each authored table.
+- Grouping is fail-open: a table is left untouched if any visible required row has missing or inconsistent path metadata.
+- Accessible row-group headings are rendered as `th[scope=rowgroup]`; original `.num-cell` text is not modified.
+- An additive SQL migration has been added for the three nullable columns, their all-null-or-all-populated check constraint, and a partial lookup index.
+- A pull-request workflow runs `npm ci` and `npm run build`. The current feature-branch build passed.
+- No production migration has been applied and no path data has been backfilled. Until both happen, production behavior remains unchanged.
+
 ## Rollout sequence
 
-1. Finish path assignments for every required row in the eight-topic pilot (275 placements), not just the 71 rows with missing roles.
-2. Review and merge the documentation-only classification PR.
-3. Add the nullable schema fields and frontend grouping on a feature branch; keep the new metadata empty so the feature is inert until backfilled.
-4. Run the production Astro build in GitHub Actions and test a staging/preview build with representative topics that have 1, 2, 3, and 7 authored tables.
-5. Prepare a separate data migration to populate all reviewed role/path metadata. Recheck IDs, topic IDs, and order numbers immediately before applying.
-6. Verify progress restore, completion toggles, revision marks, optional references, and row matching before production rollout.
-7. Only after a successful production deployment, verify the generated footer version and that it is rendered at the bottom of the page.
+1. Complete the cross-topic ownership review and path assignments for every retained required placement in the eight-topic pilot (275 current required placements, adjusted only by reviewed demotions).
+2. Verify every path sequence and custom problem source; preserve stable IDs, topic IDs, and `order_num`.
+3. Apply the additive schema migration to production before deploying code that selects the new columns.
+4. Apply a separate reviewed data migration to populate role/path metadata. Check the affected-row count and assert that every retained required placement has complete metadata.
+5. Run the production Astro build in GitHub Actions and test representative topics with 1, 2, 3, and 7 authored tables.
+6. Verify progress restore, completion toggles, revision marks, optional references, row matching, and mobile table rendering.
+7. Merge and deploy only after the checks pass; then verify the generated footer version and that it is rendered at the bottom of the page.
 
 ## Non-negotiable invariants
 
