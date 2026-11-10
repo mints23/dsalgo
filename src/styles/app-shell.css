@@ -1283,3 +1283,28 @@ th.th-insight-walkthrough::after {
     transform: none;
   }
 }
+
+
+/* Curriculum path separators — semantic row groups inside the existing problem table. */
+.topic-body table .curriculum-path-heading th {
+  padding: 0.7rem 0.75rem 0.45rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: color-mix(in oklab, var(--primary) 5%, var(--surface));
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.topic-body table .curriculum-path-heading:first-child th {
+  border-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-body table .curriculum-path-heading th {
+    scroll-behavior: auto;
+  }
+}
