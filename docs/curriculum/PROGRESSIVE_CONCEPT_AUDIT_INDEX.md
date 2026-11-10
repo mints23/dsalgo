@@ -26,7 +26,7 @@ Every question is assessed as one of:
 - **Core progression:** adds a new reusable concept or invariant.
 - **Reinforcement:** reuses a prior concept under a changed constraint or output objective.
 - **Integration:** combines previously learned techniques.
-- **Diagnostic trap:** teaches when a tempting technique is incorrect or unnecessarily complex.
+- **Excluded trap (historical):** a diagnostic row retained in the database for audit/history, but not displayed in the learner-facing topic path.
 - **Reference:** useful for fluency, but not part of the advanced required path.
 - **Move / split:** valuable content whose canonical home is another topic or sub-path.
 - **Review:** source, statement, algorithm label, or correctness needs verification.
@@ -40,7 +40,7 @@ Every question is assessed as one of:
 - A topic can contain several parallel concept paths. Use a prerequisite graph rather than forcing unrelated patterns into one linear order.
 - A unique problem ID is not the same as a unique learning objective. A problem repeated across topics should have one canonical solution and a clearly stated alternate learning lens.
 - The live cross-topic duplicate pass found 229 numeric LeetCode IDs across multiple topics (559 placements, 330 additional placements). Only 57 have exactly one current `core_pattern` topic, 20 have multiple core topics, and 152 have no core topic; ownership therefore requires content review, not a role-based guess. See [Cross-Topic Canonical Ownership Audit](CROSS_TOPIC_CANONICAL_OWNERSHIP_AUDIT.md).
-- Diagnostic traps should be retained, but should not inflate the count of new core concepts.
+- Trap-category questions are excluded from all learner-facing topic paths. Their records remain stored as `excluded_trap` with `is_required = false`; teach the correct technique directly in the topic explanation instead.
 - The 145 advanced-DP rows in Topics 38–43 lack structured key_insight values. Their existing sub_variant descriptions often contain useful detail, so each insight needs a careful concept-delta rewrite rather than blind copying.
 - Several problem rows need source/algorithm verification before they can be accepted as canonical, including custom/competitive-programming entries and potentially misclassified techniques. The audit documents call out the exact topic and order.
 - No production problem rows, user progress, playback, authentication, subscriptions, or payment data were modified during this first pass.
