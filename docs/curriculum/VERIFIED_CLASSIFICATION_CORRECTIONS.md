@@ -22,6 +22,7 @@
 ## Safety and preservation
 
 - All six original problem IDs remain unchanged.
+- The AtCoder AGC017B and Codeforces 327E source URLs are now stored in lc_url and linked in topic HTML. The remigration parser now preserves canonical Codeforces IDs and extracts AtCoder contest IDs such as AGC017B.
 - All six records remain required diagnostic/trap entries; their is_required flags were not changed.
 - No rows were deleted or moved between topics in this correction batch.
 - User progress and playback records remain attached to the same problem IDs.
