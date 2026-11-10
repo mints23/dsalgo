@@ -108,7 +108,7 @@ The canonical-owner pass did not use a blanket one-owner-per-LeetCode rule. A du
 
 - Supabase aggregate verification: 919 required rows, 919 complete paths, 919 explicit roles, zero incomplete required rows, zero null roles across all placements.
 - Per-topic verification: all 43 topics passed; each topic's required count equals its complete path count and role count.
-- Five canonical-owner migrations applied successfully; optional references increased from 55 to 203.
+- Six canonical-owner migrations applied successfully; 151 redundant or misclassified placements were demoted, increasing optional references from 55 to 206.
 - GitHub Actions Astro build and publish job for run #84 completed successfully.
 - The production `gh-pages/index.html` footer was inspected and reports `v1.0.84`.
 - The production app uses the already-released path-grouping UI; the full data backfill makes path headings available across all topics.
@@ -131,8 +131,9 @@ The frontend's incomplete-metadata fail-open behavior is in place, but it does n
 - `20261110_z_zzz_full_curriculum_canonical_owner_pass_3.sql` — 16 placements.
 - `20261110_z_zzzz_full_curriculum_canonical_owner_pass_4.sql` — 10 placements.
 - `20261110_z_zzzzz_full_curriculum_canonical_owner_pass_5.sql` — 2 placements.
+- `20261110_z_zzzzzzz_full_curriculum_canonical_owner_pass_6.sql` — 3 placements.
 
-The five passes are committed directly to `main` and applied to production. The per-topic path order was recalculated after each pass. A subsequent Segment Tree metadata integrity migration fixed the only path-order/name collision discovered by the global audit. All required rows remain complete.
+All six passes are committed directly to `main` and applied to production. The per-topic path order was recalculated after each pass. A subsequent Segment Tree metadata integrity migration fixed the only path-order/name collision discovered by the global audit. All required rows remain complete.
 
 ## Next phase
 
