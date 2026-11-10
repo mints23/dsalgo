@@ -38,3 +38,13 @@ The small version label in the top-right corner is generated automatically from 
 - Flagged five algorithm-label placements for review (LC 2492, 2421, 1584, 282, and 363) without deleting or demoting any row in this pass.
 - Refreshed the live same-topic repeat count to 25 topic/problem pairs and 26 additional rows.
 - No problem records, user progress, playback, authentication, subscriptions, or payment flows were changed.
+
+## v1.0.23 — Remove trap-category questions from topic paths
+
+- Removed all 165 visible trap-category rows from learner-facing topic question lists across 41 topics. This includes rows marked by the Trap layer and explicit ⚠️ TRAP / partial-trap labels.
+- Preserved the 165 corresponding structured problem records with the new `excluded_trap` role and `is_required = false`; no problem rows were deleted.
+- Reconciled seven additional explicitly marked rows that remained in authored HTML after the initial identity-based pass. Four HTML-only stale rows in Intervals had no corresponding structured problem record; the remaining three were matched and preserved as excluded records.
+- Verified zero trap-category rows remain in the topic HTML question paths.
+- Total problem rows remain 1,311; required rows are 1,099. User progress (692 rows) and playback (29 rows) are unchanged.
+- Added the `excluded_trap` schema role and updated both migration scripts so excluded rows cannot be marked required if encountered in a future source import.
+- No authentication, subscriptions, Razorpay/payment flows, or learner history were changed.
