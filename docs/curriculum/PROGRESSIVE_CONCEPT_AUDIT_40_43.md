@@ -153,11 +153,11 @@
 | 8 | Number of Ways to Paint N×3 Grid | Row-pattern transition compression to a small recurrence | Duplicate/cross-link with Combinatorial DP; keep one canonical solution |
 | 9 | L-Tromino Tiling (custom) | Piece spans two columns; profile must retain more than one frontier column | Advanced wider-piece state |
 | 10 | COCI 2020 — Selotejp | 2×2 pieces require a two-row/two-column frontier mask | Advanced multi-row profile |
-| 11 | CF 11D — A Simple Task | Metadata claims plug connectivity / non-crossing matching | Review urgently: CF 11D is commonly a subset-DP cycle-counting problem, not a plug-DP grid-connectivity problem |
+| 11 | CF 11D — A Simple Task | Count simple cycles in an undirected graph with n≤19 using bitmask DP | Misclassified subset DP; move to Bitmask DP / Graph DP, not profile DP |
 | 12 | Can I Win | Bitmask over chosen numbers, not a geometric frontier | Diagnostic / general bitmask DP |
 | 13 | Matchsticks to Square | Bitmask over assigned sticks and four side sums | Diagnostic / subset partition DP |
 | 14 | Select Cells in Grid With Maximum Score | Row-availability bitmask with distinct-value selection | Advanced assignment/profile transfer |
-| 15 | CF 327E — Axis Walking | Metadata labels visited-node bitmask as profile | Verify exact source and whether this is subset DP rather than broken-profile DP |
+| 15 | CF 327E — Axis Walking | Count permutations avoiding up to two forbidden prefix sums using subset DP | Misclassified bitmask/combinatorial DP; not a frontier-profile problem |
 | 16 | CEOI 2006 — Connect | Plug pairing and special start/end connectivity handling | Advanced connectivity profile; source required |
 | 17 | USACO Platinum — Compound Escape | Multiple component identities encoded in frontier partition | Advanced multi-component plug DP; source required |
 | 18 | ABC 215H — Cabbage Master | Precompute transition matrix and exponentiate for huge width | Advanced transfer-matrix extension; source required |
