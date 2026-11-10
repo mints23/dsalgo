@@ -2146,16 +2146,17 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         }
       }
 
-      // Delegate topic navigation from the stable sidebar container. This keeps every
-      // topic clickable even if individual nav buttons are re-rendered by sidebar UI code.
+      // Bind at the button itself rather than relying only on bubbling from the
+      // sidebar container. A direct target listener still fires if another page-level
+      // handler stops propagation before the event reaches #nav-list.
       const navList = document.getElementById('nav-list');
-      navList?.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement | null;
-        const item = target?.closest('.nav-item') as HTMLElement | null;
-        if (!item || !navList.contains(item)) return;
-        const topicId = Number(item.getAttribute('data-topic-id'));
-        if (!Number.isFinite(topicId)) return;
-        show(topicId, item);
+      navList?.querySelectorAll<HTMLButtonElement>('.nav-item').forEach((item) => {
+        item.addEventListener('click', (event) => {
+          event.preventDefault();
+          const topicId = Number(item.dataset.topicId);
+          if (!Number.isFinite(topicId)) return;
+          show(topicId, item);
+        });
       });
 
       // ── Remember Last Topic ──
