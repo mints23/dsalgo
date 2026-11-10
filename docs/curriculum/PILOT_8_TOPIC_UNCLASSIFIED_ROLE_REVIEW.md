@@ -7,7 +7,7 @@
 
 ## Executive summary
 
-The live pilot inventory originally contained 275 required placements across eight topics. All 71 previously unclassified placements have now been assigned an explicit role: 56 remain required and 15 are demoted (14 out_of_scope, one excluded_trap). Three already-classified duplicate Two Pointers rows are retained as optional references, and one already-classified date-arithmetic row is demoted. The resulting pilot has 256 required placements, all with a complete path assignment.
+The live pilot inventory originally contained 275 required placements across eight topics. All 71 previously unclassified placements have now been assigned an explicit role: 56 remain required and 15 are demoted (14 out_of_scope, one excluded_trap). Three duplicate Two Pointers rows and ten secondary cross-topic duplicates are retained as optional references; one already-classified date-arithmetic row is also demoted. The resulting pilot has 246 required placements, all with a complete path assignment.
 
 The review distinguishes three outcomes:
 
@@ -201,7 +201,7 @@ A live duplicate-identity query across the eight pilot topics found the followin
 | 881 | Two Pointers; Greedy | Legitimate two-pointer + greedy pairing. Keep one required owner and cross-reference the other to avoid duplicate completion counts. |
 | 974 | HashMap; Prefix Sums | Prefix Sums owns modular prefix-state counting; HashMap may cross-reference the remainder-frequency map. |
 
-**Important:** This audit is a review queue, not an applied data migration. No duplicate placement has been deleted, moved, or demoted. The implementation must preserve all existing IDs and order numbers; secondary placements should be demoted or relabelled, never deleted.
+**Applied ownership decision:** Secondary duplicates were demoted to optional references, never deleted or moved. The production migration preserves all existing IDs and order numbers.
 
 
 ## Production application result (2026-11-10)
@@ -209,10 +209,10 @@ A live duplicate-identity query across the eight pilot topics found the followin
 - 56 null-role rows retained with explicit roles: core_pattern, variant, or combination.
 - 14 null-role rows demoted to out_of_scope.
 - One null-role row demoted to excluded_trap (CF 981E digit-DP disguise).
-- Existing LC 76, LC 713, and LC 763 placements in Two Pointers were made optional references; their stable rows remain available through the existing optional-reference control.
+- Thirteen secondary duplicate placements were made optional references: LC 76, 713, and 763 in Two Pointers; LC 3 and 438 in HashMap; LC 435, 452, 45, 881, 253, and 1326 in Greedy; and LC 630 and 763 in Intervals. Their stable rows remain available through the existing optional-reference control.
 - LC 1360 (date arithmetic) was demoted from the Intervals required curriculum.
 - All retained required rows now have non-null curriculum_path, positive curriculum_path_order, and positive path_problem_order.
-- Final production verification: 256 required rows, 256 complete path assignments, zero required rows with null curriculum_role.
+- Final production verification: 246 required rows, 246 complete path assignments, zero required rows with null curriculum_role.
 - No problem IDs, topic IDs, order_num values, or progress keys were changed.
 
-The cross-topic audit intentionally retains distinct algorithmic perspectives where they add real value (for example, LC 287 as Floyd-cycle detection in Two Pointers and value-domain binary search in Binary Search). The three Two Pointers entries above were demoted because their canonical objectives are owned by Sliding Window / Greedy.
+The canonical-owner pass leaves five intentional multi-topic required identities because each placement teaches a materially different algorithmic lens: LC 1074 (2D Kadane vs 2D prefix compression), LC 287 (Floyd cycle detection vs value-domain binary search), LC 525 (first-seen index vs Boolean prefix transform), LC 560 (prefix-sum counting with a map in both topic contexts), and LC 974 (modular prefix remainder counting). All other reviewed duplicates have one required owner and secondary placements are optional references.
