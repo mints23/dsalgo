@@ -153,7 +153,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
                 </div>
               </div>
             </div>
-            <span class="app-version" aria-label="Application version {APP_VERSION}" title="Release {APP_VERSION}">v{APP_VERSION}</span>
+            <span class="app-version" aria-label={`Application version ${APP_VERSION}`} title={`Release ${APP_VERSION}`}>v{APP_VERSION}</span>
           </div>
         </div>
         <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
