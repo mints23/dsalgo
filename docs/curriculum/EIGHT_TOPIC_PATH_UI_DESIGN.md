@@ -4,7 +4,7 @@
 
 ## Decision
 
-Use two additive nullable columns on `public.problems`:
+Use three additive nullable columns on `public.problems`:
 
 - `curriculum_path text`: learner-facing path title, for example `Sorted pair search and counting`.
 - `curriculum_path_order integer`: order of this path within the topic.
