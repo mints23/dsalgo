@@ -1,6 +1,6 @@
 # Eight-Topic Curriculum Paths — Data and UI Design
 
-**Status:** Implementation design for the eight-topic pilot. No production schema or application changes are made by this document.
+**Status:** Implemented and released to production on 2026-11-10. The path schema, frontend grouping, and reviewed pilot backfill are live.
 
 ## Decision
 
@@ -49,24 +49,24 @@ A topic may contain multiple authored problem tables with different column layou
 - Ensure horizontal scrolling remains owned by the existing `.tbl-wrap`.
 - Verify light and dark themes, desktop and narrow mobile widths.
 
-## Implementation status on the feature branch
+## Production implementation status
 
-- The frontend now reads the three path metadata fields and groups visible required rows within each authored table.
+- The frontend reads the three path metadata fields and groups visible required rows within each authored table. This is deployed on main.
 - Grouping is fail-open: a table is left untouched if any visible required row has missing or inconsistent path metadata.
 - Accessible row-group headings are rendered as `th[scope=rowgroup]`; original `.num-cell` text is not modified.
-- An additive SQL migration has been added for the three nullable columns, their all-null-or-all-populated check constraint, and a partial lookup index.
-- A pull-request workflow runs `npm ci` and `npm run build`. The current feature-branch build passed.
-- No production migration has been applied and no path data has been backfilled. Until both happen, production behavior remains unchanged.
+- The additive SQL migration for the three nullable columns, all-null-or-all-populated check constraint, and partial lookup index has been applied to production.
+- The role/path backfill is applied: 256 required placements across the eight topics have complete metadata; 71 originally unclassified placements were all resolved, with 56 retained and 15 demoted. Three preclassified Two Pointers duplicates became optional references and one date-arithmetic row was demoted.
+- Production Astro build and GitHub Pages deployment succeeded; release footer is generated from the workflow run number.
+- The corrected authored explanations for Talent Show and LC 2770 are in the database HTML, in addition to the structured problem metadata.
 
-## Rollout sequence
+## Production rollout result and remaining QA
 
-1. Complete the cross-topic ownership review and path assignments for every retained required placement in the eight-topic pilot (275 current required placements, adjusted only by reviewed demotions).
-2. Verify every path sequence and custom problem source; preserve stable IDs, topic IDs, and `order_num`.
-3. Apply the additive schema migration to production before deploying code that selects the new columns.
-4. Apply a separate reviewed data migration to populate role/path metadata. Check the affected-row count and assert that every retained required placement has complete metadata.
-5. Run the production Astro build in GitHub Actions and test representative topics with 1, 2, 3, and 7 authored tables.
-6. Verify progress restore, completion toggles, revision marks, optional references, row matching, and mobile table rendering.
-7. Merge and deploy only after the checks pass; then verify the generated footer version and that it is rendered at the bottom of the page.
+1. Additive schema migration applied successfully.
+2. Reviewed role/path data migration applied with assertions for complete metadata, no null roles among required rows, and unique path labels per topic/path order.
+3. Production build and GitHub Pages deployment succeeded.
+4. The production index.html and generated JS bundle were inspected: version footer is present, and path grouping code plus the required metadata fields are bundled.
+5. Production SQL verification returned 256 required rows, zero incomplete path rows, and zero missing required curriculum roles.
+6. Browser-level verification of progress restore, completion/revision toggles, mobile widths, and each authored table layout remains a final manual QA task; the deployment is live and the grouping code fails open if a table's row metadata cannot be matched.
 
 ## Non-negotiable invariants
 
