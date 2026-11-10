@@ -208,6 +208,6 @@ Assessment problems should be hidden or held back from the learning path where p
 
 **Not yet mastery-certified.** The existing curriculum has substantial and in places genuinely advanced breadth. The strongest visible areas include Digit DP, Tree DP, Profile DP, Segment Tree, Trie and Data-Structure-Optimised DP. However, important classification errors, missing coherent concept families and the lack of verified Java solution artifacts prevent an authoritative FAANG mastery claim.
 
-The next highest-value engineering task is to establish a compilable Java reference library and test harness, then repair the concept ownership map and audit the 22 existing pseudocode walkthroughs. After that, add the missing families and assessments with evidence.
+The first Java reference batch is now in the repository: LC 167, LC 15 and LC 11 compile under Java 17 and pass smoke tests. The next highest-value engineering task is to expand this verified Java library topic-by-topic, then repair the concept ownership map and audit the 22 existing pseudocode walkthroughs. After that, add the missing families and assessments with evidence.
 
 **Target outcome:** a learner who can independently recognise, derive, prove, optimise and implement solutions to unfamiliar FAANG interview problems in Java—not merely complete a long list.
