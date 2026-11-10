@@ -153,7 +153,6 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
                 </div>
               </div>
             </div>
-            <span class="app-version" aria-label={`Application version ${APP_VERSION}`} title={`Release ${APP_VERSION}`}>v{APP_VERSION}</span>
           </div>
         </div>
         <div class="heatmap-modal" id="heatmap-modal" aria-modal="true" role="dialog" aria-labelledby="heatmap-modal-title" hidden>
@@ -308,6 +307,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 
     <div style="text-align:center;padding:0.6rem;font-size:0.72rem;color:var(--muted);">
       Need help? <a href="mailto:algofrog07@gmail.com" style="color:var(--primary);text-decoration:none;font-weight:600;">algofrog07@gmail.com</a>
+      <span aria-hidden="true"> · </span>
+      <span class="app-version" aria-label={`Application version ${APP_VERSION}`} title={`Release ${APP_VERSION}`}>v{APP_VERSION}</span>
       {hasDiscordInvite() && (
         <>
           <span aria-hidden="true"> · </span>
