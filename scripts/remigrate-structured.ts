@@ -200,6 +200,7 @@ const LAYER_CLEAN: Record<string, string> = {
   '5': 'Hard',
   '5 ⚠️': 'Trap',
   'Out of Scope': 'Out of Scope',
+  'Excluded Trap': 'Excluded Trap',
 };
 
 // Verified canonical IDs for LeetCode links whose authored anchor text contains only a title.
@@ -224,6 +225,7 @@ const VERIFIED_LEETCODE_IDS_BY_SLUG: Record<string, string> = {
 
 function classifyCurriculumRole(layer: string, difficulty: string | null): string | null {
   if (/^out of scope$/i.test(layer.trim())) return 'out_of_scope';
+  if (/^excluded trap$/i.test(layer.trim())) return 'excluded_trap';
   if (/^easy$/i.test(difficulty ?? '')) return 'optional_reference';
   const normalized = layer.trim().toLowerCase();
   if (normalized === 'foundation' || normalized === 'found') return 'core_pattern';
@@ -567,7 +569,7 @@ function parseProblems(topicId: number, html: string): ProblemRow[] {
         is_premium: isPremium,
         sub_variant: subVariant,
         key_insight: keyInsight,
-        is_required: !/^out of scope$/i.test(layer) && /^(med|medium|hard)$/i.test(difficulty ?? ''),
+        is_required: !/^(out of scope|excluded trap)$/i.test(layer) && /^(med|medium|hard)$/i.test(difficulty ?? ''),
         curriculum_role: classifyCurriculumRole(layer, difficulty),
       });
     }
