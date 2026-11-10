@@ -21,7 +21,6 @@
 - **Divide & Conquer:** inspect Merge Sort, D&C DP optimization, CDQ, divide-and-conquer on answer, and tree decomposition coverage. Consider a topic if the algorithmic paradigm itself needs a coherent explanation.
 - **Computational Geometry:** inspect Advanced Graphs, Greedy and custom problem sets. Evaluate convex hull, line sweep, orientation, closest pair, and geometric sweeps as a possible separate advanced topic.
 - **Divide & Conquer:** inspect Merge Sort, D&C DP optimization, CDQ, divide-and-conquer on answer, and tree decomposition coverage. Consider a topic if the paradigm itself needs a coherent explanation.
-- **Computational Geometry:** inspect Advanced Graphs, Greedy and custom problem sets. Evaluate convex hull, line sweep, orientation, closest pair, and geometric sweeps as a possible separate advanced topic.
 
 ## Existing catalogue coverage to preserve
 
