@@ -573,7 +573,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       // over the wire for ineligible topics (trial preview set, or is_free when expired).
       const TOPIC_LIST_SELECT =
         'id, display_number, show_in_sidebar, nav_section, nav_label, nav_tier_dot_color, title, tier_code, tier_label, type_label, summary_meta, topbar_meta';
-      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight)`;
+      const TOPIC_EMBED_SELECT = `${TOPIC_LIST_SELECT}, topic_content(why_it_matters, core_idea, pattern_triggers, coverage_problems, red_flags), problems(id, order_num, layer, lc_number, lc_url, title, difficulty, sub_variant, key_insight, is_required)`;
 
       function mergeTopicShellWithEmbeds(shellRows: any[], fullById: Map<number, any>): any[] {
         return shellRows.map((row: any) => {
@@ -1302,46 +1302,81 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
       patchProblemRowIdsFromTopics(topics);
 
-      // ── Advanced track: Easy problems are optional reference, never required ──
-      // Apply only after DB problem IDs are attached so hiding rows cannot shift ID mapping.
+      // ── Advanced track: only DB-approved problems count as required ──
+      // Problem IDs are attached first; difficulty/status comes from the normalized DB row.
       function applyRequiredDifficultyFilter() {
-        document.querySelectorAll('.topic-card').forEach((card) => {
-          const wrap = card.querySelector<HTMLElement>('.tbl-wrap.problem-set');
-          const table = wrap?.querySelector('table');
-          if (!wrap || !table) return;
-          const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
-            (th.textContent || '').trim().toLowerCase()
-          );
-          const difficultyIdx = headers.findIndex((h) =>
-            h === 'diff' || h === 'difficulty'
-          );
-          if (difficultyIdx < 0) return;
+        topics.forEach((topic: any) => {
+          const card = document.getElementById(`tp${topic.id}`);
+          if (!card || !Array.isArray(topic.problems) || !topic.problems.length) return;
 
-          const easyRows = Array.from(table.querySelectorAll('tbody tr')).filter((row) => {
-            const cell = row.children[difficultyIdx];
-            return (cell?.textContent || '').trim().toLowerCase() === 'easy';
-          }) as HTMLTableRowElement[];
-          if (!easyRows.length) return;
+          const problemById = new Map<number, any>(
+            topic.problems.map((problem: any) => [Number(problem.id), problem])
+          );
+          const table = Array.from(card.querySelectorAll('.topic-body table')).find((candidate) => {
+            const headers = Array.from(candidate.querySelectorAll('thead th')).map((th) =>
+              (th.textContent || '').trim().toLowerCase()
+            );
+            return headers.some((h) => h.includes('insight'))
+              && (headers.some((h) => h.includes('link')) || headers.some((h) => h.includes('layer')));
+          }) as HTMLTableElement | undefined;
+          if (!table) return;
+          const wrap = table.closest<HTMLElement>('.tbl-wrap');
+          if (!wrap) return;
 
-          easyRows.forEach((row) => {
-            row.classList.add('optional-easy-row');
-            row.hidden = true;
+          const easyRows: HTMLTableRowElement[] = [];
+          const reviewRows: HTMLTableRowElement[] = [];
+          table.querySelectorAll('tbody tr[data-problem-id]').forEach((row) => {
+            const problemId = Number(row.getAttribute('data-problem-id'));
+            const problem = problemById.get(problemId);
+            if (!problem || problem.is_required === true) return;
+
+            const difficulty = String(problem.difficulty || '').trim().toLowerCase();
+            if (difficulty === 'easy') {
+              easyRows.push(row as HTMLTableRowElement);
+            } else {
+              reviewRows.push(row as HTMLTableRowElement);
+            }
           });
 
-          const toggle = document.createElement('button');
-          toggle.type = 'button';
-          toggle.className = 'topic-details-btn easy-reference-toggle';
-          toggle.setAttribute('aria-expanded', 'false');
-          toggle.textContent = `Show optional Easy reference (${easyRows.length})`;
-          toggle.addEventListener('click', () => {
-            const show = toggle.getAttribute('aria-expanded') !== 'true';
-            easyRows.forEach((row) => { row.hidden = !show; });
-            toggle.setAttribute('aria-expanded', String(show));
-            toggle.textContent = show
-              ? 'Hide optional Easy reference'
-              : `Show optional Easy reference (${easyRows.length})`;
-          });
-          wrap.insertBefore(toggle, table);
+          const addReferenceToggle = (
+            rows: HTMLTableRowElement[],
+            rowClass: string,
+            closedLabel: string,
+            openLabel: string,
+          ) => {
+            if (!rows.length) return;
+            rows.forEach((row) => {
+              row.classList.add(rowClass);
+              row.hidden = true;
+            });
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'topic-details-btn easy-reference-toggle';
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.textContent = closedLabel.replace('{count}', String(rows.length));
+            toggle.addEventListener('click', () => {
+              const show = toggle.getAttribute('aria-expanded') !== 'true';
+              rows.forEach((row) => { row.hidden = !show; });
+              toggle.setAttribute('aria-expanded', String(show));
+              toggle.textContent = show
+                ? openLabel
+                : closedLabel.replace('{count}', String(rows.length));
+            });
+            wrap.insertBefore(toggle, table);
+          };
+
+          addReferenceToggle(
+            easyRows,
+            'optional-easy-row',
+            'Show optional Easy reference ({count})',
+            'Hide optional Easy reference',
+          );
+          addReferenceToggle(
+            reviewRows,
+            'unclassified-problem-row',
+            'Show unclassified problems for review ({count})',
+            'Hide unclassified problems for review',
+          );
         });
       }
       applyRequiredDifficultyFilter();
@@ -1804,11 +1839,11 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           const topicId = parseInt(navItem.getAttribute('data-topic-id')!);
           const card = document.getElementById(`tp${topicId}`);
           if (!card) return;
-          const totalRows = card.querySelectorAll('tbody tr:not(.optional-easy-row) .num-cell').length;
+          const totalRows = card.querySelectorAll('tbody tr:not(.optional-easy-row):not(.unclassified-problem-row) .num-cell').length;
           if (!totalRows) return;
           let doneCount = 0;
           card.querySelectorAll('tbody tr').forEach((row) => {
-            if (!row.classList.contains('optional-easy-row') && row.classList.contains('row-done')) doneCount++;
+            if (!row.classList.contains('optional-easy-row') && !row.classList.contains('unclassified-problem-row') && row.classList.contains('row-done')) doneCount++;
           });
           const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
           if (!indicator) return;
@@ -1831,8 +1866,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         const fill = document.getElementById('overall-fill') as HTMLElement | null;
         const text = document.getElementById('overall-text');
         if (!fill || !text) return;
-        const allRows = document.querySelectorAll('tbody tr:not(.optional-easy-row) .num-cell').length;
-        const doneRows = document.querySelectorAll('tbody tr.row-done:not(.optional-easy-row)').length;
+        const allRows = document.querySelectorAll('tbody tr:not(.optional-easy-row):not(.unclassified-problem-row) .num-cell').length;
+        const doneRows = document.querySelectorAll('tbody tr.row-done:not(.optional-easy-row):not(.unclassified-problem-row)').length;
         const pct = allRows ? Math.round((doneRows / allRows) * 100) : 0;
         fill.style.width = `${pct}%`;
         text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
