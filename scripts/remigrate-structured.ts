@@ -201,6 +201,26 @@ const LAYER_CLEAN: Record<string, string> = {
   '5 ⚠️': 'Trap',
 };
 
+// Verified canonical IDs for LeetCode links whose authored anchor text contains only a title.
+// This preserves IDs when remigrating topics whose links do not print the LC number.
+const VERIFIED_LEETCODE_IDS_BY_SLUG: Record<string, string> = {
+  'critical-connections-in-a-network': '1192',
+  'minimum-number-of-days-to-disconnect-island': '1568',
+  'minimize-malware-spread-ii': '928',
+  'collect-coins-in-a-tree': '2603',
+  'find-eventual-safe-states': '802',
+  'minimum-number-of-vertices-to-reach-all-nodes': '1557',
+  'longest-cycle-in-a-graph': '2360',
+  'count-visited-nodes-in-a-directed-graph': '2876',
+  'reconstruct-itinerary': '332',
+  'valid-arrangement-of-pairs': '2097',
+  'cracking-the-safe': '753',
+  'min-cost-to-connect-all-points': '1584',
+  'maximum-students-taking-exam': '1349',
+  'optimize-water-distribution-in-a-village': '1168',
+  'find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree': '1489',
+};
+
 function classifyCurriculumRole(layer: string, difficulty: string | null): string | null {
   if (/^easy$/i.test(difficulty ?? '')) return 'optional_reference';
   const normalized = layer.trim().toLowerCase();
@@ -458,6 +478,13 @@ function parseProblems(topicId: number, html: string): ProblemRow[] {
           title = title.replace(new RegExp(`^LC\\s+${lcNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`), '');
           title = title.replace(new RegExp(`^${lcNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[–—-]\\s*`), '');
         }
+      }
+
+      // Recover the canonical LC number from a verified slug when the authored anchor
+      // contains only the problem title (common in Advanced Graphs topic 29).
+      if (lcUrl && !lcNumber) {
+        const slug = lcUrl.match(/leetcode\.com\/problems\/([^/?#]+)/i)?.[1];
+        if (slug) lcNumber = VERIFIED_LEETCODE_IDS_BY_SLUG[slug] ?? null;
       }
 
       // Clean title: remove ⚠️ / 🔧 prefixes and ✅ suffix
