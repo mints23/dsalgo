@@ -50,8 +50,10 @@ Check these against all existing topic bodies before adding separate topics:
 - Bit Manipulation & Bitmask Techniques
 - Advanced String Algorithms
 - Mathematics & Number Theory
+- Network Flow & Matching
+- Offline Query Algorithms
 
-Also evaluate Matrix / Multidimensional Algorithms, Divide & Conquer, and Offline Algorithms as standalone topics versus subtopics.
+Also evaluate Matrix / Multidimensional Algorithms, Divide & Conquer, and Computational Geometry as standalone topics versus subtopics.
 
 ## Safe rollout
 - Preserve existing topic and problem records.
