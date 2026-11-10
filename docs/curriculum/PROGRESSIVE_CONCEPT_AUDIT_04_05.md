@@ -125,7 +125,7 @@
 | 24 | House Robber | Non-adjacent selection recurrence; contiguity is broken | Diagnostic trap; canonical home 1D DP |
 | 25 | Longest Increasing Subsequence | Non-contiguous subsequence; patience sorting / LIS state, not Kadane | Diagnostic trap; canonical home LIS |
 | 26 | Subarray Sum Equals K | Exact-sum counting with negatives needs prefix + HashMap | Diagnostic trap; canonical home HashMap/Prefix Sums |
-| 27 | Merge Intervals | Interval union is sort + greedy, not a subarray recurrence | Diagnostic trap; canonical home Intervals |
+| 27 | Merge Intervals | Interval union is sort + greedy, not a subarray recurrence | **Removed from Kadane's topic as out of scope**; canonical home is Topic 06 (Intervals). A separate trap instance remains in Topic 16 to contrast ordinary interval merging with monotonic-stack invariants |
 | 28 | Shortest Subarray with Sum ≥ K | Negative values plus shortest-length objective requires prefix + monotonic deque | Diagnostic trap / cross-link Prefix Sums + Sliding Window |
 
 ### Recommended concept paths
