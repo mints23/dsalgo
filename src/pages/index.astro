@@ -641,7 +641,9 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
 
       const guideProblemRowCount = (topics as any[]).reduce(
-        (n, t) => n + (Array.isArray(t.problems) ? t.problems.length : 0),
+        (n, t) => n + (Array.isArray(t.problems)
+          ? t.problems.filter((problem: any) => problem.is_required === true).length
+          : 0),
         0,
       );
       (function syncGuideStatsDom() {
@@ -649,15 +651,15 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         const pc = guideProblemRowCount;
         document.querySelector('meta[name="description"]')?.setAttribute(
           'content',
-          `Interview prep built around problem tables: ${pc} questions across ${tc} topics, each row in teaching order. Pick a topic, work the list.`,
+          `Advanced interview prep: ${pc} required Medium/Hard questions across ${tc} topics. Optional Easy references and unclassified rows are excluded.`,
         );
         document.querySelector('meta[property="og:description"]')?.setAttribute(
           'content',
-          `Problem tables in teaching order — ${pc} questions across ${tc} DSA topics.`,
+          `${pc} required Medium/Hard problems across ${tc} DSA topics.`,
         );
         document.querySelector('meta[name="twitter:description"]')?.setAttribute(
           'content',
-          `${pc} questions in ordered tables — ${tc} DSA topics for interview prep.`,
+          `${pc} required Medium/Hard questions across ${tc} DSA topics for interview prep.`,
         );
       })();
 
