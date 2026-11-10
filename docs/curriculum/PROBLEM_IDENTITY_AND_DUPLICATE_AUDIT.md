@@ -7,8 +7,8 @@
 
 - 1,311 problem records remain in production.
 - 823 distinct non-empty LeetCode IDs are present.
-- 234 LeetCode IDs occur in more than one placement across the curriculum.
-- 26 topic/LeetCode-ID pairs have repeated placements inside the same topic, accounting for 27 extra rows.
+- 229 numeric LeetCode IDs occur across more than one topic (559 placements; 330 placements beyond the first).
+- 25 topic/LeetCode-ID pairs repeat inside the same topic, accounting for 26 extra rows.
 - Most same-topic repeats are deliberate trap records: a canonical problem is followed by a row explaining a wrong invariant, edge case, or implementation failure.
 - Repeated IDs should therefore be evaluated by pedagogical role, not removed by a uniqueness constraint.
 
@@ -94,7 +94,7 @@ Topics 38–43 have 145 rows with an empty structured `key_insight`, but their `
 1. Correct topic 32 row 26 by validating a single canonical problem, then update its HTML row and structured record atomically.
 2. Recover canonical LeetCode IDs for topic 29 from verified problem metadata.
 3. Review the two non-trap revisit pairs (topic 30 LIS and topic 31 Minimum Falling Path Sum II) for distinct learning value.
-4. Review all 234 cross-topic repeated IDs and assign a primary, cross-pattern, revisit, or trap rationale. Do not delete cross-topic placements merely because IDs repeat.
+4. Use `CROSS_TOPIC_CANONICAL_OWNERSHIP_AUDIT.md` to adjudicate the 229 cross-topic repeated IDs. Assign a primary owner and a distinct learning-contribution label to each secondary placement. Do not delete cross-topic placements merely because IDs repeat.
 5. Manually classify the remaining Hard / Hard-Insight curriculum roles.
 6. Keep the UI's identity matcher conservative: unmatched rows remain reviewable rather than being hidden or assigned a database ID by row position.
 
