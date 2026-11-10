@@ -1302,6 +1302,50 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       }
       patchProblemRowIdsFromTopics(topics);
 
+      // ── Advanced track: Easy problems are optional reference, never required ──
+      // Apply only after DB problem IDs are attached so hiding rows cannot shift ID mapping.
+      function applyRequiredDifficultyFilter() {
+        document.querySelectorAll('.topic-card').forEach((card) => {
+          const wrap = card.querySelector<HTMLElement>('.tbl-wrap.problem-set');
+          const table = wrap?.querySelector('table');
+          if (!wrap || !table) return;
+          const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+            (th.textContent || '').trim().toLowerCase()
+          );
+          const difficultyIdx = headers.findIndex((h) =>
+            h === 'diff' || h === 'difficulty'
+          );
+          if (difficultyIdx < 0) return;
+
+          const easyRows = Array.from(table.querySelectorAll('tbody tr')).filter((row) => {
+            const cell = row.children[difficultyIdx];
+            return (cell?.textContent || '').trim().toLowerCase() === 'easy';
+          }) as HTMLTableRowElement[];
+          if (!easyRows.length) return;
+
+          easyRows.forEach((row) => {
+            row.classList.add('optional-easy-row');
+            row.hidden = true;
+          });
+
+          const toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.className = 'topic-details-btn easy-reference-toggle';
+          toggle.setAttribute('aria-expanded', 'false');
+          toggle.textContent = `Show optional Easy reference (${easyRows.length})`;
+          toggle.addEventListener('click', () => {
+            const show = toggle.getAttribute('aria-expanded') !== 'true';
+            easyRows.forEach((row) => { row.hidden = !show; });
+            toggle.setAttribute('aria-expanded', String(show));
+            toggle.textContent = show
+              ? 'Hide optional Easy reference'
+              : `Show optional Easy reference (${easyRows.length})`;
+          });
+          wrap.insertBefore(toggle, table);
+        });
+      }
+      applyRequiredDifficultyFilter();
+
       let w98Active = studyProblemsOnlyPref;
 
       function appendProblemsOnlyToggle(titleRow: HTMLElement) {
@@ -1760,11 +1804,11 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
           const topicId = parseInt(navItem.getAttribute('data-topic-id')!);
           const card = document.getElementById(`tp${topicId}`);
           if (!card) return;
-          const totalRows = card.querySelectorAll('tbody tr .num-cell').length;
+          const totalRows = card.querySelectorAll('tbody tr:not(.optional-easy-row) .num-cell').length;
           if (!totalRows) return;
           let doneCount = 0;
           card.querySelectorAll('tbody tr').forEach((row) => {
-            if (row.classList.contains('row-done')) doneCount++;
+            if (!row.classList.contains('optional-easy-row') && row.classList.contains('row-done')) doneCount++;
           });
           const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
           if (!indicator) return;
@@ -1787,8 +1831,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
         const fill = document.getElementById('overall-fill') as HTMLElement | null;
         const text = document.getElementById('overall-text');
         if (!fill || !text) return;
-        const allRows = document.querySelectorAll('tbody tr .num-cell').length;
-        const doneRows = document.querySelectorAll('tbody tr.row-done').length;
+        const allRows = document.querySelectorAll('tbody tr:not(.optional-easy-row) .num-cell').length;
+        const doneRows = document.querySelectorAll('tbody tr.row-done:not(.optional-easy-row)').length;
         const pct = allRows ? Math.round((doneRows / allRows) * 100) : 0;
         fill.style.width = `${pct}%`;
         text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
