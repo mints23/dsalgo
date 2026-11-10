@@ -205,9 +205,9 @@ The topic is rich and contains genuinely distinct techniques, but the current ro
 
 ---
 
-## Remaining topics
+## Full audit status
 
-Topics 04–43 have not yet received this progressive question-level review. Existing phase audit documents are inventory/coverage scans and should not be mistaken for completed concept-delta audits. Each remaining topic will be reviewed in the same format before we approve new topic additions or make broad production curriculum changes.
+All 43 topics have now received a first-pass question-by-question progressive concept review across the companion documents in this folder. This is not yet a line-by-line solution correctness review. Every flagged custom/competitive-programming problem, questionable algorithm label, and source-dependent complexity claim must be verified before production curriculum changes.
 
 ## Production safety
 
