@@ -1270,16 +1270,16 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
       function normalizeProblemUrl(value: string): string {
         try {
           const parsed = new URL(value, window.location.origin);
-          return `${parsed.hostname.toLowerCase()}${parsed.pathname.replace(/\\/+$/, '')}`;
+          return `${parsed.hostname.toLowerCase()}${parsed.pathname.replace(/\/+$/, '')}`;
         } catch {
-          return value.trim().toLowerCase().replace(/\\/+$/, '');
+          return value.trim().toLowerCase().replace(/\/+$/, '');
         }
       }
 
       function normalizeProblemTitle(value: string): string {
         return value
-          .replace(/^\\s*(?:LC\\s*)?\\d+\\s*[–—-]\\s*/i, '')
-          .replace(/\\s*⚠️\\s*TRAP\\s*$/i, '')
+          .replace(/^\s*(?:LC\s*)?\d+\s*[–—-]\s*/i, '')
+          .replace(/\s*⚠️\s*TRAP\s*$/i, '')
           .replace(/⚠️/g, '')
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '');
@@ -1338,8 +1338,8 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
               }
               if (!matched) {
                 const anchorText = anchors.map((anchor) => anchor.textContent || '').join(' ');
-                const lcMatch = anchorText.match(/\\bLC\\s*(\\d+)\\b/i)
-                  || cellText.match(/^\\s*(\\d+)\\s*[–—-]/);
+                const lcMatch = anchorText.match(/\bLC\s*(\d+)\b/i)
+                  || cellText.match(/^\s*(\d+)\s*[–—-]/);
                 if (lcMatch) matched = takeUnused(byLcNumber.get(lcMatch[1]));
               }
               if (!matched) {
