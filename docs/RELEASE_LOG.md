@@ -29,3 +29,12 @@ The small version label in the top-right corner is generated automatically from 
 - Removed five unrelated questions from their visible topic paths: Merge Intervals from Kadane, Count Pairs of Nodes from Floyd-Warshall, CF 768C and AGC017B from Game Theory, and CF 1202D from Digit DP.
 - Added the explicit `out_of_scope` curriculum role. Excluded rows remain stored with their original problem IDs; progress and playback references are preserved.
 - Updated migration and remigration scripts so future data imports preserve the out-of-scope classification.
+
+## v1.0.22 — Cross-topic canonical ownership audit
+
+- Audited live repeated LeetCode placements across all 43 topics: 229 numeric IDs appear in multiple topics (559 placements, 330 additional placements).
+- Documented canonical ownership, alternate algorithms, cross-pattern bridges, prerequisite reinforcement, diagnostic traps, and redundant-placement criteria.
+- Verified examples include Two Sum, Longest Palindromic Substring, Trapping Rain Water, mutable range sums, Network Delay Time, Word Break, and graph/DP cross-topic placements.
+- Flagged five algorithm-label placements for review (LC 2492, 2421, 1584, 282, and 363) without deleting or demoting any row in this pass.
+- Refreshed the live same-topic repeat count to 25 topic/problem pairs and 26 additional rows.
+- No problem records, user progress, playback, authentication, subscriptions, or payment flows were changed.
