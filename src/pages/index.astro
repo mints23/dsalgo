@@ -1323,7 +1323,7 @@ import { PRO_MONTHLY_INR } from '../lib/payment-await';
             if (insightIdx < 0 || problemIdx < 0) return;
 
             table.setAttribute('data-curriculum-problem-table', 'true');
-            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            const rows = Array.from(table.querySelectorAll('tbody tr')).filter((row) => row !== headerRow);
             rows.forEach((row) => {
               row.setAttribute('data-problem-candidate', 'true');
               const problemCell = row.children[problemIdx] as HTMLElement | undefined;
