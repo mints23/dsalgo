@@ -10,11 +10,13 @@ with assignments(problem_id, path_name, path_order, inferred_role) as (
   (9966::bigint,'Subset and combination search',1,'variant'),
   (9972::bigint,'Subset and combination search',1,'variant'),
   (9973::bigint,'Subset and combination search',1,'combination'),
+  (9968::bigint,'Subset and combination search',1,'combination'),
 
   (9941::bigint,'Permutation and arrangement search',2,'core_pattern'),
   (9945::bigint,'Permutation and arrangement search',2,'core_pattern'),
   (9961::bigint,'Permutation and arrangement search',2,'combination'),
   (9970::bigint,'Permutation and arrangement search',2,'combination'),
+  (9967::bigint,'Permutation and arrangement search',2,'variant'),
 
   (9946::bigint,'String construction and partitioning',3,'variant'),
   (9947::bigint,'String construction and partitioning',3,'variant'),
@@ -36,6 +38,7 @@ with assignments(problem_id, path_name, path_order, inferred_role) as (
   (9960::bigint,'Constraint satisfaction and branch-and-bound',5,'combination'),
   (9962::bigint,'Constraint satisfaction and branch-and-bound',5,'combination'),
   (9965::bigint,'Constraint satisfaction and branch-and-bound',5,'combination'),
+  (9958::bigint,'Constraint satisfaction and branch-and-bound',5,'combination'),
 
   (9956::bigint,'Memoized and adversarial state search',6,'combination'),
   (9963::bigint,'Memoized and adversarial state search',6,'combination')
