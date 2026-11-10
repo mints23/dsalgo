@@ -12,12 +12,15 @@
 | Bit Manipulation & Bitmask Techniques | Backtracking, Knapsack, Profile DP and Game Theory use bitmasks; no dedicated standalone topic | **Create topic.** Cover bitwise algebra, XOR, subset/submask enumeration, SOS DP, bitsets, state compression, and optimization of bitmask transitions. Coordinate with Profile DP to prevent duplicate teaching. |
 | Advanced String Algorithms | KMP and Trie/Aho-Corasick exist; Strings & Subsequences is DP-oriented | **Create topic.** Cover Z-function, rolling hash, Rabin–Karp, Manacher, suffix array/LCP, suffix automaton, and multi-pattern matching. Keep KMP as an existing focused topic and cross-link. |
 | Mathematics & Number Theory | Sieve exists; Combinatorial & Modulo DP includes some math; no coherent math prerequisite path | **Create topic.** Cover gcd/extended Euclid, modular arithmetic, modular inverse, fast exponentiation, factorization, divisor functions, CRT, combinatorics, inclusion-exclusion, and Diophantine equations. Do not duplicate DP counting. |
+| Network Flow & Matching | Bipartite Graph contains a small matching slice; Advanced Graphs has a few flow/matching reductions but no coherent flow curriculum | **Create dedicated advanced topic.** Cover augmenting paths, residual networks, max-flow/min-cut, Dinic, bipartite matching, vertex/edge capacities, min-cost max-flow and reductions. Explain when bitmask DP or greedy is preferable. |
+| Offline Query Algorithms | Offline sweeps and DSU/Tree/BIT patterns are scattered across existing topics | **Create dedicated advanced topic.** Cover query reordering, sweep line, Mo's algorithm, parallel binary search, rollback DSU, offline LCA, CDQ and divide-and-conquer on time. Teach the decision framework and trade-offs. |
 
 ## Candidates to keep as subtopics pending deeper audit
 
 - **Matrix / multidimensional algorithms:** first inspect 2D Grid DP, Prefix Sums, Graph BFS, and advanced range-query material. A separate topic may be warranted for matrix exponentiation, matrix traversal and geometric transforms, but not merely for 2D arrays.
 - **Divide & Conquer:** inspect Merge Sort, D&C DP optimization, CDQ, divide-and-conquer on answer, and tree decomposition coverage. Consider a topic if the algorithmic paradigm itself needs a coherent explanation.
-- **Offline Algorithms:** inspect Mo's algorithm, parallel binary search, offline sweeps, DSU rollback, CDQ and query reordering. Likely deserves a standalone advanced topic if current guide lacks a coherent offline-query decision framework.
+- **Computational Geometry:** inspect Advanced Graphs, Greedy and custom problem sets. Evaluate convex hull, line sweep, orientation, closest pair, and geometric sweeps as a possible separate advanced topic.
+- **Divide & Conquer:** inspect Merge Sort, D&C DP optimization, CDQ, divide-and-conquer on answer, and tree decomposition coverage. Consider a topic if the paradigm itself needs a coherent explanation.
 - **Computational Geometry:** inspect Advanced Graphs, Greedy and custom problem sets. Evaluate convex hull, line sweep, orientation, closest pair, and geometric sweeps as a possible separate advanced topic.
 
 ## Existing catalogue coverage to preserve
