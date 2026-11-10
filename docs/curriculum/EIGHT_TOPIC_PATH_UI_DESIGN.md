@@ -74,4 +74,4 @@ A topic may contain multiple authored problem tables with different column layou
 - Never delete a placement to remove a duplicate.
 - Never change the existing progress key (`topic_id` + visible `num-cell`).
 - Do not expose out-of-scope or excluded-trap rows as required problems.
-- Do not claim the path pilot is complete until all 275 required placements have a reviewed path and sequence.
+- Do not claim the path pilot is complete until all retained required placements have a reviewed path and sequence (246 in the current production pilot).
