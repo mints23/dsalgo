@@ -4,7 +4,7 @@
 
 **Audit method:** A problem is not considered unique merely because it has a different LeetCode ID. For each placement, inspect its primary concept, concept delta, prerequisite/reuse, constraint mutation, and whether the same learning objective already exists elsewhere. Keep useful contrastive traps, but do not count them as new algorithm concepts.
 
-**Status:** In progress. The first three topics have been reviewed from the live Supabase problem rows and topic-content metadata. This is a curriculum/sequence audit, not yet a full independent correctness review of every solution.
+**Status:** First-pass review complete across all 43 topics. The audit uses live Supabase problem rows and topic-content metadata. This is a curriculum/sequence audit, not yet a full independent correctness review of every solution.
 
 ## Decisions and labels
 
