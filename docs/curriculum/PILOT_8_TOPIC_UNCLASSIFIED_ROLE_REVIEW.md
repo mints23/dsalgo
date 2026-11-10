@@ -55,7 +55,7 @@ The recommended path labels below are conceptual group names, not yet a migratio
 |---:|---:|---|---|:---:|---|---|
 | 9727 | 31 | LC 149 — Max Points on a Line | core_pattern | Yes | Composite geometric key | Normalize slope with GCD and handle vertical / duplicate points; a high-value nontrivial key-design problem. |
 | 9728 | 32 | LC 1711 — Count Good Meals | variant | Yes | Complement counting | For each value, count complements over a bounded power-of-two target set. |
-| 9729 | 33 | LC 2266 — Count Number of Texts | combination | Yes | Frequency runs + DP | The main state is run-length DP; retain here only as an explicit integration of run grouping and counting, not as a canonical map problem. |
+| 9729 | 33 | LC 2266 — Count Number of Texts | out_of_scope | No | — | The standard solution is run-length DP; no hash map is needed. Its canonical learning objective belongs in Dynamic Programming. |
 | 9730 | 34 | LC 355 — Design Twitter | combination | Yes | HashMap + heap / k-way merge | Maps model users, tweets, and followees; heap merges per-user timelines. |
 | 9731 | 35 | LC 123 — Best Time to Buy and Sell Stock III | out_of_scope | No | — | Four-state transaction DP is the learning objective; HashMap is not required. |
 | 9732 | 36 | LC 472 — Concatenated Words | combination | Yes | HashSet + DP / DFS | A set accelerates membership, but the central task is segmentation using DP/DFS. Keep as a deliberate hash-membership integration. |
@@ -148,12 +148,12 @@ The recommended path labels below are conceptual group names, not yet a migratio
 
 | Outcome | Count |
 |---|---:|
-| Keep required with an explicit role | 57 |
-| Reclassify as `out_of_scope` and not required | 13 |
+| Keep required with an explicit role | 56 |
+| Reclassify as `out_of_scope` and not required | 14 |
 | Reclassify as `excluded_trap` and not required | 1 |
 | **Total reviewed** | **71** |
 
-The aggregate is a proposal for these 71 currently unclassified rows only. It does not include the already-classified rows in the 275-row required inventory.
+The aggregate is a proposal for these 71 currently unclassified rows only. LC 2266 was explicitly demoted after checking that its standard run-length DP solution does not require a hash map. It does not include the already-classified rows in the 275-row required inventory.
 
 ## Implementation constraints
 
