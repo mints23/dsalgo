@@ -1361,7 +1361,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
       patchProblemRowIdsFromTopics(topics);
 
       // ── Advanced track: only DB-approved problems count as required ──
-      // Unmatched and unclassified authored rows stay available behind a review toggle.
+      // Unmatched and unclassified authored rows are excluded from the learner-facing UI.
       function applyRequiredDifficultyFilter() {
         topics.forEach((topic: any) => {
           const card = document.getElementById(`tp${topic.id}`);
@@ -1424,12 +1424,9 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
               'Show optional Easy reference ({count})',
               'Hide optional Easy reference',
             );
-            addReferenceToggle(
-              reviewRows,
-              'unclassified-problem-row',
-              'Show unmatched / unclassified problems for review ({count})',
-              'Hide unmatched / unclassified problems for review',
-            );
+            // These rows are editorial leftovers, not part of the learner curriculum.
+            // Remove them from the DOM instead of exposing a review toggle.
+            reviewRows.forEach((row) => row.remove());
           });
         });
       }
