@@ -61,10 +61,10 @@ The next row (topic 32, row 27) remains LeetCode 2560 — House Robber IV, with 
 ## Other identity/data-quality findings
 
 ### Advanced Graphs topic 29
-- 20 rows have no `lc_number`.
-- 15 of those rows have LeetCode URLs, so the canonical IDs can be recovered from verified source metadata.
-- 5 rows are custom trap explanations without external URLs.
-- The existing problem titles and key insights are present; this is a structured identity gap, not evidence of missing teaching content.
+- The 15 rows with LeetCode URLs now have verified canonical IDs populated from their problem slugs and checked problem metadata.
+- The remaining 5 rows are custom trap explanations without external URLs; these correctly remain without LeetCode IDs.
+- The remigration script now carries the verified slug-to-ID mapping so a future structured remigration does not erase these IDs.
+- The existing problem titles and key insights are present; this was a structured identity gap, not missing teaching content.
 
 ### Curriculum role metadata
 A safe, additive classification was applied using explicit layer labels:
