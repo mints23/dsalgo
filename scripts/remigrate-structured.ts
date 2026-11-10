@@ -447,9 +447,15 @@ function parseProblems(topicId: number, html: string): ProblemRow[] {
         // <a href="..."><span>Problem Name</span></a> — link wrapping inner elements (get URL only)
         const lcUrlOnly = cellHtml.match(/href="(https:\/\/leetcode\.com[^"]+)"/);
         if (lcUrlOnly) return { url: lcUrlOnly[1], num: null as string | null };
-        // Codeforces link
-        const cfM = cellHtml.match(/href="(https:\/\/codeforces\.com[^"]+)"[^>]*>(CF [^<]+)/);
+        // Codeforces link — capture the canonical contest/problem ID, not the full display title.
+        const cfM = cellHtml.match(/href="(https:\/\/codeforces\.com[^"]+)"[^>]*>(CF\s+\d+[A-Z]?)/i);
         if (cfM) return { url: cfM[1], num: cfM[2] };
+        // AtCoder link — preserve contest/problem IDs such as AGC017B or ABC 228F.
+        const atcoderM = cellHtml.match(/href="(https:\/\/atcoder\.jp[^"]+)"[^>]*>([^<]+)/i);
+        if (atcoderM) {
+          const idM = atcoderM[2].trim().match(/^([A-Z]{2,}\s?\d+[A-Z]?)/i);
+          return { url: atcoderM[1], num: idM?.[1] ?? null };
+        }
         return null;
       };
 
