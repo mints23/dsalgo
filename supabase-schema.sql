@@ -272,8 +272,17 @@ create table if not exists problems (
   is_premium  boolean not null default false,
   sub_variant text,
   key_insight text,
+  is_required boolean not null default false,
+  curriculum_role text check (curriculum_role is null or curriculum_role in (
+    'core_pattern', 'variant', 'combination', 'optimization',
+    'trap', 'mastery_assessment', 'optional_reference'
+  )),
   unique (topic_id, order_num)
 );
+
+create index if not exists idx_problems_required_topic_order
+  on problems (topic_id, order_num)
+  where is_required = true;
 
 alter table problems enable row level security;
 

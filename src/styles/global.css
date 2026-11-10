@@ -4671,3 +4671,16 @@ td.insight-clickable:focus-visible {
 .payment-overlay--success .payment-overlay-spinner {
   border-top-color: color-mix(in oklab, var(--primary) 55%, #22c55e);
 }
+
+
+/* Advanced curriculum: optional Easy reference problems are hidden by default. */
+.easy-reference-toggle {
+  display: inline-flex;
+  margin: 0 0 0.55rem;
+  margin-left: 0;
+  font-size: 0.78rem;
+}
+.optional-easy-row[hidden],
+.unclassified-problem-row[hidden] {
+  display: none !important;
+}

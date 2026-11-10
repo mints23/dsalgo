@@ -92,6 +92,8 @@ function parseProblems(topicId: number, html: string) {
         is_premium: /<span class="prem">/.test(row),
         sub_variant: clean(tds[6][1]) || null,
         key_insight: clean(tds[7][1]) || null,
+        is_required: /^(med|medium|hard)$/i.test(diffM?.[1] ?? ''),
+        curriculum_role: /^easy$/i.test(diffM?.[1] ?? '') ? 'optional_reference' : null,
       });
     }
   }
