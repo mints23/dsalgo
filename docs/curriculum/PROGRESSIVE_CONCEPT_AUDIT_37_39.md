@@ -5,7 +5,7 @@
 
 ## Topic 37 — Game Theory & Minimax
 
-**Inventory:** 29 placements; 24 Medium/Hard core/variant rows and 5 diagnostic traps.  
+**Inventory:** 28 placements; 23 Medium/Hard core/variant rows and 5 diagnostic traps.  
 **Verdict:** **Good progression from win/lose DP to minimax score differences, Grundy theory, and cyclic-game retrograde analysis. Some competitive-programming entries need source/algorithm verification.**
 
 | Order | Problem | New logic / concept contribution | Treatment |
@@ -29,16 +29,16 @@
 | 17 | Nim Game (multi-pile) | XOR of independent pile Grundy values | Core compositional theorem |
 | 18 | Chalkboard XOR Game | Structural XOR + parity proof; not general minimax DP | Advanced mathematical game |
 | 19 | Flip Game II | Memoized game on implicit string-state graph | Core memoized W/L transfer |
-| 20 | CF 768C — Voting | Partisan game where players have different actions; queue/simulation strategy | Verify exact source and game classification |
+| 20 | CF 768C — Jon Snow and his Favourite Number | Repeated sorting + alternating XOR updates; frequency/simulation problem, not a game | Misclassified source; move to simulation/bitwise, or retain only as a diagnostic trap |
 | 21 | CF 850C — Arpa and a Game | Factorization into independent subgames and Grundy XOR | Advanced Sprague-Grundy application |
 | 22 | CF 768E — Game of Stones | Staircase Nim reduction to selected pile components | Advanced Nim variant; source/claim verification |
-| 23 | AGC017B — Moderate Differences | Metadata says eventual periodic Grundy sequence | Review urgently: title/known problem framing does not obviously match a game/Grundy problem |
+| 23 | AGC017B — Moderate Differences | Feasibility of a sequence of adjacent signed differences in [C,D] | Misclassified math/greedy feasibility problem; remove from Game Theory core |
 | 24 | Gold — Mortal Kombat Tower (custom) | Two-dimensional health/turn minimax DP on a DAG | Custom advanced; exact source/statement required |
 | 25 | Stone Game (n even) | Even-length first-player guarantee avoids O(n²) interval DP | Diagnostic trap |
 | 26 | Stone Game VI | Greedy combined-value sort beats minimax DP | Diagnostic trap |
 | 27 | Solving Questions with Brainpower | Single-player take/skip optimization is not adversarial game theory | Diagnostic trap / DP |
 | 28 | Sum Game | Algebraic parity/imbalance condition replaces game-state DP | Diagnostic trap |
-| 29 | Stone Game II (strategy shortcut) | Recognize when a structural guarantee is insufficient and M-state DP is needed | Review classification; verify row content |
+
 
 ### Recommended changes
 
@@ -137,7 +137,7 @@
 | 17 | Count Symmetric Integers | Property links mirrored positions and half-string balance | Advanced positional coupling |
 | 18 | Next Greater Numerically Balanced Number | Generate valid digit-count structures and find smallest candidate ≥ n | Diagnostic: constructive search, not range-count digit DP |
 | 19 | CF 1286F — LCC | Build two numbers simultaneously with interacting tight states and XOR property | Verify source and exact state transition |
-| 20 | CF 1202D — Print String | Metadata claims automaton state plus two tight flags | Review urgently: title/problem framing may be constructive rather than digit DP |
+| 20 | CF 1202D — Print a 1337-string | Construct a string over {1,3,7} with exactly n subsequences equal to 1337 | Misclassified constructive/combinatorial problem; not digit DP or KMP automaton DP |
 | 21 | Palindrome Digit DP (custom) | Mirror second half from first half; tight constraint applies to generated prefix | Advanced custom; full statement/source required |
 | 22 | CF 1070E — Alternating Digit Sum | Position parity changes sign of digit contribution modulo K | Advanced arithmetic property |
 | 23 | Matrix Exponentiation Digit DP (custom) | Linear state transition raised to huge length with matrix exponentiation | Advanced large-bound extension; source required |
