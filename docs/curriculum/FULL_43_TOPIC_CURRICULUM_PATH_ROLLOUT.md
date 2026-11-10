@@ -3,7 +3,7 @@
 **Date:** 2026-11-10  
 **Repository:** `mints23/dsalgo`  
 **Branch:** `main`  
-**Latest production release:** `v1.0.78` (GitHub Actions run #78)  
+**Curriculum data release:** `v1.0.82` (GitHub Actions run #82)  
 **Database:** Supabase project `zxgcsotirznipjjiilim`
 
 ## Scope and outcome
@@ -132,7 +132,7 @@ The frontend's incomplete-metadata fail-open behavior is in place, but it does n
 - `20261110_z_zzzz_full_curriculum_canonical_owner_pass_4.sql` — 10 placements.
 - `20261110_z_zzzzz_full_curriculum_canonical_owner_pass_5.sql` — 2 placements.
 
-The five passes are committed directly to `main` and applied to production. The per-topic path order was recalculated after each pass. All required rows remain complete.
+The five passes are committed directly to `main` and applied to production. The per-topic path order was recalculated after each pass. A subsequent Segment Tree metadata integrity migration fixed the only path-order/name collision discovered by the global audit. All required rows remain complete.
 
 ## Next phase
 
