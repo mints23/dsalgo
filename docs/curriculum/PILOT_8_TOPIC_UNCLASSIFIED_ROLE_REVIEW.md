@@ -1,13 +1,13 @@
 # Eight-Topic Pilot — Unclassified Required-Row Review
 
 **Source of truth:** Live Supabase `public.problems` rows on 2026-11-10, joined to `public.topics`.  
-**Branch:** `audit/eight-topic-role-and-path-review`  
-**Scope:** The 71 required placements in the eight pilot topics whose `curriculum_role` is currently null.  
-**Status:** Classification proposal only. No production rows, topic HTML, schema, or learner progress have been changed.
+**Branch:** `main`  
+**Scope:** The 71 placements that originally had null `curriculum_role`, plus cross-topic ownership corrections in the eight-topic pilot.  
+**Status:** Applied to production on 2026-11-10. All changes preserve problem IDs, topic IDs, `order_num`, and learner progress keys.
 
 ## Executive summary
 
-The live pilot inventory contains 275 required placements across eight topics. Exactly 71 required placements are missing a curriculum role. This review proposes a role and a learning-path assignment for each of those rows.
+The live pilot inventory originally contained 275 required placements across eight topics. All 71 previously unclassified placements have now been assigned an explicit role: 56 remain required and 15 are demoted (14 out_of_scope, one excluded_trap). Three already-classified duplicate Two Pointers rows are retained as optional references, and one already-classified date-arithmetic row is demoted. The resulting pilot has 256 required placements, all with a complete path assignment.
 
 The review distinguishes three outcomes:
 
@@ -15,7 +15,7 @@ The review distinguishes three outcomes:
 - **Reclassify as out of scope:** The row is a valid problem, but its canonical learning objective belongs to another topic. Preserve its record and stable ID; set `is_required=false` and `curriculum_role='out_of_scope'`.
 - **Exclude trap:** The row is an explicit wrong-pattern / category-boundary trap. Preserve its record and stable ID; set `is_required=false` and `curriculum_role='excluded_trap'`.
 
-The recommended path labels below are conceptual group names, not yet a migration or an instruction to reorder existing rows.
+The path labels below were used for the production backfill. They group rows within each authored table; they do not alter order_num or the visible progress number.
 
 ## Live counts
 
@@ -202,3 +202,17 @@ A live duplicate-identity query across the eight pilot topics found the followin
 | 974 | HashMap; Prefix Sums | Prefix Sums owns modular prefix-state counting; HashMap may cross-reference the remainder-frequency map. |
 
 **Important:** This audit is a review queue, not an applied data migration. No duplicate placement has been deleted, moved, or demoted. The implementation must preserve all existing IDs and order numbers; secondary placements should be demoted or relabelled, never deleted.
+
+
+## Production application result (2026-11-10)
+
+- 56 null-role rows retained with explicit roles: core_pattern, variant, or combination.
+- 14 null-role rows demoted to out_of_scope.
+- One null-role row demoted to excluded_trap (CF 981E digit-DP disguise).
+- Existing LC 76, LC 713, and LC 763 placements in Two Pointers were made optional references; their stable rows remain available through the existing optional-reference control.
+- LC 1360 (date arithmetic) was demoted from the Intervals required curriculum.
+- All retained required rows now have non-null curriculum_path, positive curriculum_path_order, and positive path_problem_order.
+- Final production verification: 256 required rows, 256 complete path assignments, zero required rows with null curriculum_role.
+- No problem IDs, topic IDs, order_num values, or progress keys were changed.
+
+The cross-topic audit intentionally retains distinct algorithmic perspectives where they add real value (for example, LC 287 as Floyd-cycle detection in Two Pointers and value-domain binary search in Binary Search). The three Two Pointers entries above were demoted because their canonical objectives are owned by Sliding Window / Greedy.
