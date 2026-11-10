@@ -43,23 +43,20 @@
 | 32 | 2291 | Maximum Profit from Trading Stocks; composite “Maximum Reward / House Robber IV” row | **Data/content defect; see below** |
 | 37 | 877 | Stone Game; Stone Game (n even) | Canonical + theorem / shortcut trap |
 
-## Confirmed identity defect: Knapsack topic 32, row 26
+## Corrected identity defect: Knapsack topic 32, row 26
 
-The authored HTML row contains two separate LeetCode links in one problem cell:
+The authored HTML row previously contained two separate LeetCode links in one problem cell (2291 and 2560), while its learning objective was meet-in-the-middle. The row was corrected in production as one atomic topic-HTML + structured-record change.
 
-- LeetCode 2291 — Maximum Profit from Trading Stocks
-- LeetCode 2560 — House Robber IV
+It now points to **LeetCode 2035 — Partition Array Into Two Arrays to Minimize Sum Difference**:
+- `lc_number = 2035`
+- `lc_url = https://leetcode.com/problems/partition-array-into-two-arrays-to-minimize-sum-difference/`
+- title and link now identify the same single problem
+- sub-variant: meet-in-the-middle with cardinality buckets
+- key insight: split the 2n elements, enumerate subset sums grouped by selected count, pair k with n-k, and search for the closest complement
 
-The structured database row currently stores:
-- `lc_number = 2291`
-- `lc_url = https://leetcode.com/problems/maximum-profit-from-trading-stocks/`
-- title: `Maximum Reward (revisit) / 2560 – House Robber IV`
-- sub-variant: `Meet-in-the-middle on subset sum`
-- key insight: meet-in-the-middle for small n and huge capacity
+The official constraints have `n ≤ 15` and `nums.length = 2n`, with values as large as ±10^7. This is an exact fit for meet-in-the-middle: sum-indexed knapsack is impractical over the huge/negative sum range, while each half has at most 2^15 subsets. The algorithm groups by cardinality to enforce equal-sized partitions, then sorts and binary-searches the closest complement. See the [official LeetCode statement](https://leetcode.com/problems/partition-array-into-two-arrays-to-minimize-sum-difference/description/).
 
-The next row (topic 32, row 27) separately stores LeetCode 2560 with the correct House Robber IV title and a binary-search/greedy feasibility treatment.
-
-This is not a safe candidate for automatic deduplication. The row 26 title, links, and teaching objective disagree. The meet-in-the-middle lesson should be paired with a verified problem that actually exercises that technique (a candidate is LeetCode 2035, but its statement and constraints must be checked before changing the source). Keep the current row intact until the replacement is validated, then update the authored HTML and structured row together.
+The next row (topic 32, row 27) remains LeetCode 2560 — House Robber IV, with its separate binary-search/greedy feasibility treatment. The two rows now teach distinct problems and techniques.
 
 ## Other identity/data-quality findings
 
