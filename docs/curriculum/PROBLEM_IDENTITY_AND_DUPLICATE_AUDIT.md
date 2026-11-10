@@ -81,7 +81,8 @@ Current role counts after this additive classification:
 - `combination`: 300
 - `trap`: 136 (111 currently required by difficulty)
 - `optional_reference`: 51
-- role pending manual classification: 321
+- `optimization`: 1 (the corrected Knapsack meet-in-the-middle row)
+- role pending manual classification: 320
 
 No records were deleted. Existing `is_required` values were not changed by this role normalization.
 
