@@ -137,7 +137,7 @@
 | 17 | Count Symmetric Integers | Property links mirrored positions and half-string balance | Advanced positional coupling |
 | 18 | Next Greater Numerically Balanced Number | Generate valid digit-count structures and find smallest candidate ≥ n | Diagnostic: constructive search, not range-count digit DP |
 | 19 | CF 1286F — LCC | Build two numbers simultaneously with interacting tight states and XOR property | Verify source and exact state transition |
-| 20 | CF 1202D — Print String | Metadata claims automaton state plus two tight flags | Review urgently: title/problem framing may be constructive rather than digit DP |
+| 20 | CF 1202D — Print a 1337-string | Construct a string over {1,3,7} with exactly n subsequences equal to 1337 | Misclassified constructive/combinatorial problem; not digit DP or KMP automaton DP |
 | 21 | Palindrome Digit DP (custom) | Mirror second half from first half; tight constraint applies to generated prefix | Advanced custom; full statement/source required |
 | 22 | CF 1070E — Alternating Digit Sum | Position parity changes sign of digit contribution modulo K | Advanced arithmetic property |
 | 23 | Matrix Exponentiation Digit DP (custom) | Linear state transition raised to huge length with matrix exponentiation | Advanced large-bound extension; source required |
