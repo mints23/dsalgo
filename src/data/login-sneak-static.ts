@@ -53,7 +53,6 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '39', navSection: 'Advanced Techniques', navLabel: 'Segment Tree', navTierDotColor: '#da7101' },
   { displayNumber: '40', navSection: 'Advanced Techniques', navLabel: 'KMP Pattern Matching', navTierDotColor: '#da7101' },
   { displayNumber: '41', navSection: 'Advanced Techniques', navLabel: 'LIS O(N log N)', navTierDotColor: '#da7101' },
-  { displayNumber: '42', navSection: 'Advanced Techniques', navLabel: 'Bit Manipulation & Bitmask', navTierDotColor: '#a13544' },
 ];
 
 export const LOGIN_SNEAK_SAMPLE_TOPIC = {
