@@ -31,7 +31,7 @@ A fresh production query on 2026-11-10 confirms:
 | Empty key_insight rows in topics 38–43 | 113 |
 | Temporary Topic 44 remaining | 0 |
 
-The 11 playback records are in a Python-style explanation/visualisation schema; inspected snippets are not verified Java solutions. GitHub code searches for Java Solution sources returned no results. That search result does not prove no Java code exists elsewhere; a repository tree/file inventory or other source must still be inspected.
+The 11 playback records are in a Python-style explanation/visualisation schema; inspected snippets are not verified Java solutions. A complete recursive Git tree scan returned 210 entries and zero .java files. The curated algorithm-walkthroughs.ts contains 22 LeetCode walkthrough keys, all pseudocode/Python-style rather than Java. The generated solution file is key-insight-derived stub content, not a full implementation.
 
 ## Four audit batches
 
@@ -184,7 +184,7 @@ Assessment problems should be hidden or held back from the learning path where p
 ### Phase A — Architecture and evidence
 1. Complete all four concept audits (done at first-pass level).
 2. Reconcile primary ownership and path taxonomy.
-3. Locate the repository's Java solution source of truth. The current GitHub code search did not surface Java files; inspect repository file inventory and build conventions before concluding code is absent.
+3. Java source audit completed: the repository tree contains zero .java files. Establish a version-controlled Java 17 reference library and compilation/test harness; see JAVA_SOLUTION_SOURCE_AUDIT.md.
 4. Audit all 11 existing playback solutions for correctness, and check their relationship to the problem rows.
 
 ### Phase B — Solution quality
@@ -208,6 +208,6 @@ Assessment problems should be hidden or held back from the learning path where p
 
 **Not yet mastery-certified.** The existing curriculum has substantial and in places genuinely advanced breadth. The strongest visible areas include Digit DP, Tree DP, Profile DP, Segment Tree, Trie and Data-Structure-Optimised DP. However, important classification errors, missing coherent concept families and the lack of verified Java solution artifacts prevent an authoritative FAANG mastery claim.
 
-The next highest-value engineering task is not to append another hundred questions. It is to locate/establish the Java solution source of truth, inspect the actual teaching artifacts, and correct the concept ownership map. Then add the missing families and assessments with evidence.
+The next highest-value engineering task is to establish a compilable Java reference library and test harness, then repair the concept ownership map and audit the 22 existing pseudocode walkthroughs. After that, add the missing families and assessments with evidence.
 
 **Target outcome:** a learner who can independently recognise, derive, prove, optimise and implement solutions to unfamiliar FAANG interview problems in Java—not merely complete a long list.
