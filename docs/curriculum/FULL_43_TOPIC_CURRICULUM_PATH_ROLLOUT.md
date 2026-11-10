@@ -3,7 +3,7 @@
 **Date:** 2026-11-10  
 **Repository:** `mints23/dsalgo`  
 **Branch:** `main`  
-**Curriculum data release:** `v1.0.82` (GitHub Actions run #82)  
+**Curriculum data release:** `v1.0.84` (GitHub Actions run #84)  
 **Database:** Supabase project `zxgcsotirznipjjiilim`
 
 ## Scope and outcome
@@ -13,13 +13,13 @@ The curriculum path and role taxonomy has been extended from the original eight-
 | Production invariant | Verified result |
 |---|---:|
 | Topics in curriculum | 43 |
-| Required problem placements | 922 |
-| Required placements with complete path metadata | 922 |
-| Required placements with explicit curriculum role | 922 |
+| Required problem placements | 919 |
+| Required placements with complete path metadata | 919 |
+| Required placements with explicit curriculum role | 919 |
 | Required placements missing path metadata | 0 |
 | Required placements missing role | 0 |
 | Placements with null curriculum role (all placements) | 0 |
-| Optional references | 203 |
+| Optional references | 206 |
 
 All 43 topics passed the same per-topic check: required count = complete path count = explicit-role count.
 
@@ -53,9 +53,9 @@ All 43 topics passed the same per-topic check: required count = complete path co
 | 24 | Topological Sort | 15 | 15 | 15 |
 | 25 | Dijkstra | 16 | 16 | 16 |
 | 26 | Floyd-Warshall | 6 | 6 | 6 |
-| 27 | Bellman-Ford | 8 | 8 | 8 |
+| 27 | Bellman-Ford | 7 | 7 | 7 |
 | 28 | Union Find / DSU | 13 | 13 | 13 |
-| 29 | Advanced Graph Algorithms | 15 | 15 | 15 |
+| 29 | Advanced Graph Algorithms | 14 | 14 | 14 |
 | 30 | 1D Linear DP | 24 | 24 | 24 |
 | 31 | 2D Grid DP | 26 | 26 | 26 |
 | 32 | Knapsack | 29 | 29 | 29 |
@@ -68,9 +68,9 @@ All 43 topics passed the same per-topic check: required count = complete path co
 | 39 | Digit DP | 22 | 22 | 22 |
 | 40 | DAGs & Probability | 11 | 11 | 11 |
 | 41 | Combinatorial & Modulo DP | 12 | 12 | 12 |
-| 42 | Data-Structure-Optimised DP | 22 | 22 | 22 |
+| 42 | Data-Structure-Optimised DP | 21 | 21 | 21 |
 | 43 | Profile / Broken Profile DP | 17 | 17 | 17 |
-| **Total** | **43 topics** | **922** | **922** | **922**|
+| **Total** | **43 topics** | **919** | **919** | **919** |
 
 ## Implementation batches committed directly to main
 
@@ -98,19 +98,19 @@ The original eight-topic pilot migrations remain in the repository and productio
 
 ## Cross-topic identity review
 
-A production query identified 178 cross-topic duplicate LeetCode identities (217 secondary required placements) before canonical ownership work. Five ownership migrations have now demoted 148 confirmed redundant or misclassified placements to optional references, retaining all underlying records and stable identifiers.
+A production query identified 178 cross-topic duplicate LeetCode identities (217 secondary required placements) before canonical ownership work. Six ownership migrations have now demoted 151 confirmed redundant or misclassified placements to optional references, retaining all underlying records and stable identifiers.
 
-Current live verification: **63 duplicate identities remain across topics, representing 70 secondary required placements**. These are retained because the remaining rows teach distinct algorithms, data structures, or deliberate cross-topic integrations. Examples include LC 287 (Floyd vs. value-domain binary search), LC 1074 (2D Kadane vs. 2D prefix compression), LC 399 (Floyd vs. weighted DSU), LC 378 (binary search vs. heap), LC 743 (Dijkstra vs. Bellman-Ford), and LC 1584 (Prim vs. Kruskal). Three same-topic duplicate IDs also remain as explicit solution variants/revisits: LC 215 (heap vs. Quickselect), LC 347 (heap vs. bucket sort), and LC 1289 (baseline vs. advanced revisit).
+Current live verification: **63 duplicate identities remain across topics, representing 67 secondary required placements**. These are retained because the remaining rows teach distinct algorithms, data structures, or deliberate cross-topic integrations. Examples include LC 287 (Floyd vs. value-domain binary search), LC 1074 (2D Kadane vs. 2D prefix compression), LC 399 (Floyd vs. weighted DSU), LC 378 (binary search vs. heap), LC 743 (Dijkstra vs. Bellman-Ford), and LC 1584 (Prim vs. Kruskal). Three same-topic duplicate IDs also remain as explicit solution variants/revisits: LC 215 (heap vs. Quickselect), LC 347 (heap vs. bucket sort), and LC 1289 (baseline vs. advanced revisit).
 
 The canonical-owner pass did not use a blanket one-owner-per-LeetCode rule. A duplicate was retained when its algorithmic lens materially differs; it was made optional only when the same implementation or an incorrect topic classification was repeated. No problem was deleted or moved, and no learner progress records were changed.
 
 ## Release verification
 
-- Supabase aggregate verification: 922 required rows, 922 complete paths, 922 explicit roles, zero incomplete required rows, zero null roles across all placements.
+- Supabase aggregate verification: 919 required rows, 919 complete paths, 919 explicit roles, zero incomplete required rows, zero null roles across all placements.
 - Per-topic verification: all 43 topics passed; each topic's required count equals its complete path count and role count.
 - Five canonical-owner migrations applied successfully; optional references increased from 55 to 203.
-- GitHub Actions build and GitHub Pages publish job for run #78 completed successfully.
-- The production `gh-pages/index.html` footer was inspected and reports `v1.0.78`.
+- GitHub Actions Astro build and publish job for run #84 completed successfully.
+- The production `gh-pages/index.html` footer was inspected and reports `v1.0.84`.
 - The production app uses the already-released path-grouping UI; the full data backfill makes path headings available across all topics.
 
 ## Remaining QA
