@@ -4680,6 +4680,7 @@ td.insight-clickable:focus-visible {
   margin-left: 0;
   font-size: 0.78rem;
 }
-.optional-easy-row[hidden] {
+.optional-easy-row[hidden],
+.unclassified-problem-row[hidden] {
   display: none !important;
 }
