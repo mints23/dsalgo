@@ -57,7 +57,7 @@
 | 2 | Minimum Score of Path Between Two Cities | Connected-component membership and minimum edge scan; Floyd is unnecessary | Diagnostic trap / Graph Traversal |
 | 3 | Number of Good Paths | DSU by value threshold is the scalable solution, not APSP | Diagnostic trap / DSU |
 | 4 | Find Center of Star Graph | Direct common endpoint of first two edges | Easy reference / method selection |
-| 5 | Count Pairs of Nodes | Current metadata claims Floyd/APSP, but the official problem's scalable solution is degree sorting plus correction for shared edges | Review urgently; likely misclassified algorithm |
+| 5 | Count Pairs of Nodes | LeetCode 1782 is degree-pair counting: sort degrees, two pointers per query, then correct for shared edges | **Removed from Floyd-Warshall as out of scope**; it does not teach APSP or a useful Floyd-Warshall selection boundary |
 | 6 | Evaluate Division | Multiplicative path closure or DFS per query | Core alternate algebra |
 | 7 | Strange Printer II | Build color dependency graph and detect cycle with topo sort; Floyd closure is not needed | Diagnostic / Topological Sort |
 | 8 | Minimum Cost to Convert String I | 26-node weighted character graph makes Floyd-Warshall practical | Core application |

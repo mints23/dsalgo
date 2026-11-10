@@ -29,10 +29,10 @@
 | 17 | Nim Game (multi-pile) | XOR of independent pile Grundy values | Core compositional theorem |
 | 18 | Chalkboard XOR Game | Structural XOR + parity proof; not general minimax DP | Advanced mathematical game |
 | 19 | Flip Game II | Memoized game on implicit string-state graph | Core memoized W/L transfer |
-| 20 | CF 768C — Jon Snow and his Favourite Number | Repeated sorting + alternating XOR updates; frequency/simulation problem, not a game | Misclassified source; move to simulation/bitwise, or retain only as a diagnostic trap |
+| 20 | CF 768C — Jon Snow and his Favourite Number | Repeated sorting + alternating XOR updates; deterministic simulation / bitwise transformation | **Removed from Game Theory as out of scope**; no adversarial game or game-theoretic decision is present |
 | 21 | CF 850C — Arpa and a Game | Factorization into independent subgames and Grundy XOR | Advanced Sprague-Grundy application |
 | 22 | CF 768E — Game of Stones | Staircase Nim reduction to selected pile components | Advanced Nim variant; source/claim verification |
-| 23 | AGC017B — Moderate Differences | Feasibility of a sequence of adjacent signed differences in [C,D] | Misclassified math/greedy feasibility problem; remove from Game Theory core |
+| 23 | AGC017B — Moderate Differences | Feasibility of N−1 signed adjacent differences in [C,D] | **Removed from Game Theory as out of scope**; this is mathematical feasibility, not a game or a meaningful game-selection diagnostic |
 | 24 | Gold — Mortal Kombat Tower (custom) | Two-dimensional health/turn minimax DP on a DAG | Custom advanced; exact source/statement required |
 | 25 | Stone Game (n even) | Even-length first-player guarantee avoids O(n²) interval DP | Diagnostic trap |
 | 26 | Stone Game VI | Greedy combined-value sort beats minimax DP | Diagnostic trap |
@@ -137,7 +137,7 @@
 | 17 | Count Symmetric Integers | Property links mirrored positions and half-string balance | Advanced positional coupling |
 | 18 | Next Greater Numerically Balanced Number | Generate valid digit-count structures and find smallest candidate ≥ n | Diagnostic: constructive search, not range-count digit DP |
 | 19 | CF 1286F — LCC | Build two numbers simultaneously with interacting tight states and XOR property | Verify source and exact state transition |
-| 20 | CF 1202D — Print a 1337-string | Construct a string over {1,3,7} with exactly n subsequences equal to 1337 | Misclassified constructive/combinatorial problem; not digit DP or KMP automaton DP |
+| 20 | CF 1202D — Print a 1337-string | Construct a string over {1,3,7} with exactly n subsequences equal to 1337 | **Removed from Digit DP as out of scope**; this is constructive string generation, not a useful digit-DP boundary case |
 | 21 | Palindrome Digit DP (custom) | Mirror second half from first half; tight constraint applies to generated prefix | Advanced custom; full statement/source required |
 | 22 | CF 1070E — Alternating Digit Sum | Position parity changes sign of digit contribution modulo K | Advanced arithmetic property |
 | 23 | Matrix Exponentiation Digit DP (custom) | Linear state transition raised to huge length with matrix exponentiation | Advanced large-bound extension; source required |

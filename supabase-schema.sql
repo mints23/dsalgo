@@ -275,7 +275,7 @@ create table if not exists problems (
   is_required boolean not null default false,
   curriculum_role text check (curriculum_role is null or curriculum_role in (
     'core_pattern', 'variant', 'combination', 'optimization',
-    'trap', 'mastery_assessment', 'optional_reference'
+    'trap', 'mastery_assessment', 'optional_reference', 'out_of_scope'
   )),
   unique (topic_id, order_num)
 );
