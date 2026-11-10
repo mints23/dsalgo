@@ -31,6 +31,10 @@ Every question is assessed as one of:
 - **Move / split:** valuable content whose canonical home is another topic or sub-path.
 - **Review:** source, statement, algorithm label, or correctness needs verification.
 
+## Verified correction queue
+
+[Source-verified algorithm classification corrections](VERIFIED_CLASSIFICATION_CORRECTIONS.md) records six high-confidence mismatches across Floyd-Warshall, Game Theory, Digit DP, and Profile DP. These need production content correction while preserving original problem IDs and learner progress.
+
 ## Major findings
 
 - A topic can contain several parallel concept paths. Use a prerequisite graph rather than forcing unrelated patterns into one linear order.
