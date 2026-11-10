@@ -181,6 +181,8 @@ type ProblemRow = {
   is_premium: boolean;
   sub_variant: string | null;
   key_insight: string | null;
+  is_required: boolean;
+  curriculum_role: string | null;
 };
 
 const LAYER_CLEAN: Record<string, string> = {
@@ -519,6 +521,8 @@ function parseProblems(topicId: number, html: string): ProblemRow[] {
         is_premium: isPremium,
         sub_variant: subVariant,
         key_insight: keyInsight,
+        is_required: /^(med|medium|hard)$/i.test(difficulty ?? ''),
+        curriculum_role: /^easy$/i.test(difficulty ?? '') ? 'optional_reference' : null,
       });
     }
   }
