@@ -1621,11 +1621,32 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
       let completedSet = new Set<string>();
       let revisionSet = new Set<string>();
       let dailySolvedMap: Record<string, number> = {};
+      const progressStatus = document.createElement('div');
+      progressStatus.setAttribute('role', 'status');
+      progressStatus.setAttribute('aria-live', 'polite');
+      progressStatus.setAttribute('aria-atomic', 'true');
+      progressStatus.hidden = true;
+      progressStatus.style.cssText = 'position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:10000;max-width:min(36rem,calc(100vw - 2rem));padding:.75rem 1rem;border-radius:.65rem;background:var(--surface-raised,#242424);color:var(--text-primary,#fff);border:1px solid var(--border,#666);box-shadow:0 4px 20px rgba(0,0,0,.2);font-size:.875rem;';
+      document.querySelector('.main')?.appendChild(progressStatus);
+      function showProgressStatus(message: string) {
+        progressStatus.textContent = message;
+        progressStatus.hidden = false;
+      }
+
       if (hasProFeatures) {
-        const { data: progress } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
-        completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
-        const { data: revRows } = await supabase.from('user_revision').select('topic_id, problem_num').eq('user_id', userId);
-        revisionSet = new Set((revRows || []).map((r: any) => `${r.topic_id}-${r.problem_num}`));
+        const { data: progress, error: progressLoadError } = await supabase.from('user_progress').select('topic_id, problem_num').eq('user_id', userId);
+        if (progressLoadError) {
+          showProgressStatus('Could not load your saved solve progress. Your saved data has not been changed; reload to retry.');
+        } else {
+          completedSet = new Set((progress || []).map((p: any) => `${p.topic_id}-${p.problem_num}`));
+        }
+
+        const { data: revRows, error: revisionLoadError } = await supabase.from('user_revision').select('topic_id, problem_num').eq('user_id', userId);
+        if (revisionLoadError) {
+          showProgressStatus('Could not load your saved revision marks. Your saved data has not been changed; reload to retry.');
+        } else {
+          revisionSet = new Set((revRows || []).map((r: any) => `${r.topic_id}-${r.problem_num}`));
+        }
       }
 
       // ── Daily solved heatmap (GitHub-style) ──
@@ -1917,10 +1938,10 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
               cb.disabled = true;
               if (cb.checked) {
                 const { error } = await supabase.from('user_progress').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
-                if (error) { cb.checked = false; } else { row.classList.add('row-done'); completedSet.add(key); fetchDailySolved(); }
+                if (error) { cb.checked = false; showProgressStatus("Couldn't save this solve change. Check your connection and try again."); } else { row.classList.add('row-done'); completedSet.add(key); fetchDailySolved(); }
               } else {
                 const { error } = await supabase.from('user_progress').delete().eq('user_id', userId).eq('topic_id', topicId).eq('problem_num', probNum);
-                if (error) { cb.checked = true; } else { row.classList.remove('row-done'); completedSet.delete(key); fetchDailySolved(); }
+                if (error) { cb.checked = true; showProgressStatus("Couldn't save this solve change. Check your connection and try again."); } else { row.classList.remove('row-done'); completedSet.delete(key); fetchDailySolved(); }
               }
               cb.disabled = false;
               cb.title = cb.checked ? 'Mark incomplete' : 'Mark complete';
@@ -1944,6 +1965,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
                   revBtn.setAttribute('aria-pressed', 'false');
                   revBtn.title = 'Mark for revision';
                   revBtn.setAttribute('aria-label', revBtn.title);
+                } else {
+                  showProgressStatus("Couldn't update this revision mark. Check your connection and try again.");
                 }
               } else {
                 const { error } = await supabase.from('user_revision').insert({ user_id: userId, topic_id: topicId, problem_num: probNum });
@@ -1953,6 +1976,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
                   revBtn.setAttribute('aria-pressed', 'true');
                   revBtn.title = 'Remove from revision';
                   revBtn.setAttribute('aria-label', revBtn.title);
+                } else {
+                  showProgressStatus("Couldn't update this revision mark. Check your connection and try again.");
                 }
               }
               revBtn.disabled = false;
