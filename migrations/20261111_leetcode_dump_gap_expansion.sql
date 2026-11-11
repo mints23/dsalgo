@@ -156,9 +156,6 @@ values
 (50,5,'Hard','324','https://leetcode.com/problems/wiggle-sort-ii/','Wiggle Sort II','Med',false,'Quickselect median, Dutch-national-flag partition and virtual indexing','Find the median with Quickselect, then perform a three-way partition around it using virtual index mapping (1+2·i) mod (n|1), which visits odd slots before even slots. Place values greater than the median at peak positions and smaller values at valley positions; equal values occupy the middle. The guarantee that a valid answer exists is essential. Explain the virtual-index permutation and duplicate handling.',true,'combination','Selection and in-place constrained partitioning',3,1)
 on conflict (topic_id,order_num) do nothing;
 
--- Ensure the two new topic content records exist before updating their summaries.
-update public.topic_content set core_idea=core_idea where topic_id in (49,50);
-
 -- Existing topic summaries are kept in sync with the new rows.
 update public.topics set summary_meta='59 problems · sorted pair, fast/slow, in-place transforms, boundary scans and candidate elimination' where id=1;
 update public.topics set summary_meta='56 problems · variable/fixed windows, exact-K, deque, complement and value-neighbour windows' where id=4;
