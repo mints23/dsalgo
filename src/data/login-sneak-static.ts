@@ -57,6 +57,7 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '45', navSection: 'Advanced Techniques', navLabel: 'Meet in the Middle', navTierDotColor: '#da7101' },
   { displayNumber: '46', navSection: 'Advanced Techniques', navLabel: 'Advanced Strings', navTierDotColor: '#da7101' },
   { displayNumber: '47', navSection: 'Advanced Techniques', navLabel: 'Offline Queries & Sqrt Decomposition', navTierDotColor: '#da7101' },
+  { displayNumber: '48', navSection: 'Advanced Techniques', navLabel: 'Computational Geometry', navTierDotColor: '#da7101' },
 ];
 
 export const LOGIN_SNEAK_SAMPLE_TOPIC = {
