@@ -7,7 +7,8 @@ insert into public.problems
 values
 (29,25,'Hard','CSES 1684','https://cses.fi/problemset/task/1684','Giant Pizza','Hard',false,'2-SAT from two-literal clauses and SCC assignment','Represent each literal as a vertex. Clause (a OR b) adds implications NOT a→b and NOT b→a. Satisfiable iff x and NOT x never share an SCC. Recover assignment from SCC topological order, deriving the comparison direction for the chosen SCC implementation. Test forced literals and contradictory units.',true,'core_pattern','Satisfiability, implication graphs and 2-SAT',6,1),
 (29,26,'Hard','CF 776D','https://codeforces.com/problemset/problem/776/D','The Door Problem','Hard',false,'2-SAT from switch parity constraints','Each door''s required final state imposes equality or inequality between its two switch variables. Encode equality with implications in both directions and inequality with cross implications. Solve SCC and map truth values back to switch states.',true,'variant','Satisfiability, implication graphs and 2-SAT',6,2),
-(29,27,'Hard','CF 468B','https://codeforces.com/problemset/problem/468/B','Two Sets','Hard',false,'2-SAT assignment with complement implications','For each value x, define Boolean choice A or B. If x is assigned to A, its complement A−x must exist and also be assigned A; similarly for B−x. Encode implications from each choice to the required complement choice. Missing complements force the opposite set. Detect contradictions by SCC and recover a valid assignment.',true,'combination','Satisfiability, implication graphs and 2-SAT',6,3)
+(29,27,'Hard','CF 468B','https://codeforces.com/problemset/problem/468/B','Two Sets','Hard',false,'2-SAT assignment with complement implications','For each value x, define Boolean choice A or B. If x is assigned to A, its complement A−x must exist and also be assigned A; similarly for B−x. Encode implications from each choice to the required complement choice. Missing complements force the opposite set. Detect contradictions by SCC and recover a valid assignment.',true,'combination','Satisfiability, implication graphs and 2-SAT',6,3),
+(29,28,'Hard',null,null,'At-Most-One Boolean Constraints in 2-SAT — Sequential Counter','Hard',false,'Linear-size sequential encoding of at-most-one constraints','Pairwise exclusion uses O(k²) binary clauses. A sequential counter introduces auxiliary prefix variables s_i and uses O(k) binary clauses to ensure no two x_i are true. All clauses remain 2-CNF. Important boundary: at-most-one is 2-CNF encodable, but arbitrary at-least-one over k>2 literals is not.',true,'combination','Satisfiability, implication graphs and 2-SAT',6,4)
 on conflict (topic_id,order_num) do nothing;
 
 update public.problems set
@@ -16,7 +17,7 @@ update public.problems set
  key_insight='For each value x, define Boolean choice A or B. If x is assigned to A, its complement A−x must exist and also be assigned A; similarly for B−x. Encode implications from each choice to the required complement choice. Missing complements force the opposite set. Detect contradictions by SCC and recover a valid assignment; handle duplicate values by indexing occurrences if the input permits them.'
 where topic_id=29 and order_num=27;
 
-update public.topics set summary_meta='27 problems · 21 required · bridges, SCC, Euler paths, MST, flow and 2-SAT' where id=29;
+update public.topics set summary_meta='28 problems · 22 required · bridges, SCC, Euler paths, MST, flow and 2-SAT' where id=29;
 
 update public.topic_content
 set sub_variants=sub_variants || '["2-SAT implication graph from 2-CNF clauses","SCC-based satisfiability test and assignment extraction","Geometric/physical constraints reduced to Boolean equality or inequality","At-most-one encodings with pairwise or sequential auxiliary variables"]'::jsonb,
@@ -30,5 +31,13 @@ set sub_variants=sub_variants || '["2-SAT implication graph from 2-CNF clauses",
  coverage_problems=coverage_problems || '["CSES 1684 Giant Pizza","CF 776D The Door Problem","CF 468B Two Sets"]'::jsonb
 where topic_id=29
 and not (sub_variants @> '["2-SAT implication graph from 2-CNF clauses"]'::jsonb);
+
+
+update public.topic_content
+set sub_variants=sub_variants || '["At-most-one constraints: pairwise exclusion versus linear-size sequential counter","Expressibility boundary: at-most-one is 2-CNF; arbitrary at-least-one is not"]'::jsonb,
+ pattern_triggers=pattern_triggers || '[{"trigger":"At most one among k Boolean choices may be true and k is large","breaks_when":"Need a general at-least-one clause over k>2 literals; that is not 2-CNF expressible","sub_variant":"Sequential-counter auxiliary variables with O(k) binary clauses"}]'::jsonb,
+ core_idea=core_idea || E'\n\nEncoding boundary: at-most-one among k variables can be represented in 2-CNF using pairwise exclusions (O(k²)) or a sequential counter with auxiliary variables (O(k)). But an arbitrary at-least-one clause over more than two literals is not a 2-CNF relation.',
+ coverage_problems=coverage_problems || '["Custom At-Most-One Constraint via Sequential Counter"]'::jsonb
+where topic_id=29 and not (sub_variants @> '["At-most-one constraints: pairwise exclusion versus linear-size sequential counter"]'::jsonb);
 
 commit;
