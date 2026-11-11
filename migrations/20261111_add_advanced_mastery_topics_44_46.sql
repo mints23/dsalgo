@@ -39,28 +39,26 @@ values
 '[{"trigger":"Many substring equality checks or common-substring search","breaks_when":"Hash collisions cannot be tolerated without verification","sub_variant":"Rolling hash with double hashing or candidate verification"},{"trigger":"Lexicographic suffix order or substring-order queries","breaks_when":"Only one short pattern search is required","sub_variant":"Suffix array plus LCP"},{"trigger":"Count distinct substrings or find k-th substring","breaks_when":"Only fixed-pattern matching is needed","sub_variant":"Suffix-array contributions or suffix-automaton intervals"},{"trigger":"Match cyclic shifts or count many substring occurrences","breaks_when":"A fixed small pattern set suits KMP/Aho–Corasick","sub_variant":"Suffix automaton and suffix links"},{"trigger":"All palindrome radii or longest palindrome in linear time","breaks_when":"Only a few short centers are queried","sub_variant":"Manacher odd/even radii"}]'::jsonb,
 '["LC 1923 Longest Common Subpath","CSES 2102 Finding Patterns","CSES 2103 Substring Order I","CSES 2104 Substring Order II","CF 235C Cyclical Quest","CF 271D Good Substrings","Custom Manacher"]'::jsonb,
 '["Rolling hash is probabilistic unless collisions are verified or otherwise controlled.","Define the LCP indexing convention explicitly.","Distinct-substring contributions subtract overlap with the adjacent suffix.","A suffix-automaton state contributes len(v)-len(link(v)) substrings before additional constraints.","Manacher needs separate odd and even radii."]'::jsonb)
-on conflict (topic_id) do update set
- why_it_matters=excluded.why_it_matters,core_idea=excluded.core_idea,sub_variants=excluded.sub_variants,
- pattern_triggers=excluded.pattern_triggers,coverage_problems=excluded.coverage_problems,red_flags=excluded.red_flags;
+on conflict (topic_id) do nothing;
 
 -- Extend existing topic teaching content without duplicating entries on a replay.
 update public.topic_content set
  sub_variants=sub_variants || '["Deterministic Miller–Rabin for 64-bit primality","Pollard Rho factorisation with Miller–Rabin","Möbius inversion for gcd constraints and coprime-pair counting"]'::jsonb,
  core_idea=core_idea || E'\n\nLarge-integer number theory: for isolated values near 10^18 use deterministic Miller–Rabin with a proven witness set and overflow-safe modular multiplication. Pollard Rho finds non-trivial factors using pseudorandom iteration and gcd, combined recursively with primality testing. Möbius inversion converts gcd constraints into divisor sums weighted by μ(d).',
  why_it_matters=why_it_matters || E'\n\nThe advanced range now covers isolated huge integers, factorisation of large composites, and divisor-sum inversion beyond bounded sieve precomputation.'
-where topic_id=10 and not (sub_variants @> '["Deterministic Miller–Rabin for 64-bit primality","Pollard Rho factorisation with Miller–Rabin","Möbius inversion for gcd constraints and coprime-pair counting"]'::jsonb);
+where topic_id=10 and not (sub_variants @> '["Deterministic Miller–Rabin for 64-bit primality"]'::jsonb);
 
 update public.topic_content set
  sub_variants=sub_variants || '["Minimum vertex cover from maximum matching via alternating reachability (König)","Hall-deficient set construction as a certificate","Weighted bipartite assignment via Hungarian primal-dual algorithm"]'::jsonb,
  core_idea=core_idea || E'\n\nMatching duality: König''s theorem equates maximum matching and minimum vertex-cover size in bipartite graphs. Alternating reachability constructs a minimum cover and a Hall-deficient witness when left-perfect matching fails. Weighted assignment uses Hungarian primal-dual potentials and augmenting paths.',
  why_it_matters=why_it_matters || E'\n\nThe matching path now continues beyond cardinality matching to dual certificates, Hall obstructions and minimum-cost assignment.'
-where topic_id=23 and not (sub_variants @> '["Minimum vertex cover from maximum matching via alternating reachability (König)","Hall-deficient set construction as a certificate","Weighted bipartite assignment via Hungarian primal-dual algorithm"]'::jsonb);
+where topic_id=23 and not (sub_variants @> '["Minimum vertex cover from maximum matching via alternating reachability (König)"]'::jsonb);
 
 update public.topic_content set
  sub_variants=sub_variants || '["Dinic maximum flow with residual edges, level graph and current-arc optimisation","Minimum s-t cut extraction from residual reachability","Integral maximum flow and edge-disjoint path decomposition","Vertex-disjoint paths via node splitting and vertex capacities"]'::jsonb,
  core_idea=core_idea || E'\n\nFlow networks: encode resource limits as capacities and enforce conservation. Residual edges represent unused capacity and the ability to undo prior routing. Dinic builds BFS level graphs and sends blocking flow with DFS/current-arc pointers. When no augmenting path remains, residual reachability yields a minimum cut. Integral capacities enable edge-disjoint path decomposition; vertex-disjoint paths use node splitting.',
  why_it_matters=why_it_matters || E'\n\nThe required graph curriculum now includes complete max-flow modelling, min-cut recovery and disjoint-path extraction.'
-where topic_id=29 and not (sub_variants @> '["Dinic maximum flow with residual edges, level graph and current-arc optimisation","Minimum s-t cut extraction from residual reachability","Integral maximum flow and edge-disjoint path decomposition","Vertex-disjoint paths via node splitting and vertex capacities"]'::jsonb);
+where topic_id=29 and not (sub_variants @> '["Dinic maximum flow with residual edges, level graph and current-arc optimisation"]'::jsonb);
 
 -- Required problem additions. Conflict handling preserves existing row IDs and progress references.
 insert into public.problems
@@ -104,12 +102,10 @@ values
 (46,5,'Hard','CF 235C','https://codeforces.com/problemset/problem/235/C','Cyclical Quest','Hard',false,'Suffix automaton for cyclic-shift matching','Scan s+s while maintaining automaton state and matched length, capped at |s|. Use suffix links and occurrence aggregation to count valid rotations without duplicates.',true,'combination','Suffix automata and cyclic matching',3,1),
 (46,6,'Hard','CF 271D','https://codeforces.com/problemset/problem/271/D','Good Substrings','Hard',false,'Distinct valid substrings with suffix automaton','Use a two-pointer bound on valid length per end position, propagate maximum valid length to suffix-automaton states through suffix links, and count max(0,min(len[v],valid[v])−len(link[v])).',true,'combination','Suffix automata and cyclic matching',3,2),
 (46,7,'Hard',null,null,'Manacher — Compute Every Palindrome Radius in O(n)','Hard',false,'Odd/even palindrome radii','Maintain rightmost palindrome [l,r], seed radius from its mirror, expand, and update [l,r]. Run separate odd and even passes; right boundary advances monotonically.',true,'core_pattern','Palindrome radii and linear-time structure',4,1)
-on conflict (topic_id,order_num) do update set
- layer=excluded.layer,lc_number=excluded.lc_number,lc_url=excluded.lc_url,title=excluded.title,
- difficulty=excluded.difficulty,is_premium=excluded.is_premium,sub_variant=excluded.sub_variant,
- key_insight=excluded.key_insight,is_required=excluded.is_required,curriculum_role=excluded.curriculum_role,
- curriculum_path=excluded.curriculum_path,curriculum_path_order=excluded.curriculum_path_order,
- path_problem_order=excluded.path_problem_order;
+on conflict (topic_id,order_num) do nothing;
+
+-- Correct the Codeforces problem identity: 1100F is Ivan and Burgers.
+update public.problems set title='Ivan and Burgers', key_insight='Answer range maximum-XOR queries using a segment tree of mergeable linear bases. Each node stores a basis spanning its interval; merge child bases by inserting pivots, then merge O(log n) nodes for a query and greedily maximise XOR.' where topic_id=44 and order_num=16;
 
 -- Keep generated topic IDs safe for the next default insert after explicit IDs 44–46.
 do $$
