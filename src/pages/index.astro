@@ -1453,28 +1453,52 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 
             const normalizeVariant = (value: unknown) =>
               String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
-            const byVariant = new Map<string, typeof anchors>();
-            anchors.forEach((anchor) => {
-              const key = normalizeVariant(anchor.problem.sub_variant);
-              if (!key) return;
-              const list = byVariant.get(key) || [];
-              list.push(anchor);
-              byVariant.set(key, list);
-            });
+            const variantTokens = (value: unknown) => new Set(
+              normalizeVariant(value)
+                .replace(/[^a-z0-9]+/g, ' ')
+                .split(/\s+/)
+                .filter((token) => token.length > 1
+                  && !['the', 'and', 'from', 'with', 'using', 'into', 'for', 'on', 'of', 'in', 'to', 'a', 'an', 'by'].includes(token))
+                .map((token) => token.replace(/s$/, ''))
+            );
+            const similarity = (left: unknown, right: unknown) => {
+              const a = variantTokens(left);
+              const b = variantTokens(right);
+              if (!a.size || !b.size) return 0;
+              let intersection = 0;
+              a.forEach((token) => { if (b.has(token)) intersection++; });
+              return intersection / (a.size + b.size - intersection);
+            };
 
             complete.filter((entry) => entry.isReference).forEach((reference) => {
               const variantKey = normalizeVariant(reference.problem.sub_variant);
-              const exact = variantKey ? byVariant.get(variantKey) || [] : [];
+              const exact = anchors.filter((anchor) =>
+                normalizeVariant(anchor.problem.sub_variant) === variantKey && variantKey
+              );
+              const scored = anchors.map((anchor) => ({
+                anchor,
+                score: similarity(reference.problem.sub_variant, anchor.problem.sub_variant),
+              })).sort((a, b) => {
+                const scoreDiff = b.score - a.score;
+                if (scoreDiff) return scoreDiff;
+                const distance = Math.abs(Number(a.anchor.problem.order_num) - Number(reference.problem.order_num))
+                  - Math.abs(Number(b.anchor.problem.order_num) - Number(reference.problem.order_num));
+                return distance || Number(a.anchor.problem.order_num) - Number(b.anchor.problem.order_num);
+              });
               const sameLayer = anchors.filter((anchor) =>
                 String(anchor.problem.layer || '') === String(reference.problem.layer || '')
               );
-              const candidates = exact.length ? exact : (sameLayer.length ? sameLayer : anchors);
-              candidates.sort((a, b) => {
-                const distance = Math.abs(Number(a.problem.order_num) - Number(reference.problem.order_num))
-                  - Math.abs(Number(b.problem.order_num) - Number(reference.problem.order_num));
-                return distance || Number(a.problem.order_num) - Number(b.problem.order_num);
-              });
-              const anchor = candidates[0];
+              const anchor = exact.length
+                ? exact.sort((a, b) =>
+                    Math.abs(Number(a.problem.order_num) - Number(reference.problem.order_num))
+                    - Math.abs(Number(b.problem.order_num) - Number(reference.problem.order_num))
+                  )[0]
+                : scored[0]?.score >= 0.2
+                  ? scored[0].anchor
+                  : (sameLayer.length ? sameLayer : anchors).sort((a, b) =>
+                      Math.abs(Number(a.problem.order_num) - Number(reference.problem.order_num))
+                      - Math.abs(Number(b.problem.order_num) - Number(reference.problem.order_num))
+                    )[0];
               reference.path = anchor.path;
               reference.pathOrder = anchor.pathOrder;
               // Keep the reference adjacent to its closest logical anchor without
