@@ -51,7 +51,7 @@ The two P1 candidates were accepted as explicit progression steps in Pass 6: LC 
 
 ## Source evidence limitations
 
-The dump is not a complete editorial archive. Of the remaining 2,658 rows:
+The dump is not a complete editorial archive. At the start of Pass 6, before its ten accepted IDs were removed from the remaining set, the audit snapshot contained 2,668 rows:
 
 | Evidence type | Rows |
 |---|---:|
@@ -69,7 +69,7 @@ Missing fields:
 | Java solution code | 2,112 |
 | Hints | 829 |
 
-**Interpretation:** all 2,668 IDs were row-level triaged using title, topic tags, available problem statement, hints, editorial/code excerpts, likely curriculum owner and source URL. The high-signal technique candidates were individually inspected in greater depth, with constraints and solution mechanics checked where source material was present. The 2,668 rows have **not** each received an individually authored editorial proof or full code review. The 84 rows marked insufficient evidence (and the 465 metadata-only rows) should not be treated as confidently redundant.
+**Interpretation:** the original 2,668 absent IDs were row-level triaged using title, topic tags, available problem statement, hints, editorial/code excerpts, likely curriculum owner and source URL. Pass 6 accepted ten of those IDs; the current remaining total is therefore 2,658. The evidence table above describes the pre-Pass-6 snapshot, not a newly regenerated evidence inventory for those 2,658 remaining IDs. The high-signal technique candidates were individually inspected in greater depth, with constraints and solution mechanics checked where source material was present. The 2,668 baseline rows have **not** each received an individually authored editorial proof or full code review. The 84 rows marked insufficient evidence (and the 465 metadata-only rows in that baseline snapshot) should not be treated as confidently redundant.
 
 ## Six expansion passes completed
 
@@ -197,9 +197,8 @@ The static marketing count was synchronised to 1,450 problem rows. The deploymen
 
 ## Recommended next review order
 
-1. Retrieve full statements/editorials for the 84 insufficient-evidence records and the 465 metadata-only records.
-2. Inspect the 17 rare-tag second-look candidates for genuinely distinct data-structure or proof requirements, not just rare tags.
-3. Review the ten remaining advanced-tag candidates individually against statements and solution methods; do not promote a problem because its tag is rare.
+1. Retrieve full statements/editorials for the insufficient-evidence records and metadata-only records, beginning with the 84 and 465 flagged in the pre-Pass-6 audit snapshot.
+2. Inspect the ten remaining advanced-tag candidates individually against statements and solution methods; do not promote a problem because its tag is rare.
 4. Keep cross-topic applications as optional transfer practice unless a specific learning-path gap is demonstrated.
 5. Continue Java 17 implementation and adversarial-test coverage separately; a curriculum placement is not a verified Java reference solution.
 
@@ -210,8 +209,8 @@ The accompanying workbook is a pre-Pass-6 audit snapshot and therefore still con
 The accompanying workbook contains:
 
 - **Summary** — coverage, dispositions, source evidence and audit caveats.
-- **Remaining Audit** — all 2,668 absent IDs with owner candidates, evidence flags/excerpts, rationale, similar questions and source URL.
-- **Added Decisions** — the 63 placement decisions, including required/optional rationale.
+- **Remaining Audit** — the pre-Pass-6 2,668 absent IDs with owner candidates, evidence flags/excerpts, rationale, similar questions and source URL.
+- **Added Decisions** — the original 63 placement decisions from Passes 1–5, including required/optional rationale; Pass 6's ten decisions are listed in this report and its migration.
 - **Tag Analysis** — common tags, rare signals and suggested topic owners.
 
 A CSV companion contains the row-level remaining audit for programmatic review.
