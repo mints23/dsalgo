@@ -2,26 +2,26 @@
 
 ## Executive decision
 
-The uploaded dump contains **3,549 LeetCode records**. After five curriculum-gap expansion passes, AlgoFrog now represents **881 unique LeetCode IDs** from this dump. **2,668 IDs remain absent by exact number**.
+The uploaded dump contains **3,549 LeetCode records**. After six curriculum-gap expansion passes, AlgoFrog now represents **891 unique LeetCode IDs** from this dump. **2,658 IDs remain absent by exact number**.
 
-The audit created **63 new problem placements**: **43 required** and **20 optional**. Two placements (LC 470 and LC 528) intentionally reuse IDs that were already represented as trap references in the probability topic, so the number of *new unique LeetCode IDs* increased by 61 (820 → 881). Existing problem IDs and learner progress references were preserved.
+The audit created **73 new problem placements**: **50 required** and **23 optional**. Two placements (LC 470 and LC 528) intentionally reuse IDs that were already represented as trap references in the probability topic, so the first five passes added 61 new unique IDs; Pass 6 added 10 more. The total moved from 820 to 891 unique IDs represented from the dump. Existing problem IDs and learner progress references were preserved.
 
 This was not an instruction to import every absent question. A problem is added as required only when it teaches a distinct invariant, data structure, proof, constraint-sensitive reduction, or reusable algorithmic composition. A different story using the same core technique is generally treated as another application, not a new concept.
 
-## Inventory of the remaining 2,668
+## Inventory of the remaining 2,658
 
 ### Scope
 
 | Category | Remaining rows |
 |---|---:|
-| Algorithms | 2,263 |
+| Algorithms | 2,253 |
 | Database | 302 |
 | JavaScript | 67 |
 | pandas | 15 |
 | Concurrency | 9 |
 | Shell | 4 |
 | Uncategorised | 8 |
-| **Total** | **2,668** |
+| **Total** | **2,658** |
 
 The 405 non-Algorithms records are not automatically DSA gaps. They belong in database, language, concurrency or other separate interview tracks.
 
@@ -29,54 +29,49 @@ The 405 non-Algorithms records are not automatically DSA gaps. They belong in da
 
 | Difficulty | Rows |
 |---|---:|
-| Easy | 809 |
-| Medium | 1,376 |
-| Hard | 483 |
+| Easy | 808 |
+| Medium | 1,370 |
+| Hard | 480 |
 
 ### Row-level disposition
 
-Every remaining ID has one row-level triage classification in the accompanying audit CSV/workbook.
+Every ID remaining after Pass 6 has a row-level triage classification in the original audit CSV/workbook; those files are a pre-Pass-6 snapshot and therefore still include the ten newly accepted IDs.
 
 | Disposition | Rows | Interpretation |
 |---|---:|---|
 | Existing curriculum family | 734 | Maps to an existing pattern family; absent ID does not establish a missing concept |
-| Cross-topic application / combination | 1,426 | Combines known techniques or provides another application; inspect for transfer value before adding |
-| Advanced tag — second-look candidate | 17 | Rare tag or advanced label warrants technique-level scrutiny; not an automatic addition |
-| Distinctive phrase match — second look | 2 | High-priority candidates that need a decision against current coverage |
+| Cross-topic application / combination | 1,425 | Combines known techniques or provides another application; inspect for transfer value before adding |
+| Advanced tag — second-look candidate | 10 | Rare tag or advanced label warrants technique-level scrutiny; not an automatic addition |
+| Distinctive phrase match — second look | 0 | Both high-priority sequencing candidates were resolved in Pass 6 |
 | Insufficient source evidence | 84 | The dump does not provide enough source material for a reliable semantic judgement |
 | Out of DSA scope / separate track | 405 | Database, JavaScript, pandas, Shell, Concurrency or uncategorised material |
-| **Total** | **2,668** | |
+| **Total** | **2,658** | |
 
-The two remaining P1/second-look items are:
-
-- **LC 3253 — Construct String with Minimum Cost (Easy)**: same weighted dictionary segmentation family as LC 3213, which was added in pass 1. This is a useful easier progression step, but does not establish a new algorithmic family.
-- **LC 3341 — Find Minimum Time to Reach Last Room I**: ordinary time-gated shortest path with Dijkstra. AlgoFrog already has stronger time-gated/parity waiting coverage (LC 2577) and phase-dependent movement cost coverage (LC 3342).
-
-These should be considered as sequencing/variant candidates if the learning path needs another easier step, not as missing algorithm concepts.
+The two P1 candidates were accepted as explicit progression steps in Pass 6: LC 3253 now introduces trie-guided weighted segmentation before the harder fast-matching LC 3213; LC 3341 now establishes the simple earliest-arrival relaxation before phase-dependent LC 3342. They are useful sequencing additions rather than wholly new algorithm families.
 
 ## Source evidence limitations
 
-The dump is not a complete editorial archive. Of the remaining 2,668 rows:
+The dump is not a complete editorial archive. Of the remaining 2,658 rows:
 
 | Evidence type | Rows |
 |---|---:|
-| Statement + editorial or Java code | 795 |
-| Statement only | 1,219 |
-| Editorial or Java code only | 189 |
-| Metadata only | 465 |
+| Statement + editorial or Java code | 790 |
+| Statement only | 1,217 |
+| Editorial or Java code only | 188 |
+| Metadata only | 463 |
 
 Missing fields:
 
 | Missing field | Rows |
 |---|---:|
-| Problem description | 654 |
-| Editorial solution | 2,083 |
-| Java solution code | 2,117 |
-| Hints | 834 |
+| Problem description | 651 |
+| Editorial solution | 2,074 |
+| Java solution code | 2,112 |
+| Hints | 829 |
 
 **Interpretation:** all 2,668 IDs were row-level triaged using title, topic tags, available problem statement, hints, editorial/code excerpts, likely curriculum owner and source URL. The high-signal technique candidates were individually inspected in greater depth, with constraints and solution mechanics checked where source material was present. The 2,668 rows have **not** each received an individually authored editorial proof or full code review. The 84 rows marked insufficient evidence (and the 465 metadata-only rows) should not be treated as confidently redundant.
 
-## Five expansion passes completed
+## Six expansion passes completed
 
 ### Pass 1 — add missing broad families and strong examples
 
@@ -135,6 +130,27 @@ Optional references: LC 2470 (monotone LCM extension), LC 3336 (two-dimensional 
 - Topic 20: LC 3244 — successor-pointer path compression for monotone forward shortcuts (optional).
 - Topic 48: LC 335 — self-crossing orthogonal spiral with a bounded set of local configurations (optional).
 
+
+
+### Pass 6 — resolve the remaining high-value sequencing and technique gaps
+
+Required additions:
+
+- Topic 8: LC 489 — Robot Room Cleaner (unknown-grid exploration with relative coordinates, visited-state tracking and physically reversible DFS).
+- Topic 10: LC 372 — Super Pow (modular exponentiation when the exponent is supplied as decimal digits).
+- Topic 18: LC 3253 — Construct String with Minimum Cost (Easy) (trie-guided minimum-cost segmentation, preceding the harder LC 3213 fast-matching version).
+- Topic 25: LC 3341 — Find Minimum Time to Reach Last Room I (earliest-arrival Dijkstra with per-cell opening times); LC 3342 is ordered directly after it as the phase-aware continuation.
+- Topic 44: LC 191 — Number of 1 Bits (Hamming weight via Brian Kernighan's lowest-set-bit clearing).
+- Topic 48: LC 427 — Construct Quad Tree; LC 558 — Logical OR of Two Binary Grids Represented as Quad-Trees (construct, combine and coalesce compressed spatial regions).
+
+Optional references:
+
+- Topic 10: LC 2543 — Check if Point Is Reachable (GCD invariant under subtraction and doubling).
+- Topic 11: LC 3073 — Maximum Increasing Triplet Value (ordered-set predecessor plus suffix maximum).
+- Topic 45: LC 1982 — Find Array Given Subset Sums (inverse subset-sum reconstruction by multiset pairing).
+
+This pass adds seven required placements and three optional references. No new topic was needed; all additions were placed within existing learning paths or optional-reference sections.
+
 ## Why other rare-tag problems were not automatically added
 
 Examples already map to existing AlgoFrog techniques, or would mainly add another application:
@@ -154,18 +170,18 @@ Examples already map to existing AlgoFrog techniques, or would mainly add anothe
 
 This is why an ID absent from AlgoFrog is not synonymous with an algorithm absent from the curriculum.
 
-## Production state after the five passes
+## Production state after the six passes
 
 | Integrity metric | Verified value |
 |---|---:|
 | Topics | 50 |
 | Sidebar-visible topics | 48 |
-| Total problem rows | 1,440 |
-| Required placements | 1,028 |
+| Total problem rows | 1,450 |
+| Required placements | 1,035 |
 | Required rows missing curriculum-path metadata | 0 |
 | Duplicate required path positions | 0 |
-| Unique LeetCode IDs represented from the dump | 881 |
-| Dump IDs remaining by exact match | 2,668 |
+| Unique LeetCode IDs represented from the dump | 891 |
+| Dump IDs remaining by exact match | 2,658 |
 
 All additions were additive. Existing problem IDs and learner progress references were preserved. The SQL migrations are committed under:
 
@@ -174,18 +190,22 @@ All additions were additive. Existing problem IDs and learner progress reference
 - `migrations/20261111_leetcode_dump_gap_expansion_pass3.sql`
 - `migrations/20261111_leetcode_dump_gap_expansion_pass4.sql`
 - `migrations/20261111_leetcode_dump_gap_expansion_pass5.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass6.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass6_order_fix.sql`
 
-The static marketing count was synchronised to 1,440 problem rows. The deployment workflow is the release evidence for the front end.
+The static marketing count was synchronised to 1,450 problem rows. The deployment workflow is the release evidence for the front end.
 
 ## Recommended next review order
 
 1. Retrieve full statements/editorials for the 84 insufficient-evidence records and the 465 metadata-only records.
 2. Inspect the 17 rare-tag second-look candidates for genuinely distinct data-structure or proof requirements, not just rare tags.
-3. Decide whether LC 3253 and LC 3341 should be added as easier progression variants despite not introducing new concepts.
-4. Keep the remaining cross-topic applications as optional transfer practice unless a specific learning-path gap is demonstrated.
+3. Review the ten remaining advanced-tag candidates individually against statements and solution methods; do not promote a problem because its tag is rare.
+4. Keep cross-topic applications as optional transfer practice unless a specific learning-path gap is demonstrated.
 5. Continue Java 17 implementation and adversarial-test coverage separately; a curriculum placement is not a verified Java reference solution.
 
 ## Audit files
+
+The accompanying workbook is a pre-Pass-6 audit snapshot and therefore still contains the original 2,668-row remaining list; it should not be used as the post-Pass-6 live count. The database state and the production row count above are authoritative.
 
 The accompanying workbook contains:
 
