@@ -1377,8 +1377,11 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
                 return;
               }
               if (problem.is_required === true) return;
-              const difficulty = String(problem.difficulty || '').trim().toLowerCase();
-              if (difficulty === 'easy' || problem.curriculum_role === 'optional_reference') return;
+              // Only explicitly approved optional references are visible. Easy rows
+              // classified as excluded_trap/out_of_scope must not bypass the filter:
+              // they have no curriculum path and would otherwise disable grouping
+              // for the entire table.
+              if (problem.curriculum_role === 'optional_reference') return;
               reviewRows.push(row as HTMLTableRowElement);
             });
 
