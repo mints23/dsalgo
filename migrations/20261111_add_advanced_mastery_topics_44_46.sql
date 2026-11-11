@@ -107,6 +107,29 @@ on conflict (topic_id,order_num) do nothing;
 -- Correct the Codeforces problem identity: 1100F is Ivan and Burgers.
 update public.problems set title='Ivan and Burgers', key_insight='Answer range maximum-XOR queries using a segment tree of mergeable linear bases. Each node stores a basis spanning its interval; merge child bases by inserting pivots, then merge O(log n) nodes for a query and greedily maximise XOR.' where topic_id=44 and order_num=16;
 
+
+-- Add decision triggers for the newly covered number-theory, matching and flow patterns.
+update public.topic_content set pattern_triggers=pattern_triggers || '[
+ {"trigger":"Primality queries involve values too large for a sieve and trial division","breaks_when":"Dense bounded range where a sieve is faster","sub_variant":"Deterministic Miller–Rabin with a proven witness set"},
+ {"trigger":"Factor a large 64-bit composite or semiprime","breaks_when":"Small values or dense bounded domain","sub_variant":"Miller–Rabin plus Pollard Rho"}
+]'::jsonb
+where topic_id=10 and not (pattern_triggers @> '[{"trigger":"Primality queries involve values too large for a sieve and trial division"}]'::jsonb);
+
+update public.topic_content set pattern_triggers=pattern_triggers || '[
+ {"trigger":"Find the smallest set of vertices touching every edge in a bipartite graph","breaks_when":"The graph is not bipartite","sub_variant":"König minimum vertex cover via alternating reachability"},
+ {"trigger":"Prove no matching can saturate the left partition and return a witness subset","breaks_when":"A left-perfect matching exists","sub_variant":"Hall-deficient set S with |N(S)| < |S|"},
+ {"trigger":"Assign workers to distinct tasks while minimising total cost","breaks_when":"Only cardinality matching is required","sub_variant":"Hungarian primal-dual assignment"}
+]'::jsonb
+where topic_id=23 and not (pattern_triggers @> '[{"trigger":"Find the smallest set of vertices touching every edge in a bipartite graph"}]'::jsonb);
+
+update public.topic_content set pattern_triggers=pattern_triggers || '[
+ {"trigger":"Maximise throughput from one source to one sink under edge capacities","breaks_when":"Negative capacities or non-network constraints","sub_variant":"Dinic residual network and blocking flow"},
+ {"trigger":"Find the smallest edge set whose removal disconnects source and sink","breaks_when":"Additional cut constraints alter the problem","sub_variant":"Max-flow/min-cut duality and residual reachability"},
+ {"trigger":"Find maximum edge-disjoint source-to-sink routes","breaks_when":"Routes may share edges with capacity greater than one","sub_variant":"Unit-capacity max flow and integral path decomposition"},
+ {"trigger":"Find vertex-disjoint routes","breaks_when":"Only edge-disjointness is required","sub_variant":"Node splitting and vertex capacities"}
+]'::jsonb
+where topic_id=29 and not (pattern_triggers @> '[{"trigger":"Maximise throughput from one source to one sink under edge capacities"}]'::jsonb);
+
 -- Keep generated topic IDs safe for the next default insert after explicit IDs 44–46.
 do $$
 declare seq_name text;
