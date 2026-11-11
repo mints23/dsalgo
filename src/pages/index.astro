@@ -652,7 +652,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         const pc = guideProblemRowCount;
         document.querySelector('meta[name="description"]')?.setAttribute(
           'content',
-          `Advanced interview prep: ${pc} required Medium/Hard questions across ${tc} topics. Optional Easy references and unclassified rows are excluded.`,
+          `Advanced interview prep: ${pc} core Medium/Hard questions plus Easy reference questions across ${tc} topics.`,
         );
         document.querySelector('meta[property="og:description"]')?.setAttribute(
           'content',
@@ -1356,8 +1356,9 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
       }
       patchProblemRowIdsFromTopics(topics);
 
-      // ── Advanced track: only DB-approved problems count as required ──
-      // Unmatched and unclassified authored rows are excluded from the learner-facing UI.
+      // ── Keep mapped Easy/reference questions visible in the normal topic table ──
+      // Required status still controls curriculum classification; it does not control visibility.
+      // Only unmatched and non-reference, non-required editorial rows are removed.
       function applyRequiredDifficultyFilter() {
         topics.forEach((topic: any) => {
           const card = document.getElementById(`tp${topic.id}`);
@@ -1367,9 +1368,6 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           );
 
           card.querySelectorAll('table[data-curriculum-problem-table="true"]').forEach((table) => {
-            const wrap = table.closest<HTMLElement>('.tbl-wrap');
-            if (!wrap) return;
-            const easyRows: HTMLTableRowElement[] = [];
             const reviewRows: HTMLTableRowElement[] = [];
             table.querySelectorAll('tbody tr[data-problem-candidate="true"]').forEach((row) => {
               const problemId = Number(row.getAttribute('data-problem-id'));
@@ -1380,48 +1378,12 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
               }
               if (problem.is_required === true) return;
               const difficulty = String(problem.difficulty || '').trim().toLowerCase();
-              if (difficulty === 'easy' || problem.curriculum_role === 'optional_reference') {
-                easyRows.push(row as HTMLTableRowElement);
-              } else {
-                reviewRows.push(row as HTMLTableRowElement);
-              }
+              if (difficulty === 'easy' || problem.curriculum_role === 'optional_reference') return;
+              reviewRows.push(row as HTMLTableRowElement);
             });
 
-            const addReferenceToggle = (
-              rows: HTMLTableRowElement[],
-              rowClass: string,
-              closedLabel: string,
-              openLabel: string,
-            ) => {
-              if (!rows.length) return;
-              rows.forEach((row) => {
-                row.classList.add(rowClass);
-                row.hidden = true;
-              });
-              const toggle = document.createElement('button');
-              toggle.type = 'button';
-              toggle.className = 'topic-details-btn easy-reference-toggle';
-              toggle.setAttribute('aria-expanded', 'false');
-              toggle.textContent = closedLabel.replace('{count}', String(rows.length));
-              toggle.addEventListener('click', () => {
-                const show = toggle.getAttribute('aria-expanded') !== 'true';
-                rows.forEach((row) => { row.hidden = !show; });
-                toggle.setAttribute('aria-expanded', String(show));
-                toggle.textContent = show
-                  ? openLabel
-                  : closedLabel.replace('{count}', String(rows.length));
-              });
-              wrap.insertBefore(toggle, table);
-            };
-
-            addReferenceToggle(
-              easyRows,
-              'optional-easy-row',
-              'Show optional Easy reference ({count})',
-              'Hide optional Easy reference',
-            );
-            // These rows are editorial leftovers, not part of the learner curriculum.
-            // Remove them from the DOM instead of exposing a review toggle.
+            // Easy/reference rows remain in their authored position with the other questions.
+            // Unmatched and non-reference, non-required authored rows remain excluded.
             reviewRows.forEach((row) => row.remove());
           });
         });
@@ -1995,7 +1957,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           const topicId = parseInt(navItem.getAttribute('data-topic-id')!);
           const card = document.getElementById(`tp${topicId}`);
           if (!card) return;
-          const totalRows = card.querySelectorAll('tbody tr:not(.optional-easy-row):not(.unclassified-problem-row) .num-cell').length;
+          const totalRows = card.querySelectorAll('tbody tr:not(.unclassified-problem-row) .num-cell').length;
           const indicator = navItem.querySelector('.tier-dot') as HTMLElement;
           if (!indicator) return;
           if (!totalRows) {
@@ -2012,7 +1974,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           }
           let doneCount = 0;
           card.querySelectorAll('tbody tr').forEach((row) => {
-            if (!row.classList.contains('optional-easy-row') && !row.classList.contains('unclassified-problem-row') && row.classList.contains('row-done')) doneCount++;
+            if (!row.classList.contains('unclassified-problem-row') && row.classList.contains('row-done')) doneCount++;
           });
           let color: string;
           let label: string;
@@ -2033,8 +1995,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         const fill = document.getElementById('overall-fill') as HTMLElement | null;
         const text = document.getElementById('overall-text');
         if (!fill || !text) return;
-        const allRows = document.querySelectorAll('tbody tr:not(.optional-easy-row):not(.unclassified-problem-row) .num-cell').length;
-        const doneRows = document.querySelectorAll('tbody tr.row-done:not(.optional-easy-row):not(.unclassified-problem-row)').length;
+        const allRows = document.querySelectorAll('tbody tr:not(.unclassified-problem-row) .num-cell').length;
+        const doneRows = document.querySelectorAll('tbody tr.row-done:not(.unclassified-problem-row)').length;
         const pct = allRows ? Math.round((doneRows / allRows) * 100) : 0;
         fill.style.width = `${pct}%`;
         text.textContent = `${doneRows}/${allRows} solved (${pct}%)`;
