@@ -1,114 +1,197 @@
-# LeetCode dump audit — 2026-11-11
+# LeetCode dump deep audit — 2026-11-11
 
-## Executive result
+## Executive decision
 
-The uploaded CSV contains **3,549 distinct LeetCode records**, with frontend IDs spanning 1–3,549. The exact-ID comparison against AlgoFrog found **820 distinct LeetCode IDs already represented** and **2,729 IDs not represented by an exact LeetCode ID**.
+The uploaded dump contains **3,549 LeetCode records**. After five curriculum-gap expansion passes, AlgoFrog now represents **881 unique LeetCode IDs** from this dump. **2,668 IDs remain absent by exact number**.
 
-That gap is not a recommendation to import 2,729 questions. Many are alternative exercises for techniques already taught, duplicates of CSES/Codeforces/custom practice, API-specific exercises, or problems whose tags do not reveal a new algorithm. The audit therefore used exact-ID coverage plus a semantic review of the high-signal advanced candidates: problem statement, constraints, hints and available solution metadata were checked before deciding whether a question contributed a distinct invariant, data structure, proof or implementation pattern.
+The audit created **63 new problem placements**: **43 required** and **20 optional**. Two placements (LC 470 and LC 528) intentionally reuse IDs that were already represented as trap references in the probability topic, so the number of *new unique LeetCode IDs* increased by 61 (820 → 881). Existing problem IDs and learner progress references were preserved.
 
-## Dump inventory
+This was not an instruction to import every absent question. A problem is added as required only when it teaches a distinct invariant, data structure, proof, constraint-sensitive reduction, or reusable algorithmic composition. A different story using the same core technique is generally treated as another application, not a new concept.
 
-| Measure | Count |
+## Inventory of the remaining 2,668
+
+### Scope
+
+| Category | Remaining rows |
 |---|---:|
-| Total rows | 3,549 |
-| Unique frontend question IDs | 3,549 |
-| Unique title slugs | 3,549 |
-| Algorithms category | 3,142 |
-| Database category | 302 |
-| JavaScript category | 67 |
-| pandas category | 15 |
-| Concurrency category | 9 |
-| Shell category | 4 |
-| Blank category | 10 |
-| Easy | 876 |
-| Medium | 1,840 |
-| Hard | 833 |
-| Description present | 2,830 |
-| Editorial solution present | 837 |
-| Java solution code present | 991 |
-| Both editorial and Java code absent | 2,001 |
-| Unique topic tags | 71 |
+| Algorithms | 2,263 |
+| Database | 302 |
+| JavaScript | 67 |
+| pandas | 15 |
+| Concurrency | 9 |
+| Shell | 4 |
+| Uncategorised | 8 |
+| **Total** | **2,668** |
 
-Tags are useful discovery metadata, not a curriculum taxonomy. A tag such as “Segment Tree”, “Trie” or “Probability” does not establish that a problem teaches a new sub-pattern.
+The 405 non-Algorithms records are not automatically DSA gaps. They belong in database, language, concurrency or other separate interview tracks.
 
-## Additions selected
+### Difficulty
 
-**24 new problem placements were added: 22 required and 2 optional references.** Two new topic homes were created. Existing problem IDs and progress references were not edited or recreated.
+| Difficulty | Rows |
+|---|---:|
+| Easy | 809 |
+| Medium | 1,376 |
+| Hard | 483 |
 
-| LeetCode | New learning outcome | Destination | Decision |
-|---|---|---|---|
-| 380 — Insert Delete GetRandom O(1) | Dense array + value-index map; swap-delete invariant | 49 Randomized Algorithms | Required |
-| 381 — Insert Delete GetRandom O(1), duplicates | Index-set maintenance for a multiset under swap-delete | 49 | Required |
-| 382 — Linked List Random Node | Reservoir sampling for an unknown-length stream | 49 | Required |
-| 398 — Random Pick Index | Reservoir sampling after filtering occurrences | 49 | Required |
-| 384 — Shuffle an Array | Fisher–Yates and uniform-permutation proof | 49 | Required |
-| 519 — Random Flip Matrix | Sparse Fisher–Yates over an implicit huge domain | 49 | Required |
-| 470 — Implement Rand10 Using Rand7 | Rejection sampling and modulo-bias avoidance | 49 | Required |
-| 478 — Generate Random Point in a Circle | Inverse-transform sampling; radius proportional to square root of U | 49 | Required |
-| 528 — Random Pick with Weight | Prefix-sum weighted discrete sampling | 49 | Required |
-| 497 — Random Point in Non-overlapping Rectangles | Weighted sampling by lattice-point count, then local coordinate sampling | 49 | Required |
-| 912 — Sort an Array | Comparison-sort guarantees, stability and space trade-offs | 50 Sorting & Selection | Required |
-| 148 — Sort List | Linked-list merge sort; top-down vs bottom-up space | 50 | Required |
-| 164 — Maximum Gap | Pigeonhole bucket bound for linear-time maximum adjacent gap | 50 | Required |
-| 2343 — Query Kth Smallest Trimmed Number | Stable LSD radix passes with original-index tie-breaking | 50 | Required |
-| 324 — Wiggle Sort II | Quickselect median + three-way partition + virtual indexing | 50 | Required |
-| 220 — Contains Duplicate III | Sliding index window plus predecessor/successor or value buckets | 4 Sliding Window | Required |
-| 277 — Find the Celebrity | Pairwise candidate elimination followed by mandatory verification | 1 Two Pointers | Required |
-| 843 — Guess the Word | Minimax partitioning of candidates by oracle feedback | 37 Game Theory & Minimax | Required |
-| 1467 — Probability of Two Boxes Having the Same Number of Distinct Balls | Weighted combinatorial allocation DP using binomial coefficients | 40 DAGs & Probability | Required |
-| 3213 — Construct String with Minimum Cost | Weighted word-break DP accelerated by length-grouped rolling hashes or multi-pattern matching | 46 Advanced Strings | Required |
-| 391 — Perfect Rectangle | Exact-cover invariant combining total area and corner parity | 48 Computational Geometry | Required |
-| 3454 — Separate Squares II | Union-area sweep and segment-tree covered length; locate a horizontal area quantile | 48 | Required |
-| 1227 — Airplane Seat Assignment Probability | Symmetry and first-displaced-seat argument | 40 | Optional reference |
-| 1515 — Best Position for a Service Centre | Geometric median and iterative convex optimisation | 48 | Optional reference |
+### Row-level disposition
 
-### Why the new topics were justified
+Every remaining ID has one row-level triage classification in the accompanying audit CSV/workbook.
 
-**Topic 49 — Randomized Algorithms & Uniform Sampling** fills a genuine family gap. Before this audit, the curriculum contained weighted/blacklist sampling in a HashMap context and probability DP, but did not teach the uniformity proofs behind reservoir sampling, Fisher–Yates, rejection sampling, inverse transforms, sparse sampling without replacement, or O(1) randomised sets. LC 470 and LC 528 were already present in Topic 40 as excluded traps because they are not probability-DP problems. Those trap placements remain; Topic 49 is their algorithmic owner.
+| Disposition | Rows | Interpretation |
+|---|---:|---|
+| Existing curriculum family | 734 | Maps to an existing pattern family; absent ID does not establish a missing concept |
+| Cross-topic application / combination | 1,426 | Combines known techniques or provides another application; inspect for transfer value before adding |
+| Advanced tag — second-look candidate | 17 | Rare tag or advanced label warrants technique-level scrutiny; not an automatic addition |
+| Distinctive phrase match — second look | 2 | High-priority candidates that need a decision against current coverage |
+| Insufficient source evidence | 84 | The dump does not provide enough source material for a reliable semantic judgement |
+| Out of DSA scope / separate track | 405 | Database, JavaScript, pandas, Shell, Concurrency or uncategorised material |
+| **Total** | **2,668** | |
 
-**Topic 50 — Sorting, Selection & Order Statistics** fills the missing systematic treatment of sorting as an algorithmic design choice. Topic 15 already teaches heap-based top-K, QuickSelect and bucket-based selection; it does not replace comparison-sort guarantees, linked-list merge sort, pigeonhole bucketing for maximum gap, stable radix passes or virtual-index three-way partitioning.
+The two remaining P1/second-look items are:
 
-## Reviewed but not added as new required questions
+- **LC 3253 — Construct String with Minimum Cost (Easy)**: same weighted dictionary segmentation family as LC 3213, which was added in pass 1. This is a useful easier progression step, but does not establish a new algorithmic family.
+- **LC 3341 — Find Minimum Time to Reach Last Room I**: ordinary time-gated shortest path with Dijkstra. AlgoFrog already has stronger time-gated/parity waiting coverage (LC 2577) and phase-dependent movement cost coverage (LC 3342).
 
-These examples already map to a meaningful current owner, or add application volume without a distinct required learning outcome:
+These should be considered as sequencing/variant candidates if the learning path needs another easier step, not as missing algorithm concepts.
 
-| Dump problem(s) | Existing coverage / decision |
+## Source evidence limitations
+
+The dump is not a complete editorial archive. Of the remaining 2,668 rows:
+
+| Evidence type | Rows |
+|---|---:|
+| Statement + editorial or Java code | 795 |
+| Statement only | 1,219 |
+| Editorial or Java code only | 189 |
+| Metadata only | 465 |
+
+Missing fields:
+
+| Missing field | Rows |
+|---|---:|
+| Problem description | 654 |
+| Editorial solution | 2,083 |
+| Java solution code | 2,117 |
+| Hints | 834 |
+
+**Interpretation:** all 2,668 IDs were row-level triaged using title, topic tags, available problem statement, hints, editorial/code excerpts, likely curriculum owner and source URL. The high-signal technique candidates were individually inspected in greater depth, with constraints and solution mechanics checked where source material was present. The 2,668 rows have **not** each received an individually authored editorial proof or full code review. The 84 rows marked insufficient evidence (and the 465 metadata-only rows) should not be treated as confidently redundant.
+
+## Five expansion passes completed
+
+### Pass 1 — add missing broad families and strong examples
+
+Created two new topics:
+
+- **Topic 49 — Randomized Algorithms & Uniform Sampling**: randomized set/multiset, reservoir sampling, Fisher–Yates, sparse sampling without replacement, rejection sampling, uniform continuous sampling, weighted sampling.
+- **Topic 50 — Sorting, Selection & Order Statistics**: comparison-sort guarantees, linked-list merge sort, pigeonhole buckets, stable radix sort, Quickselect and virtual-index partitioning.
+
+Required additions in existing topics included:
+
+- Topic 1: LC 277 — Find the Celebrity (candidate elimination + verification).
+- Topic 4: LC 220 — Contains Duplicate III (index window + ordered predecessor/successor or buckets).
+- Topic 37: LC 843 — Guess the Word (minimax feedback partition).
+- Topic 40: LC 1467 — Probability of Two Boxes (weighted combinatorial allocation).
+- Topic 46: LC 3213 — Construct String with Minimum Cost (weighted word-break DP + fast dictionary matching).
+- Topic 48: LC 391 — Perfect Rectangle; LC 3454 — Separate Squares II.
+
+Optional references: LC 1227 (symmetry probability), LC 1515 (geometric median).
+
+### Pass 2 — distinct invariants hidden behind broad tags
+
+Required additions:
+
+- Topic 10: LC 2447 — subarray GCD frontier.
+- Topic 12: LC 3479 — segment-tree first-fit descent.
+- Topic 20: LC 2612 — parity-aware BFS with successor DSU.
+- Topic 24: LC 3530 — subset DP over topological prefixes/order ideals.
+- Topic 28: LC 2092 — same-timestamp batch DSU and selective reset.
+- Topic 29: LC 1724 — MST + LCA bottleneck path queries.
+- Topic 37: LC 2029 — modulo-3 residue game.
+- Topic 41: LC 1735 (stars and bars over prime exponents), LC 3518 (multiset lexicographic unranking).
+- Topic 44: LC 3209 (bitwise-AND frontier), LC 3117 (AND frontier + partition DP).
+- Topic 46: LC 2430 (rolling-hash predicate inside prefix DP).
+- Topic 48: LC 1453 (fixed-radius circle-centre enumeration), LC 3102 (Manhattan-to-L-infinity transform).
+
+Optional references added for GCD pair inversion, MKAverage, weighted DSU consistency, reverse-time component aggregates, component bitwise AND, permutation rank, information capacity, minimum enclosing circle and constrained L1 closest pair.
+
+### Pass 3 — cross-topic combinations
+
+- Required: Topic 48 LC 3382 — maximum empty rectangle with point constraints, using orthogonal range queries.
+- Optional: Topic 18 LC 3045 (paired-character prefix/suffix trie), Topic 46 LC 2851 (rotation matching + two-class transition recurrence), Topic 7 LC 2949 (number-theoretic prefix-balance classes), Topic 41 LC 2954 (infection-gap interleavings).
+
+### Pass 4 — harder reductions and optimisation patterns
+
+Required additions:
+
+- Topic 10: LC 1819 — divisor-sieve characterisation of attainable subsequence GCDs.
+- Topic 25: LC 3342 — phase-aware time-dependent Dijkstra.
+- Topic 42: LC 1687 — constrained partition DP with a monotone deque; LC 2945 — monotonic-stack optimisation for non-decreasing segment-sum partitioning.
+- Topic 48: LC 3235 — circular-obstacle barrier connectivity with DSU; LC 963 — rotated rectangle detection through equal-length diagonals and a common midpoint.
+
+Optional references: LC 2470 (monotone LCM extension), LC 3336 (two-dimensional GCD DP), LC 2713 (same-value batched row/column DP).
+
+### Pass 5 — specialised transfer exercises
+
+- Topic 20: LC 3244 — successor-pointer path compression for monotone forward shortcuts (optional).
+- Topic 48: LC 335 — self-crossing orthogonal spiral with a bounded set of local configurations (optional).
+
+## Why other rare-tag problems were not automatically added
+
+Examples already map to existing AlgoFrog techniques, or would mainly add another application:
+
+| Dump problem(s) | Existing AlgoFrog coverage |
 |---|---|
-| 218 Skyline Problem | Topic 6 sweep line and interval aggregation |
-| 307 Range Sum Query — Mutable; 308 Range Sum Query 2D — Mutable | Topic 11 BIT and Topic 12 Segment Tree |
-| 315 Count of Smaller Numbers After Self; 327 Count of Range Sum; 493 Reverse Pairs | Existing BIT / merge-count / segment-tree DP families |
-| 332 Reconstruct Itinerary; 2097 Valid Arrangement of Pairs; 753 Cracking the Safe | Topic 29 Eulerian path/circuit and de Bruijn construction |
-| 850 Rectangle Area II | Topic 12 geometric sweep + covered-length segment tree |
-| 1192 Critical Connections | Topic 29 low-link bridges |
-| 1851 Minimum Interval to Include Each Query; 759 Employee Free Time | Topic 6 interval sweep and offline query processing |
-| 1923 Longest Common Subpath; 1698 Number of Distinct Substrings; 1062 Longest Repeating Substring | Topic 46 rolling hash, suffix structures and distinct-substring counting |
-| 2407 Longest Increasing Subsequence II | Topic 42 data-structure-optimised DP |
-| 710 Random Pick with Blacklist | Already required in Topic 2; no duplicate placement added |
-| 470 Rand10 Using Rand7; 528 Random Pick with Weight | Existing Topic 40 trap references retained while Topic 49 becomes the positive algorithm owner |
+| LC 218 — Skyline Problem | Interval sweep line / event ordering |
+| LC 307 / 308 — mutable range sums | Fenwick tree / segment tree |
+| LC 315 / 327 / 493 — order and range counting | BIT, merge-counting and segment-tree families |
+| LC 332 / 2097 / 753 — itinerary, valid arrangement, safe cracking | Eulerian paths/circuits and de Bruijn construction |
+| LC 850 — Rectangle Area II | Geometric sweep + covered-length segment tree |
+| LC 1192 — Critical Connections | Low-link bridges |
+| LC 1851 / 759 — minimum interval query, employee free time | Offline interval sweep and heap |
+| LC 1923 / 1698 / 1062 — common path / distinct substrings | Rolling hash, suffix arrays, LCP and suffix automata |
+| LC 2407 — LIS II | Data-structure-optimised LIS DP |
+| LC 710 — Random Pick with Blacklist | Already required in HashMap / randomised mapping context |
 
-Many other problems tagged with Trie, BIT, Segment Tree, Topological Sort, Shortest Path, Number Theory, Bitmask, Combinatorics, Game Theory or Geometry were treated as additional applications unless their constraints required a new proof or data-structure invariant.
+This is why an ID absent from AlgoFrog is not synonymous with an algorithm absent from the curriculum.
 
-## Exclusions and optional decisions
+## Production state after the five passes
 
-- Database, JavaScript, pandas and Shell entries are outside this DSA curriculum. Concurrency problems belong in a separate concurrency/interview track rather than being mixed into algorithm topics.
-- Read4 variants (157/158) are stateful API/buffer-management exercises; they are not a missing general algorithm pattern in this track.
-- The geometric-median problem (1515) is retained as an optional numerical-optimisation reference, not a required interview gate.
-- Airplane Seat Assignment (1227) is retained as an optional symmetry puzzle. Its key insight is not a DP transition.
-- The celebrity problem (277) is included because candidate elimination plus verification is a compact, reusable reasoning pattern.
-- Guess the Word (843) is included because the feedback response partitions the candidate space; minimax worst-case bucket size is a meaningful strategy rather than ordinary brute-force guessing.
+| Integrity metric | Verified value |
+|---|---:|
+| Topics | 50 |
+| Sidebar-visible topics | 48 |
+| Total problem rows | 1,440 |
+| Required placements | 1,028 |
+| Required rows missing curriculum-path metadata | 0 |
+| Duplicate required path positions | 0 |
+| Unique LeetCode IDs represented from the dump | 881 |
+| Dump IDs remaining by exact match | 2,668 |
 
-## Production verification
+All additions were additive. Existing problem IDs and learner progress references were preserved. The SQL migrations are committed under:
 
-After the additions:
+- `migrations/20261111_leetcode_dump_gap_expansion.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass2.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass3.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass4.sql`
+- `migrations/20261111_leetcode_dump_gap_expansion_pass5.sql`
 
-- **50 topics**, of which **48 are sidebar-visible**.
-- **1,401 total problem rows**.
-- **1,007 required placements**.
-- **0 required placements missing curriculum path metadata**.
-- **0 duplicate required path positions**.
+The static marketing count was synchronised to 1,440 problem rows. The deployment workflow is the release evidence for the front end.
 
-The release migration is `migrations/20261111_leetcode_dump_gap_expansion.sql`. Navigation and the static marketing problem count were synchronised. The database migration was applied successfully; the website build/deployment is verified separately through GitHub Actions before declaring the front end released.
+## Recommended next review order
 
-## Audit caveat
+1. Retrieve full statements/editorials for the 84 insufficient-evidence records and the 465 metadata-only records.
+2. Inspect the 17 rare-tag second-look candidates for genuinely distinct data-structure or proof requirements, not just rare tags.
+3. Decide whether LC 3253 and LC 3341 should be added as easier progression variants despite not introducing new concepts.
+4. Keep the remaining cross-topic applications as optional transfer practice unless a specific learning-path gap is demonstrated.
+5. Continue Java 17 implementation and adversarial-test coverage separately; a curriculum placement is not a verified Java reference solution.
 
-The 3,549-row inventory and exact-ID coverage comparison were exhaustive. The semantic deep review concentrated on the high-signal candidate gaps and advanced-tag families listed above, rather than claiming every absent LeetCode ID deserves an individual narrative. The 2,729 IDs absent by exact number remain candidate practice material, not evidence of 2,729 missing concepts. This avoids turning a complete dump into a volume-driven import.
+## Audit files
+
+The accompanying workbook contains:
+
+- **Summary** — coverage, dispositions, source evidence and audit caveats.
+- **Remaining Audit** — all 2,668 absent IDs with owner candidates, evidence flags/excerpts, rationale, similar questions and source URL.
+- **Added Decisions** — the 63 placement decisions, including required/optional rationale.
+- **Tag Analysis** — common tags, rare signals and suggested topic owners.
+
+A CSV companion contains the row-level remaining audit for programmatic review.
