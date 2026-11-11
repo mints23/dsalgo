@@ -41,7 +41,7 @@ on conflict (topic_id,order_num) do nothing;
 
 update public.problems set layer='Variants' where topic_id=48 and order_num=7;
 
-do $
+do $$
 declare seq_name text;
 begin
   seq_name := pg_get_serial_sequence('public.topics','id');
