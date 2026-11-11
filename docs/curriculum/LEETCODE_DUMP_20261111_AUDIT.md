@@ -197,7 +197,7 @@ The static marketing count was synchronised to 1,450 problem rows. The deploymen
 
 ## Recommended next review order
 
-1. Retrieve full statements/editorials for the insufficient-evidence records and metadata-only records, beginning with the 84 and 465 flagged in the pre-Pass-6 audit snapshot.
+1. Keep the 84 insufficient-source-evidence records deferred as requested; revisit only if explicitly requested. Treat metadata-only records separately and do not infer redundancy from missing statements.
 2. Inspect the ten remaining advanced-tag candidates individually against statements and solution methods; do not promote a problem because its tag is rare.
 4. Keep cross-topic applications as optional transfer practice unless a specific learning-path gap is demonstrated.
 5. Continue Java 17 implementation and adversarial-test coverage separately; a curriculum placement is not a verified Java reference solution.
@@ -214,3 +214,18 @@ The accompanying workbook contains:
 - **Tag Analysis** — common tags, rare signals and suggested topic owners.
 
 A CSV companion contains the row-level remaining audit for programmatic review.
+
+
+## Final reconciliation — live-curriculum comparison
+
+The final audit candidates were reconciled against the live production database before import:
+
+- **LC 489 — Robot Room Cleaner:** already present as a required placement from Pass 6; no duplicate inserted.
+- **LC 1982 — Find Array Given Subset Sums:** already present as an optional reference from Pass 6; no duplicate inserted.
+- **LC 1960 — Maximum Product of the Length of Two Palindromic Substrings:** added as a required Topic 46 combination after the custom Manacher foundation. The new learning outcome is the boundary-sweep and prefix/suffix-max composition for two disjoint odd palindromes.
+- **LC 3515 — Shortest Path in a Weighted Tree:** added as an optional Topic 38 transfer reference for Euler-tour subtree range-add and Fenwick point-query under edge-weight updates. The Fenwick and Euler-tour primitives are already taught, so this is not promoted into the required path.
+- **LC 3352 — Count K-Reducible Numbers Less Than N:** not added; the existing binary digit-DP path already teaches a bounded set-bit-count state, and this problem is a transfer application rather than a distinct core concept.
+
+The **84 insufficient-source-evidence rows are intentionally deferred** and were not inspected further or changed, per the user's instruction.
+
+After this reconciliation, the live curriculum target is **1,452 problem placements**, **1,036 required placements**, and **951 distinct LeetCode IDs** (subject to post-migration verification). No existing problem row is deleted, moved, or reassigned; learner progress identifiers remain stable.
