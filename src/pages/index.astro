@@ -1418,20 +1418,71 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
               const path = String(problem.curriculum_path || '').trim();
               const pathOrder = Number(problem.curriculum_path_order);
               const problemOrder = Number(problem.path_problem_order);
-              if (!path || !Number.isInteger(pathOrder) || pathOrder < 1
-                || !Number.isInteger(problemOrder) || problemOrder < 1) return null;
-              return { row, path, pathOrder, problemOrder, stableOrder: Number(problem.order_num) };
+              const hasPath = Boolean(path) && Number.isInteger(pathOrder) && pathOrder >= 1
+                && Number.isInteger(problemOrder) && problemOrder >= 1;
+              const isReference = problem.curriculum_role === 'optional_reference' && problem.is_required !== true;
+              if (hasPath) {
+                return {
+                  row, path, pathOrder, sortOrder: problemOrder,
+                  stableOrder: Number(problem.order_num), problem,
+                };
+              }
+              if (!isReference) return null;
+              return {
+                row, path: '', pathOrder: 0, sortOrder: 0,
+                stableOrder: Number(problem.order_num), problem, isReference: true,
+              };
             });
 
-            // Fail open: never partially regroup a table or hide an unclassified row.
+            // Required rows must retain complete, consistent path metadata. Easy/reference
+            // rows are visible too, but historically have no curriculum_path. Place those
+            // references into the best matching existing logic group using their authored
+            // sub-variant first, then the nearest row in the same layer as a safe fallback.
             if (entries.some((entry) => !entry)) return;
             const complete = entries as Array<{
               row: HTMLTableRowElement;
               path: string;
               pathOrder: number;
-              problemOrder: number;
+              sortOrder: number;
               stableOrder: number;
+              problem: any;
+              isReference?: boolean;
             }>;
+            const anchors = complete.filter((entry) => !entry.isReference);
+            if (!anchors.length) return;
+
+            const normalizeVariant = (value: unknown) =>
+              String(value || '').trim().toLowerCase().replace(/\\s+/g, ' ');
+            const byVariant = new Map<string, typeof anchors>();
+            anchors.forEach((anchor) => {
+              const key = normalizeVariant(anchor.problem.sub_variant);
+              if (!key) return;
+              const list = byVariant.get(key) || [];
+              list.push(anchor);
+              byVariant.set(key, list);
+            });
+
+            complete.filter((entry) => entry.isReference).forEach((reference) => {
+              const variantKey = normalizeVariant(reference.problem.sub_variant);
+              const exact = variantKey ? byVariant.get(variantKey) || [] : [];
+              const sameLayer = anchors.filter((anchor) =>
+                String(anchor.problem.layer || '') === String(reference.problem.layer || '')
+              );
+              const candidates = exact.length ? exact : (sameLayer.length ? sameLayer : anchors);
+              candidates.sort((a, b) => {
+                const distance = Math.abs(Number(a.problem.order_num) - Number(reference.problem.order_num))
+                  - Math.abs(Number(b.problem.order_num) - Number(reference.problem.order_num));
+                return distance || Number(a.problem.order_num) - Number(b.problem.order_num);
+              });
+              const anchor = candidates[0];
+              reference.path = anchor.path;
+              reference.pathOrder = anchor.pathOrder;
+              // Keep the reference adjacent to its closest logical anchor without
+              // disturbing the authored ordering of required problems in that group.
+              reference.sortOrder = anchor.sortOrder
+                + (Number(reference.problem.order_num) - Number(anchor.problem.order_num)) * 0.001;
+            });
+
             const pathOrderByName = new Map<string, number>();
             const pathNameByOrder = new Map<number, string>();
             for (const entry of complete) {
@@ -1445,7 +1496,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 
             complete.sort((a, b) =>
               a.pathOrder - b.pathOrder
-              || a.problemOrder - b.problemOrder
+              || a.sortOrder - b.sortOrder
               || a.stableOrder - b.stableOrder
             );
 
