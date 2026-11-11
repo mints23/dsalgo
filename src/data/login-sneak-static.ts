@@ -18,6 +18,7 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '04', navSection: 'Algorithms', navLabel: 'Sliding Window', navTierDotColor: '#01696f' },
   { displayNumber: '05', navSection: 'Algorithms', navLabel: "Kadane's Algorithm", navTierDotColor: '#01696f' },
   { displayNumber: '05', navSection: 'Algorithms', navLabel: "Kadane's Algorithm", navTierDotColor: '#01696f' },
+  { displayNumber: '05', navSection: 'Algorithms', navLabel: "Kadane's Algorithm", navTierDotColor: '#01696f' },
   { displayNumber: '06', navSection: 'Algorithms', navLabel: 'Intervals', navTierDotColor: '#01696f' },
   { displayNumber: '07', navSection: 'Algorithms', navLabel: 'Prefix Sums', navTierDotColor: '#01696f' },
   { displayNumber: '08', navSection: 'Algorithms', navLabel: 'Backtracking', navTierDotColor: '#01696f' },
@@ -46,6 +47,7 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '31', navSection: 'Graphs', navLabel: 'Topological Sort', navTierDotColor: '#da7101' },
   { displayNumber: '32', navSection: 'Graphs', navLabel: "Dijkstra's Algorithm", navTierDotColor: '#a13544' },
   { displayNumber: '32', navSection: 'Graphs', navLabel: "Dijkstra's Algorithm", navTierDotColor: '#a13544' },
+  { displayNumber: '32', navSection: 'Graphs', navLabel: "Dijkstra's Algorithm", navTierDotColor: '#a13544' },
   { displayNumber: '33', navSection: 'Graphs', navLabel: 'Floyd Warshall', navTierDotColor: '#a13544' },
   { displayNumber: '34', navSection: 'Graphs', navLabel: 'Bellman Ford', navTierDotColor: '#a13544' },
   { displayNumber: '35', navSection: 'Graphs', navLabel: 'Union Find', navTierDotColor: '#a13544' },
@@ -60,6 +62,8 @@ export const LOGIN_SNEAK_NAV: LoginSneakNavRow[] = [
   { displayNumber: '46', navSection: 'Advanced Techniques', navLabel: 'Advanced Strings', navTierDotColor: '#da7101' },
   { displayNumber: '47', navSection: 'Advanced Techniques', navLabel: 'Offline Queries & Sqrt Decomposition', navTierDotColor: '#da7101' },
   { displayNumber: '48', navSection: 'Advanced Techniques', navLabel: 'Computational Geometry', navTierDotColor: '#da7101' },
+  { displayNumber: '49', navSection: 'Advanced Techniques', navLabel: 'Randomized Algorithms', navTierDotColor: '#da7101' },
+  { displayNumber: '50', navSection: 'Advanced Techniques', navLabel: 'Sorting & Selection', navTierDotColor: '#da7101' },
 ];
 
 export const LOGIN_SNEAK_SAMPLE_TOPIC = {
