@@ -39,7 +39,9 @@ values
 (48,10,'Hard',null,null,'Orthogonal Segment Intersections with Sweep Line (Custom)','Hard',false,'Fenwick tree over active horizontal segments','Insert/remove horizontal segments at sweep events; a vertical segment queries active y-values in its interval using a Fenwick tree. Compress y and define equal-x event order to control endpoint inclusion.',true,'combination','Closest pair and geometric sweeps',3,4)
 on conflict (topic_id,order_num) do nothing;
 
-do $$
+update public.problems set layer='Variants' where topic_id=48 and order_num=7;
+
+do $
 declare seq_name text;
 begin
   seq_name := pg_get_serial_sequence('public.topics','id');
