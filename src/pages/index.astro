@@ -1392,8 +1392,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 
       // ── Curriculum paths ──
       // Group only after the required-row filter has removed editorial leftovers.
-      // A table is regrouped only when every visible learner row has complete,
-      // internally consistent path metadata; otherwise its authored order is kept.
+      // Required rows need complete path metadata; optional references are assigned
+      // to the closest matching logic group without changing their curriculum status.
       function applyCurriculumPathGrouping() {
         topics.forEach((topic: any) => {
           const card = document.getElementById(`tp${topic.id}`);
