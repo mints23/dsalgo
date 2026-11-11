@@ -1452,7 +1452,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
             if (!anchors.length) return;
 
             const normalizeVariant = (value: unknown) =>
-              String(value || '').trim().toLowerCase().replace(/\\s+/g, ' ');
+              String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
             const byVariant = new Map<string, typeof anchors>();
             anchors.forEach((anchor) => {
               const key = normalizeVariant(anchor.problem.sub_variant);
