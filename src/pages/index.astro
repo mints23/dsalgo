@@ -1338,21 +1338,23 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
               const cellText = problemCell?.textContent || '';
               const anchors = Array.from(row.querySelectorAll('a[href]')) as HTMLAnchorElement[];
               let matched: any = null;
-              for (const anchor of anchors) {
-                const href = anchor.getAttribute('href') || '';
-                const urlKey = normalizeProblemUrl(href);
-                matched = takeUnused(byUrl.get(urlKey));
-                if (matched) break;
+              // Exact title wins over a shared LC URL/number: the same LC problem may
+              // appear more than once in a topic as distinct algorithmic variants.
+              const titleKey = normalizeProblemTitle(cellText);
+              if (titleKey) matched = takeUnused(byTitle.get(titleKey));
+              if (!matched) {
+                for (const anchor of anchors) {
+                  const href = anchor.getAttribute('href') || '';
+                  const urlKey = normalizeProblemUrl(href);
+                  matched = takeUnused(byUrl.get(urlKey));
+                  if (matched) break;
+                }
               }
               if (!matched) {
                 const anchorText = anchors.map((anchor) => anchor.textContent || '').join(' ');
                 const lcMatch = anchorText.match(/\bLC\s*(\d+)\b/i)
                   || cellText.match(/^\s*(\d+)\s*[–—-]/);
                 if (lcMatch) matched = takeUnused(byLcNumber.get(lcMatch[1]));
-              }
-              if (!matched) {
-                const titleKey = normalizeProblemTitle(cellText);
-                if (titleKey) matched = takeUnused(byTitle.get(titleKey));
               }
               if (matched) {
                 usedProblemIds.add(Number(matched.id));
