@@ -831,7 +831,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           '\u00B7',
         );
         const re = new RegExp(
-          `^${esc}\\b(?:[\\s\\u00A0]*(?:\\u00B7|·|&middot;|&#183;|&#8226;|:|[\\u2013\\u2014\\-/\\\\|;]|&nbsp;))+[\\s\\u00A0]*`,
+          `^${esc}\\b(?:[\s\\u00A0]*(?:\\u00B7|·|&middot;|&#183;|&#8226;|:|[\\u2013\\u2014\\-/\\\\|;]|&nbsp;))+[\s\\u00A0]*`,
           'iu',
         );
         for (let i = 0; i < 6; i++) {
@@ -919,8 +919,8 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
       function dedupeLinearDpTagSequence(summaryMeta: string): string {
         if (!summaryMeta) return summaryMeta;
 
-        const sep = '(?:\\s*(?:·|&middot;|&#183;)\\s*)';
-        const pattern = `${FIXED_WINDOW_RE.source}${sep}Kadane${sep}Knapsack${sep}LIS${sep}State\\s*Machine${sep}CHT`;
+        const sep = '(?:\s*(?:·|&middot;|&#183;)\s*)';
+        const pattern = `${FIXED_WINDOW_RE.source}${sep}Kadane${sep}Knapsack${sep}LIS${sep}State\s*Machine${sep}CHT`;
         const re1 = new RegExp(pattern, 'g');
 
         const first = re1.exec(summaryMeta);
@@ -1054,11 +1054,11 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         if (coverageEntries.length) {
           const problemById = new Map(problems.map((problem: any) => [String(problem.id), problem]));
           const coverageLabels = coverageEntries.map((entry: string) => {
-            const id = String(entry).match(/^ID:(\\d+)$/i)?.[1];
+            const id = String(entry).match(/^ID:(\d+)$/i)?.[1];
             const problem: any = id ? problemById.get(id) : null;
             if (!problem) return String(entry);
             const identifier = String(problem.lc_number || '').trim();
-            return /^\\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
+            return /^\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
           });
           h += `<div class="sec-title">Core Bites</div>`;
           h += `<div class="coverage-box"><strong>Minimum ${coverageLabels.length} questions:</strong> `;
@@ -1589,13 +1589,13 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         const coreProblemIds = new Set<string>();
         coverageEntries.forEach((entry: string) => {
           const value = String(entry || '').trim();
-          const idMatch = value.match(/^ID:(\\d+)$/i);
+          const idMatch = value.match(/^ID:(\d+)$/i);
           if (idMatch) {
             coreProblemIds.add(idMatch[1]);
             return;
           }
           // Backward-compatible parsing for older topic content.
-          const lcMatch = value.match(/^(?:LC\\s*)?(\\d+)$/i);
+          const lcMatch = value.match(/^(?:LC\s*)?(\d+)$/i);
           if (lcMatch) {
             (topicData?.problems || []).forEach((problem: any) => {
               if (problem.is_required === true && String(problem.lc_number || '') === lcMatch[1]) {
@@ -1635,7 +1635,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
 
           // Replace legacy hand-authored minimum lists with the database-backed set.
           card.querySelectorAll<HTMLElement>('.coverage-box').forEach((box) => {
-            if (/^\\s*Minimum\\s+\\d+\\s+problems?/i.test(box.textContent || '')) box.remove();
+            if (/^\s*Minimum\s+\d+\s+problems?/i.test(box.textContent || '')) box.remove();
           });
           card.querySelector('.core-bites-summary')?.remove();
           const summary = document.createElement('div');
@@ -1647,7 +1647,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
             const pill = document.createElement('span');
             pill.className = 'pill';
             const identifier = String(problem.lc_number || '').trim();
-            pill.textContent = /^\\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
+            pill.textContent = /^\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
             pill.title = String(problem.title || pill.textContent);
             summary.appendChild(pill);
           });
