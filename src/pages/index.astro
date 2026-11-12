@@ -1050,11 +1050,19 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           h += `</tbody></table></div>`;
         }
 
-        const cov: string[] = tc.coverage_problems || [];
-        if (cov.length) {
-          h += `<div class="sec-title">80% Coverage Set</div>`;
-          h += `<div class="coverage-box"><strong>Minimum ${cov.length} problems:</strong> `;
-          cov.forEach((lc: string) => { h += `<span class="pill">${esc(lc)}</span>`; });
+        const coverageEntries: string[] = Array.isArray(tc.coverage_problems) ? tc.coverage_problems : [];
+        if (coverageEntries.length) {
+          const problemById = new Map(problems.map((problem: any) => [String(problem.id), problem]));
+          const coverageLabels = coverageEntries.map((entry: string) => {
+            const id = String(entry).match(/^ID:(\\d+)$/i)?.[1];
+            const problem: any = id ? problemById.get(id) : null;
+            if (!problem) return String(entry);
+            const identifier = String(problem.lc_number || '').trim();
+            return /^\\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
+          });
+          h += `<div class="sec-title">Core Bites</div>`;
+          h += `<div class="coverage-box"><strong>Minimum ${coverageLabels.length} questions:</strong> `;
+          coverageLabels.forEach((label: string) => { h += `<span class="pill">${esc(label)}</span>`; });
           h += `</div>`;
         }
 
@@ -1574,52 +1582,112 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
         if (!titleRow) return;
         const topicIdStr = card.id.replace(/^tp/, '');
 
-        const pills = card.querySelectorAll('.coverage-box .pill');
-        if (pills.length) {
-          const coverageSet = new Set<string>();
-          pills.forEach((pill) => {
-            const m = (pill.textContent || '').match(/\d+/);
-            if (m) coverageSet.add(m[0]);
-          });
-          if (coverageSet.size) {
-            let inMinCount = 0;
-            card.querySelectorAll('tbody tr').forEach((row) => {
-              if (!row.querySelector('.num-cell')) return;
-              const lcLink = row.querySelector('.lc-link');
-              const m = (lcLink?.textContent || '').match(/\d+/);
-              if (m && coverageSet.has(m[0])) {
-                row.classList.add('in-min');
-                inMinCount++;
+        const topicData = topics.find((topic: any) => String(topic.id) === topicIdStr);
+        const coverageEntries: string[] = Array.isArray(topicData?.topic_content?.coverage_problems)
+          ? topicData.topic_content.coverage_problems
+          : [];
+        const coreProblemIds = new Set<string>();
+        coverageEntries.forEach((entry: string) => {
+          const value = String(entry || '').trim();
+          const idMatch = value.match(/^ID:(\\d+)$/i);
+          if (idMatch) {
+            coreProblemIds.add(idMatch[1]);
+            return;
+          }
+          // Backward-compatible parsing for older topic content.
+          const lcMatch = value.match(/^(?:LC\\s*)?(\\d+)$/i);
+          if (lcMatch) {
+            (topicData?.problems || []).forEach((problem: any) => {
+              if (problem.is_required === true && String(problem.lc_number || '') === lcMatch[1]) {
+                coreProblemIds.add(String(problem.id));
               }
             });
-            if (inMinCount) {
-              const toggle = document.createElement('label');
-              toggle.className = 'min-switch study-toggle study-toggle--core' + (hasProFeatures ? '' : ' study-pref--locked');
-              toggle.title = !hasProFeatures
-                ? `Pro only — upgrade to show only these ${inMinCount} core coverage problems and save per topic.`
-                : isPaid
-                  ? `Core set: show only the ${inMinCount} minimum coverage problems (saved per topic in your Pro profile)`
-                  : `Core set: show only these ${inMinCount} minimum coverage problems (saved in this browser during your trial)`;
-              toggle.innerHTML =
-                '<input type="checkbox" class="min-toggle" /><span class="min-slider"></span>'
-                + '<span class="min-label">Core bites</span>';
-              titleRow.appendChild(toggle);
-              const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
-              if (hasProFeatures && studyMinByTopic[topicIdStr]) {
-                checkbox.checked = true;
-                card.classList.add('min-active');
-              }
-              checkbox.disabled = !hasProFeatures;
-              if (hasProFeatures) {
-                checkbox.addEventListener('change', () => {
-                  card.classList.toggle('min-active', checkbox.checked);
-                  if (checkbox.checked) studyMinByTopic[topicIdStr] = true;
-                  else delete studyMinByTopic[topicIdStr];
-                  schedulePersistStudyPrefs();
-                });
-              }
-            }
+            return;
           }
+          const titleKey = normalizeProblemTitle(value);
+          (topicData?.problems || []).forEach((problem: any) => {
+            if (problem.is_required === true && normalizeProblemTitle(String(problem.title || '')) === titleKey) {
+              coreProblemIds.add(String(problem.id));
+            }
+          });
+        });
+
+        const coreProblems = (topicData?.problems || []).filter((problem: any) =>
+          problem.is_required === true && coreProblemIds.has(String(problem.id))
+        );
+        const rowsByProblemId = new Map<string, HTMLTableRowElement>();
+        card.querySelectorAll<HTMLTableRowElement>('tbody tr[data-problem-id]').forEach((row) => {
+          rowsByProblemId.set(String(row.getAttribute('data-problem-id')), row);
+        });
+        const coreRows = coreProblems
+          .map((problem: any) => rowsByProblemId.get(String(problem.id)))
+          .filter((row: HTMLTableRowElement | undefined): row is HTMLTableRowElement => Boolean(row));
+
+        if (coreProblems.length && coreRows.length === coreProblems.length) {
+          coreRows.forEach((row) => {
+            row.classList.add('in-min');
+            let previous = row.previousElementSibling as HTMLElement | null;
+            while (previous?.classList.contains('curriculum-path-heading')) {
+              previous.classList.add('in-min');
+              break;
+            }
+          });
+
+          // Replace legacy hand-authored minimum lists with the database-backed set.
+          card.querySelectorAll<HTMLElement>('.coverage-box').forEach((box) => {
+            if (/^\\s*Minimum\\s+\\d+\\s+problems?/i.test(box.textContent || '')) box.remove();
+          });
+          card.querySelector('.core-bites-summary')?.remove();
+          const summary = document.createElement('div');
+          summary.className = 'coverage-box core-bites-summary';
+          const heading = document.createElement('strong');
+          heading.textContent = `Core Bites · ${coreProblems.length} minimum questions:`;
+          summary.appendChild(heading);
+          coreProblems.forEach((problem: any) => {
+            const pill = document.createElement('span');
+            pill.className = 'pill';
+            const identifier = String(problem.lc_number || '').trim();
+            pill.textContent = /^\\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
+            pill.title = String(problem.title || pill.textContent);
+            summary.appendChild(pill);
+          });
+          const topicBody = card.querySelector('.topic-body');
+          const problemSet = topicBody?.querySelector('.problem-set');
+          if (topicBody) {
+            if (problemSet) topicBody.insertBefore(summary, problemSet);
+            else topicBody.prepend(summary);
+          }
+
+          const toggle = document.createElement('label');
+          toggle.className = 'min-switch study-toggle study-toggle--core' + (hasProFeatures ? '' : ' study-pref--locked');
+          toggle.title = !hasProFeatures
+            ? `Pro only — upgrade to show only these ${coreProblems.length} core coverage questions and save per topic.`
+            : isPaid
+              ? `Core Bites: show only these ${coreProblems.length} minimum coverage questions (saved per topic in your Pro profile)`
+              : `Core Bites: show only these ${coreProblems.length} minimum coverage questions (saved in this browser during your trial)`;
+          toggle.innerHTML =
+            '<input type="checkbox" class="min-toggle" /><span class="min-slider"></span>'
+            + '<span class="min-label">Core bites</span>';
+          titleRow.appendChild(toggle);
+          const checkbox = toggle.querySelector('.min-toggle') as HTMLInputElement;
+          checkbox.setAttribute('aria-label', `Show only ${coreProblems.length} Core Bites questions for this topic`);
+          if (hasProFeatures && studyMinByTopic[topicIdStr]) {
+            checkbox.checked = true;
+            card.classList.add('min-active');
+          }
+          checkbox.disabled = !hasProFeatures;
+          if (hasProFeatures) {
+            checkbox.addEventListener('change', () => {
+              card.classList.toggle('min-active', checkbox.checked);
+              if (checkbox.checked) studyMinByTopic[topicIdStr] = true;
+              else delete studyMinByTopic[topicIdStr];
+              schedulePersistStudyPrefs();
+            });
+          }
+        } else if (coverageEntries.length) {
+          console.warn(
+            `Core Bites mapping incomplete for topic ${topicIdStr}: ${coreRows.length}/${coreProblems.length} selected required questions mapped to visible rows.`
+          );
         }
 
         // Some authored tables may not include `.num-cell` even after patching; `.lc-link` is a strong signal
