@@ -1050,21 +1050,7 @@ const APP_VERSION = import.meta.env.PUBLIC_APP_VERSION ?? 'dev';
           h += `</tbody></table></div>`;
         }
 
-        const coverageEntries: string[] = Array.isArray(tc.coverage_problems) ? tc.coverage_problems : [];
-        if (coverageEntries.length) {
-          const problemById = new Map(problems.map((problem: any) => [String(problem.id), problem]));
-          const coverageLabels = coverageEntries.map((entry: string) => {
-            const id = String(entry).match(/^ID:(\d+)$/i)?.[1];
-            const problem: any = id ? problemById.get(id) : null;
-            if (!problem) return String(entry);
-            const identifier = String(problem.lc_number || '').trim();
-            return /^\d+$/.test(identifier) ? `LC ${identifier}` : (identifier || problem.title);
-          });
-          h += `<div class="sec-title">Core Bites</div>`;
-          h += `<div class="coverage-box"><strong>Minimum ${coverageLabels.length} questions:</strong> `;
-          coverageLabels.forEach((label: string) => { h += `<span class="pill">${esc(label)}</span>`; });
-          h += `</div>`;
-        }
+        // Core Bites is rendered from structured problem IDs after authored rows are mapped.
 
         const flags: string[] = tc.red_flags || [];
         if (flags.length) {
